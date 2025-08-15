@@ -1,11 +1,37 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useUser } from '../contexts/UserContext';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { login } = useUser();
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Erro', 'Por favor, preencha todos os campos');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+              const success = await login(email, password);
+        if (success) {
+          router.replace('/(tabs)');
+        } else {
+        Alert.alert('Erro', 'Email ou senha incorretos');
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Ocorreu um erro ao fazer login');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -15,21 +41,39 @@ export default function Login() {
       <TouchableOpacity onPress={() => router.push('/SignUp')}>
         <Text style={styles.linkText}>não possui uma conta? <Text style={styles.link}>Faça seu Cadastro</Text></Text>
       </TouchableOpacity>
-      <TextInput placeholder="Email:" style={styles.input} keyboardType="email-address" />
+      <TextInput 
+        placeholder="Email:" 
+        style={styles.input} 
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
       <View style={styles.passwordContainer}>
-        <TextInput placeholder="Senha:" style={styles.inputPassword} secureTextEntry={!showPassword} />
+        <TextInput 
+          placeholder="Senha:" 
+          style={styles.inputPassword} 
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+        />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
           <Text>👁️</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity 
+        style={[styles.button, isLoading && styles.buttonDisabled]} 
+        onPress={handleLogin}
+        disabled={isLoading}
+      >
         <LinearGradient
           colors={['#00C6FF', '#1163E7']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.gradientButton}
         >
-          <Text style={styles.buttonText}>Entrar</Text>
+          <Text style={styles.buttonText}>
+            {isLoading ? 'Entrando...' : 'Entrar'}
+          </Text>
         </LinearGradient>
       </TouchableOpacity>
       <View style={styles.dividerContainer}>
@@ -156,5 +200,8 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     resizeMode: 'contain',
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
 }); 

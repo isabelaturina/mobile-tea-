@@ -1,10 +1,57 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useUser } from '../contexts/UserContext';
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { signUp } = useUser();
+
+  const handleSignUp = async () => {
+    if (!name || !email || !password) {
+      Alert.alert('Erro', 'Por favor, preencha todos os campos');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Simular cadastro bem-sucedido
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Fazer cadastro e login automático
+      const signUpSuccess = await signUp(name, email, password);
+      
+      if (signUpSuccess) {
+        Alert.alert(
+          'Sucesso!', 
+          'Conta criada com sucesso! Bem-vindo ao Tea+',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/(tabs)')
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Erro', 'Erro ao criar a conta');
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Ocorreu um erro ao criar a conta');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -14,17 +61,52 @@ export default function SignUp() {
       <TouchableOpacity onPress={() => router.push('/Login')}>
         <Text style={styles.linkText}>Já possui uma conta? <Text style={styles.link}>Faça seu Login</Text></Text>
       </TouchableOpacity>
-      <TextInput placeholder="Nome:" style={styles.input} />
-      <TextInput placeholder="Email:" style={styles.input} keyboardType="email-address" />
+      
+      <TextInput 
+        placeholder="Nome:" 
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+      />
+      
+      <TextInput 
+        placeholder="Email:" 
+        style={styles.input} 
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      
       <View style={styles.passwordContainer}>
-        <TextInput placeholder="Senha:" style={styles.inputPassword} secureTextEntry={!showPassword} />
+        <TextInput 
+          placeholder="Senha:" 
+          style={styles.inputPassword} 
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+        />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
           <Text>👁️</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Criar Conta</Text>
+      
+      <TouchableOpacity 
+        style={[styles.button, isLoading && styles.buttonDisabled]} 
+        onPress={handleSignUp}
+        disabled={isLoading}
+      >
+        <LinearGradient
+          colors={['#00C6FF', '#1163E7']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradientButton}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? 'Criando Conta...' : 'Criar Conta'}
+          </Text>
+        </LinearGradient>
       </TouchableOpacity>
+      
       <View style={styles.dividerContainer}>
         <View style={styles.divider} />
         <Text style={styles.dividerText}>Ou crie com as informações do</Text>
@@ -160,5 +242,16 @@ const styles = StyleSheet.create({
     height: 40,
     resizeMode: 'contain',
     zIndex: 1,
+  },
+  gradientButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
 }); 
