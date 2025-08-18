@@ -56,6 +56,11 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       // Simular delay de rede
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Validação básica (em um app real, seria feita validação com a API)
+      if (!email || !password) {
+        return false;
+      }
+      
       // Extrair o nome do email que a pessoa digitou
       // Exemplos:
       // - "maria.silva@gmail.com" → "Maria"

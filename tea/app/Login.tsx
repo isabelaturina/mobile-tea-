@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useUser } from '../contexts/UserContext';
 
 export default function Login() {
@@ -20,10 +20,10 @@ export default function Login() {
 
     setIsLoading(true);
     try {
-              const success = await login(email, password);
-        if (success) {
-          router.replace('/(tabs)');
-        } else {
+      const success = await login(email, password);
+      if (success) {
+        router.replace('/(tabs)' as any);
+      } else {
         Alert.alert('Erro', 'Email ou senha incorretos');
       }
     } catch (error) {
@@ -35,61 +35,92 @@ export default function Login() {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/images/logo tea.png')} style={styles.image} />
-      <View style={styles.backgroundCircle} />
-      <Text style={styles.title}>Faça seu Login</Text>
-      <TouchableOpacity onPress={() => router.push('/SignUp')}>
-        <Text style={styles.linkText}>não possui uma conta? <Text style={styles.link}>Faça seu Cadastro</Text></Text>
-      </TouchableOpacity>
-      <TextInput 
-        placeholder="Email:" 
-        style={styles.input} 
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <View style={styles.passwordContainer}>
-        <TextInput 
-          placeholder="Senha:" 
-          style={styles.inputPassword} 
-          secureTextEntry={!showPassword}
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
-          <Text>👁️</Text>
-        </TouchableOpacity>
-      </View>
-      <TouchableOpacity 
-        style={[styles.button, isLoading && styles.buttonDisabled]} 
-        onPress={handleLogin}
-        disabled={isLoading}
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <LinearGradient
-          colors={['#00C6FF', '#1163E7']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradientButton}
-        >
-          <Text style={styles.buttonText}>
-            {isLoading ? 'Entrando...' : 'Entrar'}
-          </Text>
-        </LinearGradient>
-      </TouchableOpacity>
-      <View style={styles.dividerContainer}>
-        <View style={styles.divider} />
-        <Text style={styles.dividerText}>Ou faça login com</Text>
-        <View style={styles.divider} />
-      </View>
-      <TouchableOpacity style={styles.googleButton}>
-        <Image source={require('../assets/images/google.png')} style={styles.googleIcon} />
-      </TouchableOpacity>
+        <View style={styles.backgroundCircle} />
+        <Image source={require('../assets/images/logo tea.png')} style={styles.image} />
+        <Text style={styles.title}>Faça seu Login</Text>
+        <TouchableOpacity onPress={() => router.push('/SignUp')}>
+          <Text style={styles.linkText}>não possui uma conta? <Text style={styles.link}>Faça seu Cadastro</Text></Text>
+        </TouchableOpacity>
+        
+        <View style={styles.formContainer}>
+          <TextInput 
+            placeholder="Email:" 
+            style={styles.input} 
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="next"
+            blurOnSubmit={false}
+          />
+          
+          <View style={styles.passwordContainer}>
+            <TextInput 
+              placeholder="Senha:" 
+              style={styles.inputPassword} 
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="done"
+              onSubmitEditing={handleLogin}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+              <Text>👁️</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <TouchableOpacity 
+            style={[styles.button, isLoading && styles.buttonDisabled]} 
+            onPress={handleLogin}
+            disabled={isLoading}
+          >
+            <LinearGradient
+              colors={['#00C6FF', '#1163E7']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Entrando...' : 'Entrar'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.dividerContainer}>
+          <View style={styles.divider} />
+          <Text style={styles.dividerText}>Ou faça login com</Text>
+          <View style={styles.divider} />
+        </View>
+        <TouchableOpacity style={styles.googleButton}>
+          <Image source={require('../assets/images/google.png')} style={styles.googleIcon} />
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
- backgroundCircle: {
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    minHeight: '100%',
+  },
+  backgroundCircle: {
     position: 'absolute',
     top: -120,
     right: 35,
@@ -97,21 +128,13 @@ const styles = StyleSheet.create({
     height: 500,
     borderRadius: 250,
     backgroundColor: '#E0F2FF',
-    zIndex: 0,
-  },
-    container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
+    zIndex: -1,
   },
   image: {
     width: 200,
     height: 200,
     marginBottom: 16,
     resizeMode: 'contain',
-    zIndex: 1,
   },
   title: {
     fontSize: 26,
@@ -129,6 +152,10 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontWeight: 'bold',
   },
+  formContainer: {
+    width: '100%',
+    marginBottom: 16,
+  },
   input: {
     width: '100%',
     borderWidth: 1,
@@ -138,6 +165,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 16,
     backgroundColor: '#fff',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -153,6 +188,14 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     backgroundColor: '#fff',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   eyeButton: {
     marginLeft: -40,
@@ -164,6 +207,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
     width: '100%',
     overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   gradientButton: {
     paddingVertical: 12,

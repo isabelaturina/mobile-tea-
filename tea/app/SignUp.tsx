@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useUser } from '../contexts/UserContext';
 
 export default function SignUp() {
@@ -39,7 +39,7 @@ export default function SignUp() {
           [
             {
               text: 'OK',
-              onPress: () => router.replace('/(tabs)')
+              onPress: () => router.replace('/(tabs)' as any)
             }
           ]
         );
@@ -55,71 +55,102 @@ export default function SignUp() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.backgroundCircle} />
-      <Image source={require('../assets/images/logo tea.png')} style={styles.image} />
-      <Text style={styles.title}>Crie sua conta</Text>
-      <TouchableOpacity onPress={() => router.push('/Login')}>
-        <Text style={styles.linkText}>Já possui uma conta? <Text style={styles.link}>Faça seu Login</Text></Text>
-      </TouchableOpacity>
-      
-      <TextInput 
-        placeholder="Nome:" 
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-      />
-      
-      <TextInput 
-        placeholder="Email:" 
-        style={styles.input} 
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      
-      <View style={styles.passwordContainer}>
-        <TextInput 
-          placeholder="Senha:" 
-          style={styles.inputPassword} 
-          secureTextEntry={!showPassword}
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
-          <Text>👁️</Text>
-        </TouchableOpacity>
-      </View>
-      
-      <TouchableOpacity 
-        style={[styles.button, isLoading && styles.buttonDisabled]} 
-        onPress={handleSignUp}
-        disabled={isLoading}
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <LinearGradient
-          colors={['#00C6FF', '#1163E7']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradientButton}
-        >
-          <Text style={styles.buttonText}>
-            {isLoading ? 'Criando Conta...' : 'Criar Conta'}
-          </Text>
-        </LinearGradient>
-      </TouchableOpacity>
-      
-      <View style={styles.dividerContainer}>
-        <View style={styles.divider} />
-        <Text style={styles.dividerText}>Ou crie com as informações do</Text>
-        <View style={styles.divider} />
-      </View>
-      <TouchableOpacity style={styles.googleButton}>
-        <Image source={require('../assets/images/google.png')} style={styles.googleIcon} />
-      </TouchableOpacity>
+        <View style={styles.backgroundCircle} />
+        <Image source={require('../assets/images/logo tea.png')} style={styles.image} />
+        <Text style={styles.title}>Crie sua conta</Text>
+        <TouchableOpacity onPress={() => router.push('/Login')}>
+          <Text style={styles.linkText}>Já possui uma conta? <Text style={styles.link}>Faça seu Login</Text></Text>
+        </TouchableOpacity>
+        
+        <View style={styles.formContainer}>
+          <TextInput 
+            placeholder="Nome:" 
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+            autoCorrect={false}
+            returnKeyType="next"
+            blurOnSubmit={false}
+          />
+          
+          <TextInput 
+            placeholder="Email:" 
+            style={styles.input} 
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="next"
+            blurOnSubmit={false}
+          />
+          
+          <View style={styles.passwordContainer}>
+            <TextInput 
+              placeholder="Senha:" 
+              style={styles.inputPassword} 
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="done"
+              onSubmitEditing={handleSignUp}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
+              <Text>👁️</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <TouchableOpacity 
+            style={[styles.button, isLoading && styles.buttonDisabled]} 
+            onPress={handleSignUp}
+            disabled={isLoading}
+          >
+            <LinearGradient
+              colors={['#00C6FF', '#1163E7']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientButton}
+            >
+              <Text style={styles.buttonText}>
+                {isLoading ? 'Criando Conta...' : 'Criar Conta'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.dividerContainer}>
+          <View style={styles.divider} />
+          <Text style={styles.dividerText}>Ou crie com as informações do</Text>
+          <View style={styles.divider} />
+        </View>
+        <TouchableOpacity style={styles.googleButton}>
+          <Image source={require('../assets/images/google.png')} style={styles.googleIcon} />
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    minHeight: '100%',
+  },
   backgroundCircle: {
     position: 'absolute',
     top: -120,
@@ -128,22 +159,13 @@ const styles = StyleSheet.create({
     height: 500,
     borderRadius: 250,
     backgroundColor: '#E0F2FF',
-    zIndex: 0,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-    overflow: 'hidden',
+    zIndex: -1,
   },
   image: {
     width: 200,
     height: 200,
     marginBottom: 16,
     resizeMode: 'contain',
-    zIndex: 1,
   },
   title: {
     fontSize: 26,
@@ -151,18 +173,19 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     color: '#222',
     textAlign: 'center',
-    zIndex: 1,
   },
   linkText: {
     color: '#888',
     marginBottom: 16,
     textAlign: 'center',
-    zIndex: 1,
   },
   link: {
     color: '#007AFF',
     fontWeight: 'bold',
-    zIndex: 1,
+  },
+  formContainer: {
+    width: '100%',
+    marginBottom: 16,
   },
   input: {
     width: '100%',
@@ -173,14 +196,20 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 16,
     backgroundColor: '#fff',
-    zIndex: 1,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
     marginBottom: 12,
-    zIndex: 1,
   },
   inputPassword: {
     flex: 1,
@@ -190,58 +219,33 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     backgroundColor: '#fff',
-    zIndex: 1,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   eyeButton: {
     marginLeft: -40,
     padding: 8,
-    zIndex: 2,
+    zIndex: 1,
   },
   button: {
-    backgroundColor: '#007AFF',
     borderRadius: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    alignItems: 'center',
     marginTop: 8,
     width: '100%',
-    zIndex: 1,
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 18,
-    zIndex: 1,
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 16,
-    width: '100%',
-    zIndex: 1,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    zIndex: 1,
-  },
-  dividerText: {
-    marginHorizontal: 8,
-    color: '#888',
-    fontSize: 12,
-    zIndex: 1,
-  },
-  googleButton: {
-    marginTop: 8,
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  googleIcon: {
-    width: 40,
-    height: 40,
-    resizeMode: 'contain',
-    zIndex: 1,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   gradientButton: {
     paddingVertical: 12,
@@ -250,6 +254,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 16,
+    width: '100%',
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  dividerText: {
+    marginHorizontal: 8,
+    color: '#888',
+    fontSize: 12,
+  },
+  googleButton: {
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  googleIcon: {
+    width: 40,
+    height: 40,
+    resizeMode: 'contain',
   },
   buttonDisabled: {
     opacity: 0.7,
