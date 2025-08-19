@@ -45,7 +45,7 @@ export default function Home() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Mensagem de boas-vindas */}
         <Text style={styles.welcomeText}>
-          Bem Vindo {userData?.name || 'Usuário'}!
+          Bem-vindo(a) {userData?.name || 'Usuário'}!
         </Text>
 
         {/* Cards de funcionalidades */}

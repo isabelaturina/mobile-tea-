@@ -39,7 +39,7 @@ export default function SignUp() {
           [
             {
               text: 'OK',
-              onPress: () => router.replace('/(tabs)' as any)
+             onPress: () => router.replace('/(tabs)/Home' as any)
             }
           ]
         );
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   linkText: {
-    color: '#888',
+    color: '#7b7b7bff',
     marginBottom: 16,
     textAlign: 'center',
   },

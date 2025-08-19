@@ -13,6 +13,7 @@ export default function Onboarding1() {
       colors={['#1CB5E0', '#000851']}
       style={styles.container}
     >
+      
       <Text style={styles.title}>Seja bem-vindo ao TEA+</Text>
       <Text style={styles.subtitle}>Conectando vidas com empatia e conhecimento</Text>
       <Image source={require('../../assets/images/familia 1.png')} style={styles.image} />
@@ -48,4 +49,5 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     resizeMode: 'contain',
   },
+  
 }); 

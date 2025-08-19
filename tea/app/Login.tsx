@@ -1,4 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -22,7 +21,7 @@ export default function Login() {
     try {
       const success = await login(email, password);
       if (success) {
-        router.replace('/(tabs)' as any);
+        router.replace('/(tabs)/Home' as any);
       } else {
         Alert.alert('Erro', 'Email ou senha incorretos');
       }
@@ -44,7 +43,9 @@ export default function Login() {
         <Image source={require('../assets/images/logo tea.png')} style={styles.image} />
         <Text style={styles.title}>Faça seu Login</Text>
         <TouchableOpacity onPress={() => router.push('/SignUp')}>
-          <Text style={styles.linkText}>não possui uma conta? <Text style={styles.link}>Faça seu Cadastro</Text></Text>
+          <Text style={styles.linkText}>
+            não possui uma conta? <Text style={styles.link}>Faça seu Cadastro</Text>
+          </Text>
         </TouchableOpacity>
         
         <View style={styles.formContainer}>
@@ -72,8 +73,14 @@ export default function Login() {
               returnKeyType="done"
               onSubmitEditing={handleLogin}
             />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeButton}>
-              <Text>👁️</Text>
+            <TouchableOpacity 
+              onPress={() => setShowPassword(!showPassword)} 
+              style={styles.eyeButton}
+            >
+              <Image 
+                source={require('../assets/images/olho.png')} 
+                style={styles.eyeIcon} 
+              />
             </TouchableOpacity>
           </View>
           
@@ -82,27 +89,12 @@ export default function Login() {
             onPress={handleLogin}
             disabled={isLoading}
           >
-            <LinearGradient
-              colors={['#00C6FF', '#1163E7']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.gradientButton}
-            >
-              <Text style={styles.buttonText}>
-                {isLoading ? 'Entrando...' : 'Entrar'}
-              </Text>
-            </LinearGradient>
+            <Text style={styles.buttonTextOutline}>
+              {isLoading ? 'Entrando...' : 'Entrar'}
+            </Text>
           </TouchableOpacity>
         </View>
-        
-        <View style={styles.dividerContainer}>
-          <View style={styles.divider} />
-          <Text style={styles.dividerText}>Ou faça login com</Text>
-          <View style={styles.divider} />
-        </View>
-        <TouchableOpacity style={styles.googleButton}>
-          <Image source={require('../assets/images/google.png')} style={styles.googleIcon} />
-        </TouchableOpacity>
+
       </ScrollView>
     </View>
   );
@@ -123,7 +115,7 @@ const styles = StyleSheet.create({
   backgroundCircle: {
     position: 'absolute',
     top: -120,
-    right: 35,
+    right: 10,
     width: 500,
     height: 500,
     borderRadius: 250,
@@ -137,16 +129,17 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   title: {
-    fontSize: 26,
+    fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 8,
     color: '#222',
     textAlign: 'center',
   },
   linkText: {
-    color: '#888',
+    color: '#7b7b7bff',
     marginBottom: 16,
     textAlign: 'center',
+    fontSize:12
   },
   link: {
     color: '#007AFF',
@@ -159,18 +152,15 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     borderWidth: 1,
-    borderColor: '#B0B0B0',
+    borderColor: '#2B81BE',
     borderRadius: 20,
     padding: 12,
-    marginBottom: 12,
+    marginBottom: 30,
     fontSize: 16,
     backgroundColor: '#fff',
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
@@ -178,22 +168,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    marginBottom: 12,
+    marginBottom: 20,
   },
   inputPassword: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#B0B0B0',
+    borderColor: '#2B81BE',
     borderRadius: 20,
     padding: 12,
-    fontSize: 16,
+    fontSize: 15,
     backgroundColor: '#fff',
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
@@ -202,57 +189,30 @@ const styles = StyleSheet.create({
     padding: 8,
     zIndex: 1,
   },
+  eyeIcon: {
+    width: 24,
+    height: 24,
+    tintColor: '#7b7b7b', // deixa o ícone cinza (opcional)
+    resizeMode: 'contain',
+  },
   button: {
-    borderRadius: 20,
+    borderRadius: 10,
     marginTop: 8,
-    width: '100%',
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  gradientButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 32,
+    width: '50%',
+    borderWidth: 1.6,
+    borderColor: '#00C6FF',
     alignItems: 'center',
-    width: '100%',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    left:'25%'
   },
-  buttonText: {
-    color: '#fff',
+  buttonTextOutline: {
+    color: '#00C6FF',
     fontWeight: 'bold',
     fontSize: 18,
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 16,
-    width: '100%',
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E0E0E0',
-  },
-  dividerText: {
-    marginHorizontal: 8,
-    color: '#888',
-    fontSize: 12,
-  },
-  googleButton: {
-    marginTop: 8,
-    alignItems: 'center',
-  },
-  googleIcon: {
-    width: 40,
-    height: 40,
-    resizeMode: 'contain',
+   
   },
   buttonDisabled: {
     opacity: 0.7,
   },
-}); 
+});
