@@ -3,6 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+
+
 export default function Chat() {
   const chatRooms = [
     {
