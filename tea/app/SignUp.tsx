@@ -12,8 +12,10 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View,
+  View
 } from 'react-native';
+
+import { Picker } from '@react-native-picker/picker';
 import { useUser } from '../contexts/UserContext';
 
 type SupportLevel = 'basico' | 'intermediario' | 'avancado';
@@ -25,6 +27,7 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [supportLevel, setSupportLevel] = useState<SupportLevel | null>(null);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
+  const [grauAutismo, setGrauAutismo] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
@@ -68,6 +71,11 @@ export default function SignUp() {
             onPress: () => router.replace('/(tabs)/Home' as any),
           },
         ]);
+        Alert.alert(
+          'Sucesso!',
+          'Conta criada com sucesso! Bem-vindo ao Tea+',
+          [{ text: 'OK', onPress: () => router.replace('/(tabs)/Home' as any) }]
+        );
       } else {
         Alert.alert('Erro', 'Erro ao criar a conta');
       }
@@ -90,8 +98,12 @@ export default function SignUp() {
           source={require('../assets/images/logo tea.png')}
           style={styles.image}
         />
+
         <Text style={styles.title}>Crie sua conta</Text>
         <TouchableOpacity onPress={() => router.push('/Login')}>
+          <Text style={styles.linkText}>
+            Já possui uma conta? <Text style={styles.link}>Faça seu Login</Text>
+          </Text>
           <Text style={styles.linkText}>
             Já possui uma conta? <Text style={styles.link}>Faça seu Login</Text>
           </Text>
@@ -103,10 +115,6 @@ export default function SignUp() {
             style={styles.input}
             value={name}
             onChangeText={setName}
-            autoCapitalize="words"
-            autoCorrect={false}
-            returnKeyType="next"
-            blurOnSubmit={false}
           />
 
           <TextInput
@@ -116,9 +124,6 @@ export default function SignUp() {
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="next"
-            blurOnSubmit={false}
           />
 
           <View style={styles.passwordContainer}>
@@ -186,6 +191,23 @@ export default function SignUp() {
 
           <TouchableOpacity
             style={[styles.button, isLoading && styles.buttonDisabled]}
+          >
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={grauAutismo}
+                onValueChange={(itemValue) => setGrauAutismo(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Grau autismo:" value="" />
+                <Picker.Item label="1" value="1" />
+                <Picker.Item label="2" value="2" />
+                <Picker.Item label="3" value="3" />
+              </Picker>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleSignUp}
             disabled={isLoading}
           >
@@ -213,7 +235,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    minHeight: '100%',
   },
   backgroundCircle: {
     position: 'absolute',
@@ -230,11 +251,13 @@ const styles = StyleSheet.create({
   linkText: { color: '#7b7b7bff', marginBottom: 16, textAlign: 'center' },
   link: { color: '#007AFF', fontWeight: 'bold' },
   formContainer: { width: '100%', marginBottom: 16 },
+
+  // Inputs iguais à 1ª imagem
   input: {
     width: '100%',
     borderWidth: 1,
-    borderColor: '#B0B0B0',
-    borderRadius: 20,
+    borderColor: '#00C6FF',
+    borderRadius: 12,
     padding: 12,
     marginBottom: 12,
     fontSize: 16,
@@ -249,8 +272,8 @@ const styles = StyleSheet.create({
   inputPassword: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#B0B0B0',
-    borderRadius: 20,
+    borderColor: '#00C6FF',
+    borderRadius: 12,
     padding: 12,
     fontSize: 16,
     backgroundColor: '#fff',
@@ -299,8 +322,20 @@ const styles = StyleSheet.create({
   optionItem: { paddingVertical: 14, paddingHorizontal: 16 },
   optionItemActive: { backgroundColor: '#EAF3FF' },
   optionText: { fontSize: 16, color: '#222' },
+  
+  eyeIcon: { width: 24, height: 24, tintColor: '#7b7b7b', resizeMode: 'contain' },
+
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#00C6FF',
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  picker: { width: '100%', height: 50 },
+
   button: {
-    borderRadius: 20,
+    borderRadius: 12,
     marginTop: 8,
     width: '100%',
     overflow: 'hidden',
@@ -311,9 +346,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   gradientButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 20,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',

@@ -24,7 +24,7 @@ export default function Profile() {
   };
 
   const handleChangePassword = () => {
-    Alert.alert('Alterar Senha', 'Funcionalidade de alteração de senha será implementada');
+    router.push('/changepassword');
   };
 
   const handleNotifications = () => {

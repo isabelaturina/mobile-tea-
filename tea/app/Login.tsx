@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     color: '#7b7b7bff',
     marginBottom: 16,
     textAlign: 'center',
-    fontSize:12
+    fontSize: 13.5,
   },
   link: {
     color: '#007AFF',
@@ -172,6 +172,7 @@ const styles = StyleSheet.create({
   },
   inputPassword: {
     flex: 1,
+   
     borderWidth: 1,
     borderColor: '#2B81BE',
     borderRadius: 20,
