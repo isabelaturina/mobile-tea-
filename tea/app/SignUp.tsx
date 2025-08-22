@@ -18,7 +18,7 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import { useUser } from '../contexts/UserContext';
 
-type SupportLevel = 'basico' | 'intermediario' | 'avancado';
+type SupportLevel = 'leve' | 'moderado' | 'severo';
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -35,9 +35,9 @@ export default function SignUp() {
 
   const levels = useMemo(
     () => [
-      { label: 'Básico', value: 'basico' as const },
-      { label: 'Intermediário', value: 'intermediario' as const },
-      { label: 'Avançado', value: 'avancado' as const },
+      { label: 'leve', value: 'leve' as const },
+      { label: 'moderado', value: 'moderado' as const },
+      { label: 'severo', value: 'severo' as const },
     ],
     []
   );
@@ -104,9 +104,7 @@ export default function SignUp() {
           <Text style={styles.linkText}>
             Já possui uma conta? <Text style={styles.link}>Faça seu Login</Text>
           </Text>
-          <Text style={styles.linkText}>
-            Já possui uma conta? <Text style={styles.link}>Faça seu Login</Text>
-          </Text>
+         
         </TouchableOpacity>
 
         <View style={styles.formContainer}>
@@ -144,7 +142,14 @@ export default function SignUp() {
               accessibilityRole="button"
               accessibilityLabel={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
             >
-              <Text>👁️</Text>
+              <Image
+                source={
+                  showPassword
+                    ? require('../assets/images/olho-aberto.png')
+                    : require('../assets/images/olho-fechado.png')
+                }
+                style={styles.eyeIcon}
+              />
             </TouchableOpacity>
           </View>
 
@@ -188,23 +193,7 @@ export default function SignUp() {
               ))}
             </View>
           </Modal>
-
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-          >
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={grauAutismo}
-                onValueChange={(itemValue) => setGrauAutismo(itemValue)}
-                style={styles.picker}
-              >
-                <Picker.Item label="Grau autismo:" value="" />
-                <Picker.Item label="1" value="1" />
-                <Picker.Item label="2" value="2" />
-                <Picker.Item label="3" value="3" />
-              </Picker>
-            </View>
-          </TouchableOpacity>
+         
 
           <TouchableOpacity
             style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -285,9 +274,9 @@ const styles = StyleSheet.create({
   },
   eyeButton: { marginLeft: -40, padding: 8, zIndex: 1 },
   dropdownTrigger: {
-    width: '100%',
+    width: '45%',
     borderWidth: 1,
-    borderColor: '#B0B0B0',
+    borderColor: '#00C6FF',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -302,7 +291,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  dropdownText: { fontSize: 16, color: '#222' },
+  dropdownText: { fontSize: 16, color: '#000000ff' },
   dropdownCaret: { fontSize: 16 },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.25)' },
   modalSheet: {
