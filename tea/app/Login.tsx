@@ -13,9 +13,16 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos');
-      return;
-    }
+  Alert.alert('Ops!', 'Parece que você esqueceu de preencher algum campo. Tente novamente!');
+  return;
+}
+
+    // 🔹 Validação para aceitar apenas emails do Gmail
+const regexGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+if (!regexGmail.test(email)) {
+  Alert.alert('Erro', 'O email deve ser do Gmail (ex: exemplo@gmail.com)');
+  return;
+}
 
     setIsLoading(true);
     try {
@@ -51,6 +58,7 @@ export default function Login() {
         <View style={styles.formContainer}>
           <TextInput 
             placeholder="Email:" 
+            placeholderTextColor="#9aa0a6"
             style={styles.input} 
             keyboardType="email-address"
             value={email}
@@ -64,6 +72,7 @@ export default function Login() {
           <View style={styles.passwordContainer}>
             <TextInput 
               placeholder="Senha:" 
+               placeholderTextColor="#9aa0a6"
               style={styles.inputPassword} 
               secureTextEntry={!showPassword}
               value={password}
@@ -104,6 +113,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+   
   },
   scrollContainer: {
     flexGrow: 1,
@@ -121,6 +131,7 @@ const styles = StyleSheet.create({
     borderRadius: 250,
     backgroundColor: '#E0F2FF',
     zIndex: -1,
+    
   },
   image: {
     width: 200,
@@ -129,21 +140,22 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   title: {
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 20,
     color: '#222',
     textAlign: 'center',
   },
   linkText: {
     color: '#7b7b7bff',
-    marginBottom: 16,
+    marginBottom: 20,
     textAlign: 'center',
-    fontSize: 13.5,
+    fontSize: 16,
   },
   link: {
     color: '#007AFF',
     fontWeight: 'bold',
+    
   },
   formContainer: {
     width: '100%',
@@ -152,7 +164,7 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     borderWidth: 1,
-    borderColor: '#2B81BE',
+    borderColor: '#00C6FF',
     borderRadius: 20,
     padding: 12,
     marginBottom: 30,
@@ -163,21 +175,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
     marginBottom: 20,
+    
   },
   inputPassword: {
     flex: 1,
-   
     borderWidth: 1,
-    borderColor: '#2B81BE',
+    borderColor: '#00C6FF',
     borderRadius: 20,
     padding: 12,
-    fontSize: 15,
+    fontSize: 16,
     backgroundColor: '#fff',
     elevation: 2,
     shadowColor: '#000',

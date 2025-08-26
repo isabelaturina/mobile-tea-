@@ -1,4 +1,5 @@
 import React, { createContext, ReactNode, useContext, useState } from 'react';
+import { StyleSheet } from 'react-native';
 
 interface UserData {
   name: string;
@@ -117,4 +118,43 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       {children}
     </UserContext.Provider>
   );
-}; 
+};export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  image: {
+    width: 200,
+    height: 200,
+    marginBottom: 32,
+    resizeMode: 'contain',
+  },
+  loginText: {
+    color: '#fff',
+    marginTop: 16,
+    textAlign: 'center',
+    fontSize: 16
+  },
+  loginLink: {
+    color: '#00CFFF',
+    textDecorationLine: 'underline',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
+ 

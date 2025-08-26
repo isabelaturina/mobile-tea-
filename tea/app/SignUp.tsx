@@ -15,7 +15,6 @@ import {
   View
 } from 'react-native';
 
-import { Picker } from '@react-native-picker/picker';
 import { useUser } from '../contexts/UserContext';
 
 type SupportLevel = 'leve' | 'moderado' | 'severo';
@@ -47,16 +46,27 @@ export default function SignUp() {
     return found?.label ?? 'Nível de suporte';
   }, [levels, supportLevel]);
 
+  
   const handleSignUp = async () => {
-    if (!name || !email || !password || !supportLevel) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos');
-      return;
-    }
-
+   if (!name || !email || !password || !supportLevel) {
+  Alert.alert('Ops!', 'Parece que você esqueceu de preencher algum campo. Tente novamente!');
+  return;
+}
+const regexNome = /^[A-Za-zÀ-ÖØ-öø-ÿ ]+$/;
+if (!regexNome.test(name)) {
+  Alert.alert('Nome inválido', 'O nome deve conter apenas letras.');
+  return;
+}
     if (password.length < 6) {
       Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres');
       return;
     }
+      // 🔹 Validação para aceitar apenas emails do Gmail
+const regexGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+if (!regexGmail.test(email)) {
+  Alert.alert('Erro', 'O email deve ser do Gmail (ex: exemplo@gmail.com)');
+  return;
+}
 
     setIsLoading(true);
     try {
@@ -110,6 +120,7 @@ export default function SignUp() {
         <View style={styles.formContainer}>
           <TextInput
             placeholder="Nome:"
+            placeholderTextColor="#9aa0a6"
             style={styles.input}
             value={name}
             onChangeText={setName}
@@ -117,6 +128,7 @@ export default function SignUp() {
 
           <TextInput
             placeholder="Email:"
+            placeholderTextColor="#9aa0a6"
             style={styles.input}
             keyboardType="email-address"
             value={email}
@@ -124,9 +136,10 @@ export default function SignUp() {
             autoCapitalize="none"
           />
 
-          <View style={styles.passwordContainer}>
-            <TextInput
+       <View style={styles.passwordContainer}>
+           <TextInput
               placeholder="Senha:"
+              placeholderTextColor="#9aa0a6"
               style={styles.inputPassword}
               secureTextEntry={!showPassword}
               value={password}
@@ -136,6 +149,7 @@ export default function SignUp() {
               returnKeyType="done"
               onSubmitEditing={handleSignUp}
             />
+
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               style={styles.eyeButton}
@@ -236,8 +250,8 @@ const styles = StyleSheet.create({
     zIndex: -1,
   },
   image: { width: 200, height: 200, marginBottom: 16, resizeMode: 'contain' },
-  title: { fontSize: 26, fontWeight: 'bold', marginBottom: 8, color: '#222', textAlign: 'center' },
-  linkText: { color: '#7b7b7bff', marginBottom: 16, textAlign: 'center' },
+  title: { fontSize: 32, fontWeight: 'bold', marginBottom: 14, color: '#222', textAlign: 'center' },
+  linkText: { color: '#7b7b7bff', marginBottom: 16, textAlign: 'center', fontSize: 16},
   link: { color: '#007AFF', fontWeight: 'bold' },
   formContainer: { width: '100%', marginBottom: 16 },
 
@@ -246,9 +260,9 @@ const styles = StyleSheet.create({
     width: '100%',
     borderWidth: 1,
     borderColor: '#00C6FF',
-    borderRadius: 12,
+    borderRadius: 56,
     padding: 12,
-    marginBottom: 12,
+    marginBottom: 30,
     fontSize: 16,
     backgroundColor: '#fff',
     elevation: 2,
@@ -257,12 +271,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
-  passwordContainer: { flexDirection: 'row', alignItems: 'center', width: '100%', marginBottom: 12 },
+  passwordContainer: { flexDirection: 'row', alignItems: 'center', width: '100%', marginBottom: 30 },
   inputPassword: {
     flex: 1,
     borderWidth: 1,
     borderColor: '#00C6FF',
-    borderRadius: 12,
+    borderRadius: 56,
     padding: 12,
     fontSize: 16,
     backgroundColor: '#fff',
@@ -271,16 +285,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    
   },
   eyeButton: { marginLeft: -40, padding: 8, zIndex: 1 },
   dropdownTrigger: {
     width: '45%',
     borderWidth: 1,
     borderColor: '#00C6FF',
-    borderRadius: 20,
+    borderRadius: 56,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginBottom: 12,
+    marginBottom: 30,
     backgroundColor: '#fff',
     elevation: 2,
     shadowColor: '#000',
@@ -326,13 +341,14 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 12,
     marginTop: 8,
-    width: '100%',
+    width: '80%',
     overflow: 'hidden',
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    left: 35,
   },
   gradientButton: {
     paddingVertical: 14,

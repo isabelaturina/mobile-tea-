@@ -55,9 +55,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginTop: 16,
     textAlign: 'center',
+    fontSize:16
   },
   loginLink: {
     color: '#00CFFF',
     textDecorationLine: 'underline',
+    fontSize: 16,
+   
   },
 }); 
