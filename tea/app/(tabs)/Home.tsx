@@ -89,7 +89,7 @@ export default function Home() {
                   }
                 >
                   <LinearGradient
-                    colors={["#70DEFE", "#0066CC"]}
+                    colors={["#70DEF", "#0066CC"]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={{ width: 40, height: 30, left: 60 }} // 👈 tamanho do gradiente
@@ -110,7 +110,7 @@ export default function Home() {
               </Text>
               <TouchableOpacity style={styles.beaButton}>
                 <LinearGradient
-                  colors={["#3B82F6", "#1D4ED8"]}
+                  colors={["#70DEFE", "#1D4ED8"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.beaButtonGradient}
@@ -166,20 +166,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    flexWrap: "wrap",
   },
   headerTextContainer: {
     flex: 1,
-    marginRight: 20,
+    marginRight: 10,
+    minWidth: 0,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#ffffffff",
+    color: "#fff",
     lineHeight: 28,
-     textShadowColor: "#4f4e4eff",    
+    textShadowColor: "#4f4e4eff",    
     textShadowOffset: { width: 0, height: 0 }, 
-     textShadowRadius: 6, 
-      
+    textShadowRadius: 6, 
+    textAlign: "left",
+    flexWrap: "wrap",
+    width: "100%",
   },
   headerIllustration: {
     alignItems: "center",
@@ -195,10 +199,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   familyImage: {
-    width: 170,
-    height: 150,
-   bottom: -20,
-   left: 15,
+    width: 120,
+    height: 120,
+    marginLeft: 0,
+    marginBottom: 0,
   },
   content: {
     flex: 1,
@@ -244,73 +248,86 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   beaCard: {
-    backgroundColor: "#E0F2FF",
+    backgroundColor: '#D9F2FF',
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
     marginBottom: 20,
-    position: "relative",
-    minHeight: 140,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   beaContent: {
-    flexDirection: "row",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   beaIllustration: {
-    position: "absolute",
-    bottom: -10,
-    right: -10,
-    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+    marginBottom: 0,
   },
   beaImage: {
-    width: 110,
-    height: 190,
-    right: 240,
+    width: 70,
+    height: 150,
+    resizeMode: 'contain',
   },
   beaTextContainer: {
     flex: 1,
-    marginRight: 120,
+    minWidth: 0,
+    justifyContent: 'center',
   },
   beaTitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    flexWrap: 'wrap',
   },
   beaTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    left: 60,
+    fontWeight: 'bold',
+    color: '#222',
+    marginLeft: 0,
   },
   beaName: {
     fontSize: 18,
-    fontWeight: "bold",
-    left: 65,
-    top: 6,
+    fontWeight: 'bold',
+    marginLeft: 4,
+    marginTop: 0,
+    color: '#2196F3',
   },
   beaHeart: {
-    marginLeft: 60,
+    marginLeft: 4,
+    color: '#2196F3',
   },
   beaDescription: {
     fontSize: 15,
-    width: 270,
-    color: "#333",
-    lineHeight: 16,
-    marginBottom: 16,
-    left: 60,
+    color: '#222',
+    lineHeight: 22,
+    marginBottom: 0,
+    textAlign: 'left',
+    width: '100%',
   },
   beaButton: {
-    alignSelf: "flex-end",
-    left: 120,
+    alignSelf: 'flex-end',
+    marginTop: 16,
+    marginLeft: 0,
   },
   beaButtonGradient: {
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   beaButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 14,
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
   },
   autismCard: {
     backgroundColor: "#E0F2FF",
@@ -344,7 +361,8 @@ const styles = StyleSheet.create({
     color: "#333",
     lineHeight: 20,
     marginBottom: 16,
-    width: 260,
+    width: "100%",
+    textAlign: "left",
   },
   autismButton: {
     backgroundColor: "#2e79e9ff",
