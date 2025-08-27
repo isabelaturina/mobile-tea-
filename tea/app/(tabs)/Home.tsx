@@ -1,8 +1,16 @@
-import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useUser } from '../../contexts/UserContext';
+import { Ionicons } from "@expo/vector-icons";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useUser } from "../../contexts/UserContext";
 
 export default function Home() {
   const { userData } = useUser();
@@ -11,7 +19,7 @@ export default function Home() {
     <View style={styles.container}>
       {/* Header com gradiente e ilustração */}
       <LinearGradient
-        colors={['#8B5CF6', '#3B82F6']}
+        colors={["#8B5CF6", "#3B82F6"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -23,17 +31,10 @@ export default function Home() {
             </Text>
           </View>
           <View style={styles.headerIllustration}>
-            {/* Ícones decorativos */}
-            <View style={styles.iconsContainer}>
-              <Ionicons name="star" size={20} color="#fff" style={styles.decorativeIcon} />
-              <Ionicons name="heart" size={20} color="#8B5CF6" style={styles.decorativeIcon} />
-              <Ionicons name="heart" size={20} color="#fff" style={styles.decorativeIcon} />
-              <Ionicons name="people" size={20} color="#fff" style={styles.decorativeIcon} />
-            </View>
             {/* Ilustração da família */}
             <View style={styles.illustrationContainer}>
-              <Image 
-                source={require('../../assets/images/homefamily.png')}
+              <Image
+                source={require("../../assets/images/homefamily.png")}
                 style={styles.familyImage}
                 resizeMode="contain"
               />
@@ -45,7 +46,7 @@ export default function Home() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Mensagem de boas-vindas */}
         <Text style={styles.welcomeText}>
-          Bem-vindo(a) {userData?.name || 'Usuário'}!
+          Bem-vindo(a) {userData?.name || "Usuário"}!
         </Text>
 
         {/* Cards de funcionalidades */}
@@ -72,27 +73,46 @@ export default function Home() {
         {/* Seção "Conheça a Bea" */}
         <View style={styles.beaCard}>
           <View style={styles.beaContent}>
-                         <View style={styles.beaIllustration}>
-               <Image 
-                 source={require('../../assets/images/bea.png')} 
-                 style={styles.beaImage}
-                 resizeMode="contain"
-               />
-             </View>
+            <View style={styles.beaIllustration}>
+              <Image
+                source={require("../../assets/images/bea.png")}
+                style={styles.beaImage}
+                resizeMode="contain"
+              />
+            </View>
             <View style={styles.beaTextContainer}>
               <View style={styles.beaTitleContainer}>
                 <Text style={styles.beaTitle}>Conheça a </Text>
-                <Text style={styles.beaName}>Bea</Text>
-                <Ionicons name="heart" size={16} color="#3B82F6" style={styles.beaHeart} />
+                <MaskedView
+                  maskElement={
+                    <Text style={styles.beaName}>Bea</Text>
+                  }
+                >
+                  <LinearGradient
+                    colors={["#70DEFE", "#0066CC"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={{ width: 40, height: 30, left: 60 }} // 👈 tamanho do gradiente
+                  />
+                </MaskedView>
+                <Ionicons
+                  name="heart"
+                  size={16}
+                  color="#3B82F6"
+                  style={styles.beaHeart}
+                />
               </View>
               <Text style={styles.beaDescription}>
-                Sua assistente virtual do TEA+ pronta para acolher, orientar e responder dúvidas sobre o espectro autista. Seja você mãe, pai ou cuidador, a Bea está aqui para ajudar com informações seguras e apoio humanizado.
+                Sua assistente virtual do TEA+ pronta para acolher, orientar e
+                responder dúvidas sobre o espectro autista. Seja você mãe, pai
+                ou cuidador, a Bea está aqui para ajudar com informações seguras
+                e apoio humanizado.
               </Text>
               <TouchableOpacity style={styles.beaButton}>
                 <LinearGradient
-                  colors={['#3B82F6', '#1D4ED8']}
+                  colors={["#3B82F6", "#1D4ED8"]}
                   start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
+                  end={{ x: 1, y: 1 }}
                   style={styles.beaButtonGradient}
                 >
                   <Text style={styles.beaButtonText}>Converse com a Bea</Text>
@@ -105,13 +125,18 @@ export default function Home() {
         {/* Seção "Quer saber mais sobre o autismo?" */}
         <View style={styles.autismCard}>
           <View style={styles.autismContent}>
-                         <View style={styles.autismIconContainer}>
-               <Text style={styles.brainIcon}>🧠</Text>
-             </View>
+            <View style={styles.autismIconContainer}>
+              <Text style={styles.brainIcon}>🧠</Text>
+            </View>
             <View style={styles.autismTextContainer}>
-              <Text style={styles.autismTitle}>Quer saber mais sobre o autismo?</Text>
+              <Text style={styles.autismTitle}>
+                Quer saber mais sobre o autismo?
+              </Text>
               <Text style={styles.autismDescription}>
-                Se você está usando o TeaMais e ainda não conhece muito sobre o tema, clique no botão abaixo e acesse nosso site! Lá você encontra curiosidades, informações importantes e muito mais. Conhecimento transforma!{' '}
+                Se você está usando o TeaMais e ainda não conhece muito sobre o
+                tema, clique no botão abaixo e acesse nosso site! Lá você
+                encontra curiosidades, informações importantes e muito mais.
+                Conhecimento transforma!{" "}
                 <Ionicons name="heart" size={14} color="#3B82F6" />
               </Text>
               <TouchableOpacity style={styles.autismButton}>
@@ -128,7 +153,7 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: "#F8F9FA",
   },
   header: {
     paddingTop: 60,
@@ -138,9 +163,9 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 30,
   },
   headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   headerTextContainer: {
     flex: 1,
@@ -148,27 +173,32 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#ffffffff",
     lineHeight: 28,
+     textShadowColor: "#4f4e4eff",    
+    textShadowOffset: { width: 0, height: 0 }, 
+     textShadowRadius: 6, 
+      
   },
   headerIllustration: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   iconsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 10,
   },
   decorativeIcon: {
     marginHorizontal: 2,
   },
   illustrationContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   familyImage: {
-    width: 120,
-    height: 120,
-    marginTop: 10,
+    width: 170,
+    height: 150,
+   bottom: -20,
+   left: 15,
   },
   content: {
     flex: 1,
@@ -177,94 +207,100 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#3B82F6',
+    fontWeight: "bold",
+    color: "#3B82F6",
     marginBottom: 24,
   },
   featureCardsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 24,
   },
   featureCard: {
-    backgroundColor: '#E0F2FF',
+    backgroundColor: "#E0F2FF",
     borderRadius: 16,
     padding: 16,
-    alignItems: 'center',
-    width: '30%',
+    alignItems: "center",
+    width: "30%",
     aspectRatio: 1,
   },
   featureCardText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginTop: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   newsIconContainer: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: "#3B82F6",
     borderRadius: 8,
     padding: 4,
-    alignItems: 'center',
+    alignItems: "center",
   },
   newsText: {
     fontSize: 8,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
     marginTop: 2,
   },
   beaCard: {
-    backgroundColor: '#E0F2FF',
+    backgroundColor: "#E0F2FF",
     borderRadius: 20,
     padding: 20,
     marginBottom: 20,
-    position: 'relative',
+    position: "relative",
     minHeight: 140,
   },
   beaContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
   },
   beaIllustration: {
-    position: 'absolute',
+    position: "absolute",
     bottom: -10,
     right: -10,
     zIndex: 1,
   },
   beaImage: {
-    width: 100,
-    height: 120,
+    width: 110,
+    height: 190,
+    right: 240,
   },
   beaTextContainer: {
     flex: 1,
     marginRight: 120,
   },
   beaTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
   },
   beaTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
+    left: 60,
   },
   beaName: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#3B82F6',
+    fontWeight: "bold",
+    left: 65,
+    top: 6,
   },
   beaHeart: {
-    marginLeft: 4,
+    marginLeft: 60,
   },
   beaDescription: {
-    fontSize: 14,
-    color: '#333',
-    lineHeight: 20,
+    fontSize: 15,
+    width: 270,
+    color: "#333",
+    lineHeight: 16,
     marginBottom: 16,
+    left: 60,
   },
   beaButton: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
+    left: 120,
   },
   beaButtonGradient: {
     borderRadius: 20,
@@ -272,52 +308,54 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   beaButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 14,
   },
   autismCard: {
-    backgroundColor: '#E0F2FF',
+    backgroundColor: "#E0F2FF",
     borderRadius: 20,
     padding: 20,
     marginBottom: 20,
   },
   autismContent: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
   },
   autismIconContainer: {
     marginRight: 16,
     marginTop: 4,
   },
   brainIcon: {
-    fontSize: 24,
+    fontSize: 35,
+    bottom: 9,
   },
   autismTextContainer: {
     flex: 1,
   },
   autismTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 12,
   },
   autismDescription: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
     lineHeight: 20,
     marginBottom: 16,
+    width: 260,
   },
   autismButton: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: "#2e79e9ff",
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 10,
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
   },
   autismButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 14,
   },
-}); 
+});

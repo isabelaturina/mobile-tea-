@@ -24,7 +24,7 @@ export default function Profile() {
   };
 
   const handleChangePassword = () => {
-    router.push('/changepassword');
+    router.push('/AlterarSenha');
   };
 
   const handleNotifications = () => {
