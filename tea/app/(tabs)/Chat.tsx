@@ -11,14 +11,14 @@ export default function Chat() {
       id: 1,
       name: 'Chat em grupo',
       subtitle: 'Se comunique com os usuarios do app!!',
-      icon: require('../../assets/images/logo tea.png'),
+      icon: require('../../assets/images/tea-icon.png'),
       route: '/ChatGrupo',
     },
     {
       id: 2,
       name: 'Bea',
       subtitle: 'Converse com a Bea, sua companheira digital.',
-      icon: require('../../assets/images/bea.png'),
+      icon: require('../../assets/images/bea-icon.png'),
       route: '/ChatBea',
     },
   ];
@@ -96,10 +96,10 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   avatarImage: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    resizeMode: 'contain',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    resizeMode: 'cover', // Preenche o espaço do avatar
   },
   chatInfo: {
     flex: 1,
@@ -116,4 +116,4 @@ const styles = StyleSheet.create({
     color: '#2196F3',
     marginBottom: 0,
   },
-}); 
+});

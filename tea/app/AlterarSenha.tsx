@@ -11,7 +11,7 @@ export default function ChangePasswordScreen() {
     
     <View style={styles.container}>
     
-      <Text style={styles.title}>Alterar Senha</Text>
+      <Text style={styles.title}>Voltar</Text>
 
       <Text style={styles.label}>Senha atual</Text>
       <TextInput

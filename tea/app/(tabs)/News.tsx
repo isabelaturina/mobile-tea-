@@ -38,7 +38,7 @@ export default function News() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#00C6FF', '#1163E7']}
+        colors={['#00C6FF', '#96bfffff']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
