@@ -6,14 +6,14 @@ import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View 
 
 
 const profileIcons = [
-  require("../../assets/images/gato-icon.png"),
-  require("../../assets/images/panda-icon.png"),
-  require("../../assets/images/servo-icon.png"),
-  require("../../assets/images/raposinha-icon.png"),
-  require("../../assets/images/whitegirl-icon.png"),
-  require("../../assets/images/blackgirl-icon.png"),
-  require("../../assets/images/whiteboy-icon.png"),
-  require("../../assets/images/blackboy-icon.png"),
+  require("../assets/images/gato-icon.png"),
+  require("../assets/images/panda-icon.png"),
+  require("../assets/images/servo-icon.png"),
+  require("../assets/images/raposinha-icon.png"),
+  require("../assets/images/whitegirl-icon.png"),
+  require("../assets/images/blackgirl-icon.png"),
+  require("../assets/images/whiteboy-icon.png"),
+  require("../assets/images/blackboy-icon.png"),
 ];
 
 export default function EditProfile() {
