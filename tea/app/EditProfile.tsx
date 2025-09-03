@@ -1,9 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
+import { useRouter, Stack } from "expo-router"; // Importando Stack
 import React, { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-
 
 const profileIcons = [
   require("../assets/images/gato-icon.png"),
@@ -19,93 +18,111 @@ const profileIcons = [
 export default function EditProfile() {
   const router = useRouter();
   const [selectedIcon, setSelectedIcon] = useState(0);
-  const [showIconOptions, setShowIconOptions] = useState(false);
+  const [showArrows, setShowArrows] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [autismLevel, setAutismLevel] = useState("");
 
+  const goPrevIcon = () => {
+    setSelectedIcon((prev) => (prev === 0 ? profileIcons.length - 1 : prev - 1));
+  };
+
+  const goNextIcon = () => {
+    setSelectedIcon((prev) => (prev === profileIcons.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleSave = () => {
+    router.back();
+  };
+
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#F8F9FA" }}>
-      <LinearGradient
-        colors={["#70DEFE", "#8B5CF6"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.headerGradient}
-      >
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={26} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Editar perfil</Text>
-        <View style={styles.selectedIconContainer}>
-          <Image source={profileIcons[selectedIcon]} style={styles.selectedIconImage} />
-          <TouchableOpacity
-            style={styles.editPhotoButton}
-            onPress={() => setShowIconOptions(!showIconOptions)}
-          >
-            <Ionicons name="camera-outline" size={22} color="#8B5CF6" />
-            <Text style={styles.editPhotoText}>Editar foto</Text>
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+
+      <ScrollView style={{ flex: 1, backgroundColor: "#F8F9FA" }}>
+        <LinearGradient
+          colors={["#70DEFE", "#8B5CF6"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerGradient}
+        >
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={26} color="#fff" />
+          </TouchableOpacity>
+
+          <Text style={styles.headerTitle}>Editar perfil</Text>
+
+          <View style={styles.selectedIconContainer}>
+            <View style={styles.avatarWrapper}>
+              {showArrows && (
+                <TouchableOpacity style={styles.arrowLeft} onPress={goPrevIcon}>
+                  <Ionicons name="chevron-back" size={34} color="#fff" />
+                </TouchableOpacity>
+              )}
+
+              <View style={styles.avatarCircle}>
+                <Image source={profileIcons[selectedIcon]} style={styles.selectedIconImage} />
+              </View>
+
+              {showArrows && (
+                <TouchableOpacity style={styles.arrowRight} onPress={goNextIcon}>
+                  <Ionicons name="chevron-forward" size={34} color="#fff" />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={styles.editPhotoButton}
+              onPress={() => setShowArrows(!showArrows)}
+            >
+              <Ionicons name="camera-outline" size={22} color="#8B5CF6" />
+              <Text style={styles.editPhotoText}>Editar foto</Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+
+        <View style={styles.formContainer}>
+          <Text style={styles.label}>Nome:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite seu nome"
+            value={name}
+            onChangeText={setName}
+          />
+
+          <Text style={styles.label}>E-mail:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Digite seu E-mail"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+
+          <Text style={styles.label}>Número de celular:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="(99) 99999-9999"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+          />
+
+          <Text style={styles.label}>Grau autismo:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Opcional"
+            value={autismLevel}
+            onChangeText={setAutismLevel}
+          />
+
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Salvar informações</Text>
           </TouchableOpacity>
         </View>
-        {showIconOptions && (
-          <View style={styles.iconsRow}>
-            {profileIcons.map((icon, idx) => (
-              <TouchableOpacity
-                key={idx}
-                style={[
-                  styles.iconCircle,
-                  selectedIcon === idx && styles.iconSelected,
-                ]}
-                onPress={() => setSelectedIcon(idx)}
-                activeOpacity={0.8}
-              >
-                <Image source={icon} style={styles.iconImage} />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </LinearGradient>
-
-      <View style={styles.formContainer}>
-        <Text style={styles.label}>Nome:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite seu nome"
-          value={name}
-          onChangeText={setName}
-        />
-
-        <Text style={styles.label}>E-mail:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite seu E-mail"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-
-        <Text style={styles.label}>Número de celular:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="(99) 99999-9999"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-        />
-
-        <Text style={styles.label}>Grau autismo:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Opcional"
-          value={autismLevel}
-          onChangeText={setAutismLevel}
-        />
-
-        <TouchableOpacity style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Salvar informações</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </>
   );
 }
 
@@ -137,16 +154,41 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     alignItems: "center",
     justifyContent: "center",
+  },
+  avatarWrapper: {
+    width: 120,
+    height: 120,
+    alignItems: "center",
+    justifyContent: "center",
     position: "relative",
   },
-  selectedIconImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "#fff",
-    resizeMode: "cover",
+  avatarCircle: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     borderWidth: 3,
     borderColor: "#8B5CF6",
+    backgroundColor: "#fff",
+    overflow: "hidden", // força a imagem a ficar dentro do círculo
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectedIconImage: {
+    width: "120%",
+    height: "125%",
+    resizeMode: "contain", 
+  },
+  arrowLeft: {
+    position: "absolute",
+    left: -25,
+    top: "50%",
+    transform: [{ translateY: -17 }],
+  },
+  arrowRight: {
+    position: "absolute",
+    right: -25,
+    top: "50%",
+    transform: [{ translateY: -17 }],
   },
   editPhotoButton: {
     flexDirection: "row",
@@ -166,39 +208,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: 6,
     fontSize: 15,
-  },
-  iconsRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-    gap: 12,
-    marginTop: 8,
-  },
-  iconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 4,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  iconSelected: {
-    borderColor: "#8B5CF6",
-    borderWidth: 2.5,
-    shadowColor: "#8B5CF6",
-    shadowOpacity: 0.18,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  iconImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    resizeMode: "cover",
   },
   formContainer: {
     paddingHorizontal: 20,
