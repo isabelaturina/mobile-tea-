@@ -107,6 +107,7 @@ export default function EditProfile() {
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
+            
           />
 
           <Text style={styles.label}>Grau autismo:</Text>
@@ -230,6 +231,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 15,
     marginBottom: 10,
+   
+  
   },
   saveButton: {
     backgroundColor: "#70DEFE",

@@ -7,7 +7,7 @@ import { useUser } from '../../contexts/UserContext';
 
 export default function Profile() {
   const router = useRouter();
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true); // Começa como modo escuro
   const { userData, logout } = useUser();
 
   if (!userData) {
@@ -36,9 +36,9 @@ export default function Profile() {
       'Tem certeza que deseja sair?',
       [
         { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Sair', 
-          style: 'destructive', 
+        {
+          text: 'Sair',
+          style: 'destructive',
           onPress: () => {
             logout();
             router.replace('/Login');
@@ -50,13 +50,14 @@ export default function Profile() {
 
   const handleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
-    Alert.alert('Modo Escuro', isDarkMode ? 'Modo escuro desativado' : 'Modo escuro ativado');
+    Alert.alert('Tema', isDarkMode ? 'Modo claro ativado' : 'Modo escuro ativado');
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDarkMode && styles.darkContainer]}>
+      
       <LinearGradient
-        colors={['#70DEFE', '#D547F4']}
+        colors={isDarkMode ? ['#158EE5', '#A05BF0', '#D547F4'] : ['#70DEFE', '#D547F4']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
@@ -71,6 +72,7 @@ export default function Profile() {
       </LinearGradient>
 
       <View style={styles.menuContainer}>
+        {/* Editar perfil */}
         <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
           <View style={styles.menuIconBox}>
             <Ionicons name="person-outline" size={22} color="#1163E7" />
@@ -78,6 +80,7 @@ export default function Profile() {
           <Text style={styles.menuText}>Editar perfil</Text>
         </TouchableOpacity>
 
+        {/* Alterar senha */}
         <TouchableOpacity style={styles.menuItem} onPress={handleChangePassword}>
           <View style={styles.menuIconBox}>
             <Ionicons name="lock-closed-outline" size={22} color="#1163E7" />
@@ -85,6 +88,7 @@ export default function Profile() {
           <Text style={styles.menuText}>Alterar Senha</Text>
         </TouchableOpacity>
 
+        {/* Notificações */}
         <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
           <View style={styles.menuIconBox}>
             <Ionicons name="notifications-outline" size={22} color="#1163E7" />
@@ -92,6 +96,7 @@ export default function Profile() {
           <Text style={styles.menuText}>Notificações</Text>
         </TouchableOpacity>
 
+        {/* Sair da conta */}
         <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
           <View style={styles.menuIconBox}>
             <Ionicons name="log-out-outline" size={22} color="#FF6B6B" />
@@ -99,11 +104,19 @@ export default function Profile() {
           <Text style={[styles.menuText, styles.logoutText]}>Sair da conta</Text>
         </TouchableOpacity>
 
+        {/* Alternar modo escuro */}
         <TouchableOpacity style={styles.menuItem} onPress={handleDarkMode}>
           <View style={styles.menuIconBox}>
-            <Ionicons name="moon-outline" size={22} color="#1163E7" />
+            <Ionicons
+              name={isDarkMode ? 'sunny-outline' : 'moon-outline'}
+              size={22}
+              color="#1163E7"
+             
+            />
           </View>
-          <Text style={styles.menuText}>Adicionar modo escuro</Text>
+          <Text style={styles.menuText}>
+            {isDarkMode ? 'Adicionar modo claro' : 'Adicionar modo escuro'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -114,6 +127,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',
+  },
+  darkContainer: {
+    backgroundColor: '#000', // Preto puro como na imagem
   },
   loadingText: {
     fontSize: 18,
@@ -172,21 +188,22 @@ const styles = StyleSheet.create({
   menuContainer: {
     flex: 1,
     paddingHorizontal: 18,
-    paddingTop: 28,
+    paddingTop: 38,
+   
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E3F6FF',
+    backgroundColor: '#fff', // Botão branco
     paddingVertical: 16,
     paddingHorizontal: 18,
     borderRadius: 16,
-    marginBottom: 22, // Espaçamento maior entre inputs
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
+    marginBottom: 22,
+    shadowColor: '#1163E7', // Sombra azul
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
   },
   menuIconBox: {
     width: 32,
