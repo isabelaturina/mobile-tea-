@@ -1,14 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useUser } from '../../contexts/UserContext';
+
 
 export default function Profile() {
   const router = useRouter();
-  const [isDarkMode, setIsDarkMode] = useState(true); // Começa como modo escuro
   const { userData, logout } = useUser();
+  const { theme, toggleTheme } = useTheme(); // pega tema global
+  const isDarkMode = theme === "dark";
 
   if (!userData) {
     return (
@@ -46,11 +49,6 @@ export default function Profile() {
         }
       ]
     );
-  };
-
-  const handleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    Alert.alert('Tema', isDarkMode ? 'Modo claro ativado' : 'Modo escuro ativado');
   };
 
   return (
@@ -105,13 +103,12 @@ export default function Profile() {
         </TouchableOpacity>
 
         {/* Alternar modo escuro */}
-        <TouchableOpacity style={styles.menuItem} onPress={handleDarkMode}>
+        <TouchableOpacity style={styles.menuItem} onPress={toggleTheme}>
           <View style={styles.menuIconBox}>
             <Ionicons
               name={isDarkMode ? 'sunny-outline' : 'moon-outline'}
               size={22}
               color="#1163E7"
-             
             />
           </View>
           <Text style={styles.menuText}>
@@ -127,9 +124,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',
+   
+    
+  
   },
   darkContainer: {
-    backgroundColor: '#000', // Preto puro como na imagem
+    backgroundColor: '#000', // Preto no modo escuro
   },
   loadingText: {
     fontSize: 18,
@@ -189,17 +189,16 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 18,
     paddingTop: 38,
-   
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff', // Botão branco
+    backgroundColor: '#fff',
     paddingVertical: 16,
     paddingHorizontal: 18,
     borderRadius: 16,
     marginBottom: 22,
-    shadowColor: '#1163E7', // Sombra azul
+    shadowColor: '#1163E7',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,

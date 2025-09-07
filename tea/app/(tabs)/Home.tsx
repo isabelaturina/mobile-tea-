@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import CustomTabBar from "../../components/CustomTabBar";
 import { useUser } from "../../contexts/UserContext";
 
 export default function Home() {

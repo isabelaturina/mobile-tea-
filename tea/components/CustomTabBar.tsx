@@ -9,6 +9,7 @@ const icons = [
   { name: "newspaper-outline", label: "News" }, // Ícone válido do Ionicons
   { name: "chatbubble-outline", label: "Chat" },
   { name: "person-outline", label: "Perfil" },
+  
 ];
 
 export default function CustomTabBar({
@@ -75,8 +76,6 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
     height: 70,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
     elevation: 10,
     shadowColor: "#000",
     shadowOpacity: 0.08,
@@ -85,6 +84,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-around",
     paddingHorizontal: 8,
+    
   },
   tab: {
     flex: 1,
