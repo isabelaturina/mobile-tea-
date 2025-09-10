@@ -25,11 +25,11 @@ export default function EditProfile() {
   const [autismLevel, setAutismLevel] = useState("");
 
   const goPrevIcon = () => {
-    setSelectedIcon((prev) => (prev === 0 ? profileIcons.length - 1 : prev - 1));
+    router.replace('/Profile');
   };
 
   const goNextIcon = () => {
-    setSelectedIcon((prev) => (prev === profileIcons.length - 1 ? 0 : prev + 1));
+    router.replace('/Profile');
   };
 
   const handleSave = () => {

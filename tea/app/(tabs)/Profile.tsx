@@ -1,17 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useUser } from '../../contexts/UserContext';
-
 
 export default function Profile() {
   const router = useRouter();
   const { userData, logout } = useUser();
-  const { theme, toggleTheme } = useTheme(); // pega tema global
+  const { theme, toggleTheme } = useTheme(); 
   const isDarkMode = theme === "dark";
+
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // novo estado para logout
 
   if (!userData) {
     return (
@@ -30,25 +32,23 @@ export default function Profile() {
   };
 
   const handleNotifications = () => {
-    Alert.alert('Notificações', 'Configurações de notificações serão implementadas');
+    setShowNotificationModal(true);
   };
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Sair da Conta',
-      'Tem certeza que deseja sair?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Sair',
-          style: 'destructive',
-          onPress: () => {
-            logout();
-            router.replace('/Login');
-          }
-        }
-      ]
-    );
+  const handleAllowNotifications = () => {
+    setShowNotificationModal(false);
+    alert('Notificações ativadas!');
+  };
+
+  const handleLater = () => {
+    setShowNotificationModal(false);
+  };
+
+  // Confirma logout
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    logout();
+    router.replace('/Login');
   };
 
   return (
@@ -95,7 +95,7 @@ export default function Profile() {
         </TouchableOpacity>
 
         {/* Sair da conta */}
-        <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => setShowLogoutModal(true)}>
           <View style={styles.menuIconBox}>
             <Ionicons name="log-out-outline" size={22} color="#FF6B6B" />
           </View>
@@ -116,6 +116,48 @@ export default function Profile() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal de notificações */}
+      {showNotificationModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Deseja receber notificações do app?</Text>
+            <Image
+              source={require('../../assets/images/notification-bell.png')}
+              style={styles.modalImage}
+            />
+            <View style={styles.modalButtonsRow}>
+              <TouchableOpacity style={styles.modalButton} onPress={handleLater}>
+                <Text style={styles.modalButtonText}>Talvez mais tarde</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalButton, styles.modalButtonPrimary]} onPress={handleAllowNotifications}>
+                <Text style={[styles.modalButtonText, styles.modalButtonPrimaryText]}>Sim desejo</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Modal de logout */}
+      {showLogoutModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Tem certeza que deseja sair da conta?</Text>
+            <Image
+              source={require('../../assets/images/logout.png')} // salve sua imagem aqui
+              style={styles.modalImage}
+            />
+            <View style={styles.modalButtonsRow}>
+              <TouchableOpacity style={styles.modalButton} onPress={() => setShowLogoutModal(false)}>
+                <Text style={styles.modalButtonText}>Não</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalButton, styles.modalButtonPrimary]} onPress={confirmLogout}>
+                <Text style={[styles.modalButtonText, styles.modalButtonPrimaryText]}>Sim, tenho certeza</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -124,12 +166,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',
-   
-    
-  
   },
   darkContainer: {
-    backgroundColor: '#000', // Preto no modo escuro
+    backgroundColor: '#000',
   },
   loadingText: {
     fontSize: 18,
@@ -220,5 +259,62 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     color: '#FF6B6B',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 99,
+  },
+  modalContainer: {
+    width: '85%',
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#222',
+    textAlign: 'center',
+    marginBottom: 18,
+  },
+  modalImage: {
+    width: 140,
+    height: 120,
+    marginBottom: 18,
+    resizeMode: 'contain',
+  },
+  modalButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 8,
+  },
+  modalButton: {
+    flex: 1,
+    backgroundColor: '#E3F6FF',
+    borderRadius: 10,
+    paddingVertical: 12,
+    marginHorizontal: 6,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#158EE5',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  modalButtonPrimary: {
+    backgroundColor: '#16c9ffff',
+  },
+  modalButtonPrimaryText: {
+    color: '#fff',
   },
 });
