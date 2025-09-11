@@ -41,6 +41,12 @@ export default function AlterarSenha() {
     } catch (error) {
       Alert.alert("Erro", "Não foi possível redirecionar");
     }
+     const handleForgotPassword = () => {
+    try {
+      router.push("/forgot-password"); // ← Redireciona para forgot-password.tsx
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível redirecionar para recuperação de senha");
+    }
   };
 
   return (
@@ -200,4 +206,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
+
 });
+}

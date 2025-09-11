@@ -9,7 +9,7 @@ import { KeyboardAvoidingView, Platform } from 'react-native';
 import { CronogramaProvider } from '../contexts/CronogramaContext';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { UserProvider } from '../contexts/UserContext';
-import '../utils/calendarLocale';
+
 
 // Componente para passar o tema certo para o React Navigation
 function NavigationThemeWrapper({ children }: { children: React.ReactNode }) {

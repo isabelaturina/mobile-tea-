@@ -21,7 +21,7 @@ export default function Chat() {
       name: "Chat em grupo",
       subtitle: "Se comunique com os usuarios do app!!",
       icon: require("../../assets/images/tea-icon.png"),
-      route: "/ChatGrupo",
+      route: "/../../ChatGrupo",
     },
     {
       id: 2,
@@ -29,6 +29,7 @@ export default function Chat() {
       subtitle: "Converse com a Bea, sua companheira digital.",
       icon: require("../../assets/images/bea-icon.png"),
       route: "/ChatBea",
+      
     },
   ];
 
