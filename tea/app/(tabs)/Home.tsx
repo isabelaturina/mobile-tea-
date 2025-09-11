@@ -1,14 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import React from "react";
 import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useUser } from "../../contexts/UserContext";
 
@@ -56,7 +57,10 @@ export default function Home() {
             <Text style={styles.featureCardText}>Localização</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.featureCard}>
+          <TouchableOpacity 
+            style={styles.featureCard}
+            onPress={() => router.push("/Cronograma")}
+          >
             <Ionicons name="calendar" size={32} color="#3B82F6" />
             <Text style={styles.featureCardText}>Cronograma</Text>
           </TouchableOpacity>
