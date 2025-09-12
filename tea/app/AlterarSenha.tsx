@@ -16,6 +16,7 @@ export default function AlterarSenha() {
   const router = useRouter();
   const { theme } = useTheme(); // ← Use o hook ORIGINAL
   const isDarkMode = theme === "dark";
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -41,9 +42,11 @@ export default function AlterarSenha() {
     } catch (error) {
       Alert.alert("Erro", "Não foi possível redirecionar");
     }
-     const handleForgotPassword = () => {
+  };
+
+  const handleForgotPassword = () => {
     try {
-      router.push("/forgot-password"); // ← Redireciona para forgot-password.tsx
+      router.push("/forgot-password");
     } catch (error) {
       Alert.alert("Erro", "Não foi possível redirecionar para recuperação de senha");
     }
@@ -54,8 +57,8 @@ export default function AlterarSenha() {
       <Stack.Screen options={{ headerShown: false }} />
 
       <View style={[styles.container, isDarkMode && styles.containerDark]}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={[styles.backButton, isDarkMode && styles.backButtonDark]}>
+        <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, isDarkMode && styles.backButtonDark]}>
             ← Voltar
           </Text>
         </Pressable>
@@ -99,7 +102,7 @@ export default function AlterarSenha() {
           placeholderTextColor={isDarkMode ? "#aaa" : "#999"}
         />
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleForgotPassword}>
           <Text style={[styles.forgot, isDarkMode && styles.forgotDark]}>
             Esqueceu a senha?
           </Text>
@@ -129,15 +132,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 24,
-    paddingTop: 60,
+  
   },
   containerDark: {
     backgroundColor: "#000",
   },
   backButton: {
+    marginBottom: 20,
+  },
+  backText: {
     fontSize: 16,
     color: "#1163E7",
-    marginBottom: 20,
+    top: 30,
   },
   backButtonDark: {
     color: "#70DEFE",
@@ -168,7 +174,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 15,
     fontSize: 15,
-    marginBottom: 30,
+    marginBottom: 10,
     color: "#000",
   },
   inputDark: {
@@ -200,6 +206,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
+    
   },
   buttonText: {
     color: "#fff",
@@ -208,4 +215,3 @@ const styles = StyleSheet.create({
   },
 
 });
-}

@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 
+
 export default function ForgotPassword() {
   const router = useRouter();
   const { theme } = useTheme();
@@ -47,11 +48,12 @@ export default function ForgotPassword() {
 
       <View style={[styles.container, isDarkMode && styles.containerDark]}>
         {/* Botão Voltar */}
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={[styles.backText, isDarkMode && styles.backTextDark]}>
-            ← Voltar
-          </Text>
-        </Pressable>
+      <Pressable onPress={() => router.push('/AlterarSenha')} style={styles.backButton}>
+  <Text style={[styles.backText, isDarkMode && styles.backTextDark]}>
+    ← Voltar
+  </Text>
+</Pressable>
+
 
         {/* Título */}
         <Text style={[styles.title, isDarkMode && styles.titleDark]}>
