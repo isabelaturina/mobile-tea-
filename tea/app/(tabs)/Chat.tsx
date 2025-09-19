@@ -28,7 +28,7 @@ export default function Chat() {
       name: "Bea",
       subtitle: "Converse com a Bea, sua companheira digital.",
       icon: require("../../assets/images/bea-icon.png"),
-      route: "/ChatBea",
+      route: "/../../ChatBea",
       
     },
   ];

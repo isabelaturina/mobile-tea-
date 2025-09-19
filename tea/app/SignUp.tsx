@@ -62,11 +62,15 @@ if (!regexNome.test(name)) {
       return;
     }
       // 🔹 Validação para aceitar apenas emails do Gmail
-const regexGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+const regexGmail = /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@gmail\.com$/;
 if (!regexGmail.test(email)) {
-  Alert.alert('Erro', 'O email deve ser do Gmail (ex: exemplo@gmail.com)');
+  Alert.alert(
+    'Erro',
+    'O email deve ser do Gmail, não começar com ponto e não conter dois pontos seguidos.'
+  );
   return;
 }
+
 
     setIsLoading(true);
     try {

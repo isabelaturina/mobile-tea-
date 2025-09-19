@@ -7,22 +7,24 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useUser();
 
   const handleLogin = async () => {
-    if (!email || !password) {
-  Alert.alert('Ops!', 'Parece que você esqueceu de preencher algum campo. Tente novamente!');
-  return;
-}
+    setEmailError('');
 
-    // 🔹 Validação para aceitar apenas emails do Gmail
-const regexGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-if (!regexGmail.test(email)) {
-  Alert.alert('Erro', 'O email deve ser do Gmail (ex: exemplo@gmail.com)');
-  return;
-}
+    if (!email || !password) {
+      Alert.alert('Ops!', 'Parece que você esqueceu de preencher algum campo. Tente novamente!');
+      return;
+    }
+
+    const regexGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    if (!regexGmail.test(email)) {
+      setEmailError('Utilize um email do Gmail (ex: exemplo@gmail.com)');
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -30,7 +32,7 @@ if (!regexGmail.test(email)) {
       if (success) {
         router.replace('/(tabs)/Home' as any);
       } else {
-        Alert.alert('Erro', 'Email ou senha incorretos');
+        setEmailError('Este email não está cadastrado ou a senha está incorreta.');
       }
     } catch (error) {
       Alert.alert('Erro', 'Ocorreu um erro ao fazer login');
@@ -68,11 +70,18 @@ if (!regexGmail.test(email)) {
             returnKeyType="next"
             blurOnSubmit={false}
           />
-          
+          {emailError ? (
+            <Text style={styles.emailErrorText}>{emailError}</Text>
+          ) : (
+            <Text style={styles.emailInfoText}>
+              Utilize o mesmo email que você usou no cadastro para acessar sua conta.
+            </Text>
+          )}
+
           <View style={styles.passwordContainer}>
             <TextInput 
               placeholder="Senha:" 
-               placeholderTextColor="#9aa0a6"
+              placeholderTextColor="#9aa0a6"
               style={styles.inputPassword} 
               secureTextEntry={!showPassword}
               value={password}
@@ -175,7 +184,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    
+  },
+  emailErrorText: {
+    color: '#FF3B30',
+    fontSize: 14,
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  emailInfoText: {
+    color: '#e71b1bff',
+    fontSize: 13,
+    bottom: 10,
+    top: -24,
+    paddingHorizontal: 8,
   },
   passwordContainer: {
     flexDirection: 'row',
@@ -218,7 +239,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    left:'25%'
+    left: '25%',
   },
   buttonTextOutline: {
     color: '#00C6FF',
