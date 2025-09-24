@@ -225,7 +225,7 @@ export default function SignUp() {
             disabled={isLoading}
           >
             <LinearGradient
-              colors={["#008BEF", "#008BEF"]}
+              colors={["#1163E7", "#1163E7"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientButton}
@@ -372,16 +372,16 @@ const styles = StyleSheet.create({
   picker: { width: "100%", height: 50 },
 
   button: {
-    borderRadius: 12,
+    borderRadius: 15,
     marginTop: 8,
-    width: "80%",
+    width: "70%",
     overflow: "hidden",
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    left: 35,
+    left: 50,
   },
   gradientButton: {
     paddingVertical: 14,

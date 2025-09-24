@@ -1,33 +1,36 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { Stack, useRouter } from "expo-router";
-import React, { useState } from "react";
-import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
+import { LinearGradient } from 'expo-linear-gradient';
+import { Stack, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { 
+  Image, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View, 
+  ScrollView, 
+  Dimensions, 
+  StatusBar,
   Platform,
+  KeyboardAvoidingView,
   Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
-} from "react-native";
-import { useTheme } from "../contexts/ThemeContext";
+  Alert,
+  TextInput
+} from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
+
+// Pegar as dimensões da tela
+const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
 export default function ForgotPassword() {
   const router = useRouter();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
   const [email, setEmail] = useState("");
-  const [confirmEmail, setConfirmEmail] = useState("");
 
-const isValidEmail = (email: string) => {
-  const emailRegex = /^(?!\.)(?!.*\.\.)(?!.*\.$)[a-zA-Z0-9._%+-]+@gmail\.com$/;
-  return emailRegex.test(email);
-};
-
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^(?!\.)(?!.*\.\.)(?!.*\.$)[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    return emailRegex.test(email);
+  };
 
   const handleSendCode = () => {
     if (!email) {
@@ -36,7 +39,7 @@ const isValidEmail = (email: string) => {
     }
 
     if (!isValidEmail(email)) {
-      Alert.alert("Erro", "Digite um email @gmail.com válido");
+      Alert.alert("Erro", "Digite um email válido");
       return;
     }
 
@@ -58,7 +61,7 @@ const isValidEmail = (email: string) => {
           keyboardShouldPersistTaps="handled"
         >
           {/* Botão Voltar */}
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <Pressable onPress={() => router.push("/(tabs)/Profile")} style={styles.backButton}>
             <Image 
               source={require('../assets/images/seta.png')} 
               style={[styles.arrowImage, isDarkMode && styles.arrowImageDark]}
@@ -91,14 +94,11 @@ const isValidEmail = (email: string) => {
             style={[styles.input, isDarkMode && styles.inputDark]}
             value={email}
             onChangeText={setEmail}
-            
             placeholderTextColor={isDarkMode ? "#aaa" : "#999"}
             keyboardType="email-address"
             autoCapitalize="none"
             placeholder="Endereço de email"
           />  
-
-          
 
           {/* Botão de Enviar Código */}
           <TouchableOpacity 
@@ -134,12 +134,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 40,
+    paddingHorizontal: screenWidth * 0.05, // 5% da largura da tela
+    paddingTop: screenHeight * 0.05, // 5% da altura da tela
+    paddingBottom: screenHeight * 0.05, // 5% da altura da tela
   },
   arrowImage: {
-    width: 15,
+    width: 20, // Ajuste o tamanho da seta de acordo com sua preferência
     height: 20,
     tintColor: "#000000ff",
     top: 15,
@@ -148,30 +148,21 @@ const styles = StyleSheet.create({
   arrowImageDark: {
     tintColor: "#70DEFE",
   },
-  backText: {
-    fontSize: 16,
-    color: "#1163E7",
-    fontWeight: "bold",
-  },
-  backTextDark: {
-    color: "#70DEFE",
-  },
   backButton: {
     marginBottom: 20,
     alignSelf: 'flex-start',
   },
   imageContainer: {
     alignItems: 'center',
-    marginBottom: 30,
-    marginTop: 30,
+    marginBottom: screenHeight * 0.05, // 5% da altura da tela
+    marginTop: screenHeight * 0.05, // 5% da altura da tela
   },
   image: {
-    width: 300,
-    height: 250,
-    top: 15,
+    width: screenWidth * 0.8, // 80% da largura da tela
+    height: screenHeight * 0.3, // 30% da altura da tela
   },
   title: {
-    fontSize: 25,
+    fontSize: screenWidth * 0.07, // 7% da largura da tela
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 15,
@@ -181,31 +172,13 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   description: {
-    fontSize: 12,
+    fontSize: screenWidth * 0.04, // 4% da largura da tela
     textAlign: "center",
     color: "#575757",
-    marginBottom: 30,
-    fontWeight: "400",
+    marginBottom: screenHeight * 0.04, // 4% da altura da tela
+    fontWeight: "500",
   },
   descriptionDark: {
-    color: "#ccc",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#ddd",
-    marginVertical: 25,
-  },
-  dividerDark: {
-    backgroundColor: "#333",
-  },
-  label: {
-    fontSize: 12,
-    color: "#A2AFBC",
-    fontWeight: "medium",
-    top: -65,
-    marginLeft: 5,
-  },
-  labelDark: {
     color: "#ccc",
   },
   input: {

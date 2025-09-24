@@ -39,7 +39,7 @@ export default function Profile() {
   };
 
   const handleChangePassword = () => {
-   router.replace('/AlterarSenha');
+   router.replace('/forgot-password');
   };
 
   const handleNotifications = () => {
@@ -100,12 +100,12 @@ export default function Profile() {
             <Text style={styles.menuText}>Editar perfil</Text>
           </TouchableOpacity>
 
-          {/* Alterar senha */}
+          {/* Esqueceu senha  */}
           <TouchableOpacity style={styles.menuItem} onPress={handleChangePassword}>
             <View style={styles.menuIconBox}>
               <Ionicons name="lock-closed-outline" size={22} color="#1163E7" />
             </View>
-            <Text style={styles.menuText}>Alterar Senha</Text>
+            <Text style={styles.menuText}>Esqueceu Senha?</Text>
           </TouchableOpacity>
 
           {/* Notificações */}

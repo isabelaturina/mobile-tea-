@@ -1,57 +1,50 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { Stack, useRouter } from "expo-router";
-import React, { useState, useRef } from "react";
-import {
-  Alert,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  ScrollView,
+import { LinearGradient } from 'expo-linear-gradient';
+import { Stack, useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { 
+  Image, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View, 
+  ScrollView, 
+  Dimensions, 
+  StatusBar,
+  Platform,
   KeyboardAvoidingView,
-  Platform
-} from "react-native";
-import { useTheme } from "../contexts/ThemeContext";
+  Pressable,
+  Alert,
+  TextInput
+} from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
-export default function VerificationCode() {
+// Pegar as dimensões da tela
+const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
+
+export default function ForgotPassword() {
   const router = useRouter();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
-  const [code, setCode] = useState<string[]>(["", "", "", ""]);
-  const inputRefs = useRef<Array<TextInput | null>>([]);
+  const [email, setEmail] = useState("");
 
-  const handleCodeChange = (text: string, index: number) => {
-    // Permite apenas números
-    const numericText = text.replace(/[^0-9]/g, '');
-    
-    const newCode = [...code];
-    newCode[index] = numericText;
-    setCode(newCode);
-
-    // Avança para o próximo input
-    if (numericText && index < 3) {
-      inputRefs.current[index + 1]?.focus();
-    }
-
-    // Volta para o input anterior quando apagar
-    if (!numericText && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^(?!\.)(?!.*\.\.)(?!.*\.$)[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    return emailRegex.test(email);
   };
 
-  const handleVerifyCode = () => {
-    const fullCode = code.join('');
-    
-    if (fullCode.length !== 4) {
-      Alert.alert("Erro", "Digite o código completo de 4 dígitos");
+  const handleSendCode = () => {
+    if (!email) {
+      Alert.alert("Erro", "Digite seu endereço de email");
       return;
     }
 
-    // Redireciona para nova senha
-    router.push('/new-password');
+    if (!isValidEmail(email)) {
+      Alert.alert("Erro", "Digite um email válido");
+      return;
+    }
+
+    // Direciona diretamente para a tela verification-code
+    router.push('/verification-code');
   };
 
   return (
@@ -68,7 +61,7 @@ export default function VerificationCode() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Botão Voltar */}
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <Pressable onPress={() => router.push("/(tabs)/Profile")} style={styles.backButton}>
             <Image 
               source={require('../assets/images/seta.png')} 
               style={[styles.arrowImage, isDarkMode && styles.arrowImageDark]}
@@ -79,42 +72,38 @@ export default function VerificationCode() {
           {/* Imagem */}
           <View style={styles.imageContainer}>
             <Image 
-              source={require('../assets/images/verification-code.png')} 
+              source={require('../assets/images/forgot.png')} 
               style={styles.image}
               resizeMode="contain"
             />
           </View>
-
+      
           {/* Título */}
           <Text style={[styles.title, isDarkMode && styles.titleDark]}>
-            Verificar endereços de Email
+            Esqueceu a Senha?
           </Text>
 
           {/* Descrição */}
           <Text style={[styles.description, isDarkMode && styles.descriptionDark]}>
-            Digite o código de verificação enviado para seu email.
+            Por favor escreva seu email para receber um código de confirmação 
+            para definir uma nova senha.
           </Text>
 
-          {/* Inputs do código */}
-          <View style={styles.codeContainer}>
-            {[0, 1, 2, 3].map((index: number) => (
-              <TextInput
-                key={index}
-                ref={ref => { inputRefs.current[index] = ref; }}
-                style={[styles.codeInput, isDarkMode && styles.codeInputDark]}
-                value={code[index]}
-                onChangeText={(text) => handleCodeChange(text, index)}
-                keyboardType="numeric"
-                maxLength={1}
-                textAlign="center"
-              />
-            ))}
-          </View>
+          {/* Campo de Email */}
+          <TextInput
+            style={[styles.input, isDarkMode && styles.inputDark]}
+            value={email}
+            onChangeText={setEmail}
+            placeholderTextColor={isDarkMode ? "#aaa" : "#999"}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            placeholder="Endereço de email"
+          />  
 
-          {/* Botão de Confirmar Código */}
+          {/* Botão de Enviar Código */}
           <TouchableOpacity 
             style={styles.buttonWrapper}
-            onPress={handleVerifyCode}
+            onPress={handleSendCode}
             activeOpacity={0.8}
           >
             <LinearGradient
@@ -123,7 +112,7 @@ export default function VerificationCode() {
               end={{ x: 1, y: 0 }}
               style={styles.button}
             >
-              <Text style={styles.buttonText}>Confirmer Código</Text>
+              <Text style={styles.buttonText}>Confirmar Email</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -145,34 +134,35 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 40,
+    paddingHorizontal: screenWidth * 0.05, // 5% da largura da tela
+    paddingTop: screenHeight * 0.05, // 5% da altura da tela
+    paddingBottom: screenHeight * 0.05, // 5% da altura da tela
+  },
+  arrowImage: {
+    width: 20, // Ajuste o tamanho da seta de acordo com sua preferência
+    height: 20,
+    tintColor: "#000000ff",
+    top: 15,
+    left: 8,
+  },
+  arrowImageDark: {
+    tintColor: "#70DEFE",
   },
   backButton: {
     marginBottom: 20,
     alignSelf: 'flex-start',
   },
-  arrowImage: {
-    width: 15,
-    height: 20,
-    tintColor: "#000000",
-    top: 20,
-  },
-  arrowImageDark: {
-    tintColor: "#70DEFE",
-  },
   imageContainer: {
     alignItems: 'center',
-    marginBottom: 30,
-    marginTop: 20,
+    marginBottom: screenHeight * 0.05, // 5% da altura da tela
+    marginTop: screenHeight * 0.05, // 5% da altura da tela
   },
   image: {
-    width: 300,
-    height: 250,
+    width: screenWidth * 0.8, // 80% da largura da tela
+    height: screenHeight * 0.3, // 30% da altura da tela
   },
   title: {
-    fontSize: 25,
+    fontSize: screenWidth * 0.07, // 7% da largura da tela
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 15,
@@ -182,34 +172,27 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   description: {
-    fontSize: 16,
+    fontSize: screenWidth * 0.04, // 4% da largura da tela
     textAlign: "center",
     color: "#575757",
-    marginBottom: 40,
-    fontWeight: "400",
+    marginBottom: screenHeight * 0.04, // 4% da altura da tela
+    fontWeight: "500",
   },
   descriptionDark: {
     color: "#ccc",
   },
-  codeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 40,
-    gap: 15,
-  },
-  codeInput: {
-    width: 60,
-    height: 60,
-    backgroundColor: "#ffffff",
+  input: {
+    backgroundColor: "#ffffffb8",
     borderRadius: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 20,
+    color: "#000",
     borderWidth: 2,
     borderColor: "#A2AFBC",
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#000",
-    textAlign: 'center',
   },
-  codeInputDark: {
+  inputDark: {
     backgroundColor: "#1a1a1a",
     color: "#fff",
     borderColor: "#333",
@@ -219,7 +202,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignSelf: "center",
     width: "70%",
-    marginTop: 20,
+    marginTop: 30,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
