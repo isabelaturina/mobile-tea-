@@ -1,20 +1,23 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
+
 import {
+  Alert,
+  Image,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
 } from "react-native";
+
 import { useTheme } from "../contexts/ThemeContext";
 
 export default function AlterarSenha() {
   const router = useRouter();
-  const { theme } = useTheme(); // ← Use o hook ORIGINAL
+  const { theme } = useTheme();
   const isDarkMode = theme === "dark";
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -57,17 +60,22 @@ export default function AlterarSenha() {
       <Stack.Screen options={{ headerShown: false }} />
 
       <View style={[styles.container, isDarkMode && styles.containerDark]}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={[styles.backText, isDarkMode && styles.backButtonDark]}>
-            ← Voltar
-          </Text>
+        {/* Botão de Voltar com Imagem */}
+        <Pressable onPress={() => router.push("/(tabs)/Profile")} style={styles.backButton}>
+          <Image
+            source={require("../assets/images/seta.png")} // ajuste esse caminho se necessário
+            style={[styles.backImage, isDarkMode && styles.backImageDark]}
+            resizeMode="contain"
+          />
         </Pressable>
 
         <Text style={[styles.title, isDarkMode && styles.titleDark]}>
           Alterar senha
         </Text>
 
-        <Text style={[styles.label, isDarkMode && styles.labelDark]}>Senha atual</Text>
+        <Text style={[styles.label, isDarkMode && styles.labelDark]}>
+          Senha atual
+        </Text>
         <TextInput
           style={[styles.input, isDarkMode && styles.inputDark]}
           secureTextEntry
@@ -114,7 +122,7 @@ export default function AlterarSenha() {
           activeOpacity={0.8}
         >
           <LinearGradient
-            colors={["#00C6FF", "#1163E7"]}
+            colors={["#1163E7", "#1163E7"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.button}
@@ -139,14 +147,14 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginBottom: 20,
+    top: 40,
   },
-  backText: {
-    fontSize: 16,
-    color: "#1163E7",
-    top: 30,
+  backImage: {
+    width: 15,
+    height: 20,
   },
-  backButtonDark: {
-    color: "#70DEFE",
+  backImageDark: {
+    tintColor: "#70DEFE",
   },
   title: {
     fontSize: 22,
@@ -163,7 +171,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#575757",
     fontWeight: "bold",
-    marginBottom: 25,
+    marginBottom: 20,
   },
   labelDark: {
     color: "#ccc",
@@ -184,22 +192,23 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 12,
     color: "red",
-    marginTop: -20,
+    marginTop: 3,
     marginBottom: 16,
   },
   forgot: {
     fontSize: 14,
     color: "#0095FF",
     marginBottom: 10,
+    fontWeight: 500,
   },
   forgotDark: {
     color: "#70DEFE",
   },
   buttonWrapper: {
-    borderRadius: 10,
+    borderRadius:13,
     overflow: "hidden",
     alignSelf: "center",
-    width: 220,
+     width: "60%",
     marginTop: 70,
   },
   button: {
@@ -210,8 +219,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+    fontWeight: "500",
+    fontSize: 15,
   },
 
 });

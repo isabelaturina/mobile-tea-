@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import { useRouter } from "expo-router";
 
 const PasswordChangedSuccess: React.FC = () => {
@@ -11,6 +11,15 @@ const PasswordChangedSuccess: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      {/* Botão de Voltar com imagem */}
+      <Pressable onPress={() => router.push("/(tabs)/Profile")} style={styles.backButtonContainer}>
+        <Image
+          source={require("../assets/images/seta.png")} // ajuste se o caminho for diferente
+          style={styles.backImage}
+          resizeMode="contain"
+        />
+      </Pressable>
+
       <View style={styles.iconWrapper}>
         <View style={styles.outerCircle}>
           <View style={styles.innerCircle}>
@@ -29,11 +38,6 @@ const PasswordChangedSuccess: React.FC = () => {
         Sua senha foi alterada com sucesso,{"\n"}
         Você já pode usar sua nova senha para acessar sua conta.
       </Text>
-
-      {/* Botão secundário para voltar */}
-      <Pressable onPress={() => router.push("/(tabs)/Profile")}>
-        <Text style={styles.backButton}>← Voltar</Text>
-      </Pressable>
     </View>
   );
 };
@@ -114,27 +118,14 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     maxWidth: 300,
   },
-  button: {
-    backgroundColor: "#1163E7",
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    marginTop: 20,
-    marginBottom: 15,
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
   backButtonContainer: {
-    marginTop: 10,
+    position: "absolute",
+    top: 60,
+    left: 20,
   },
-  backButton: {
-    fontSize: 17,
-    color: "#1163E7",
-    bottom: 470,
-    right: 140,
+  backImage: {
+    width: 20,
+    height: 20,
   },
 });
 
