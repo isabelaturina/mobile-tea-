@@ -2,9 +2,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { 
+  Image, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View, 
+  ScrollView, 
+  Dimensions,
+  StatusBar 
+} from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useUser } from '../../contexts/UserContext';
+
+const { height: screenHeight } = Dimensions.get('window');
 
 export default function Profile() {
   const router = useRouter();
@@ -13,7 +24,7 @@ export default function Profile() {
   const isDarkMode = theme === "dark";
 
   const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // novo estado para logout
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   if (!userData) {
     return (
@@ -29,7 +40,6 @@ export default function Profile() {
 
   const handleChangePassword = () => {
    router.replace('/AlterarSenha');
-
   };
 
   const handleNotifications = () => {
@@ -45,7 +55,6 @@ export default function Profile() {
     setShowNotificationModal(false);
   };
 
-  // Confirma logout
   const confirmLogout = () => {
     setShowLogoutModal(false);
     logout();
@@ -54,7 +63,13 @@ export default function Profile() {
 
   return (
     <View style={[styles.container, isDarkMode && styles.darkContainer]}>
+      <StatusBar 
+        barStyle={isDarkMode ? "light-content" : "dark-content"} 
+        backgroundColor="transparent" 
+        translucent 
+      />
       
+      {/* Header com altura relativa */}
       <LinearGradient
         colors={isDarkMode ? ['#158EE5', '#A05BF0', '#D547F4'] : ['#70DEFE', '#D547F4']}
         start={{ x: 0, y: 0 }}
@@ -70,55 +85,65 @@ export default function Profile() {
         </View>
       </LinearGradient>
 
-      <View style={styles.menuContainer}>
-        {/* Editar perfil */}
-        <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
-          <View style={styles.menuIconBox}>
-            <Ionicons name="person-outline" size={22} color="#1163E7" />
-          </View>
-          <Text style={styles.menuText}>Editar perfil</Text>
-        </TouchableOpacity>
+      {/* Conteúdo principal com ScrollView */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.menuContainer}>
+          {/* Editar perfil */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
+            <View style={styles.menuIconBox}>
+              <Ionicons name="person-outline" size={22} color="#1163E7" />
+            </View>
+            <Text style={styles.menuText}>Editar perfil</Text>
+          </TouchableOpacity>
 
-        {/* Alterar senha */}
-        <TouchableOpacity style={styles.menuItem} onPress={handleChangePassword}>
-          <View style={styles.menuIconBox}>
-            <Ionicons name="lock-closed-outline" size={22} color="#1163E7" />
-          </View>
-          <Text style={styles.menuText}>Alterar Senha</Text>
-        </TouchableOpacity>
+          {/* Alterar senha */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleChangePassword}>
+            <View style={styles.menuIconBox}>
+              <Ionicons name="lock-closed-outline" size={22} color="#1163E7" />
+            </View>
+            <Text style={styles.menuText}>Alterar Senha</Text>
+          </TouchableOpacity>
 
-        {/* Notificações */}
-        <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
-          <View style={styles.menuIconBox}>
-            <Ionicons name="notifications-outline" size={22} color="#1163E7" />
-          </View>
-          <Text style={styles.menuText}>Notificações</Text>
-        </TouchableOpacity>
+          {/* Notificações */}
+          <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
+            <View style={styles.menuIconBox}>
+              <Ionicons name="notifications-outline" size={22} color="#1163E7" />
+            </View>
+            <Text style={styles.menuText}>Notificações</Text>
+          </TouchableOpacity>
 
-        {/* Sair da conta */}
-        <TouchableOpacity style={styles.menuItem} onPress={() => setShowLogoutModal(true)}>
-          <View style={styles.menuIconBox}>
-            <Ionicons name="log-out-outline" size={22} color="#FF6B6B" />
-          </View>
-          <Text style={[styles.menuText, styles.logoutText]}>Sair da conta</Text>
-        </TouchableOpacity>
+          {/* Sair da conta */}
+          <TouchableOpacity style={styles.menuItem} onPress={() => setShowLogoutModal(true)}>
+            <View style={styles.menuIconBox}>
+              <Ionicons name="log-out-outline" size={22} color="#FF6B6B" />
+            </View>
+            <Text style={[styles.menuText, styles.logoutText]}>Sair da conta</Text>
+          </TouchableOpacity>
 
-        {/* Alternar modo escuro */}
-        <TouchableOpacity style={styles.menuItem} onPress={toggleTheme}>
-          <View style={styles.menuIconBox}>
-            <Ionicons
-              name={isDarkMode ? 'sunny-outline' : 'moon-outline'}
-              size={22}
-              color="#1163E7"
-            />
-          </View>
-          <Text style={styles.menuText}>
-            {isDarkMode ? 'Adicionar modo claro' : 'Adicionar modo escuro'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+          {/* Alternar modo escuro */}
+          <TouchableOpacity style={styles.menuItem} onPress={toggleTheme}>
+            <View style={styles.menuIconBox}>
+              <Ionicons
+                name={isDarkMode ? 'sunny-outline' : 'moon-outline'}
+                size={22}
+                color="#1163E7"
+              />
+            </View>
+            <Text style={styles.menuText}>
+              {isDarkMode ? 'Adicionar modo claro' : 'Adicionar modo escuro'}
+            </Text>
+          </TouchableOpacity>
 
-      {/* Modal de notificações */}
+          {/* Espaço extra no final */}
+          <View style={styles.spacer} />
+        </View>
+      </ScrollView>
+
+      {/* Modais */}
       {showNotificationModal && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
@@ -139,13 +164,12 @@ export default function Profile() {
         </View>
       )}
 
-      {/* Modal de logout */}
       {showLogoutModal && (
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Tem certeza que deseja sair da conta?</Text>
             <Image
-              source={require('../../assets/images/logout.png')} // salve sua imagem aqui
+              source={require('../../assets/images/logout.png')}
               style={styles.modalImage}
             />
             <View style={styles.modalButtonsRow}>
@@ -171,6 +195,12 @@ const styles = StyleSheet.create({
   darkContainer: {
     backgroundColor: '#000',
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   loadingText: {
     fontSize: 18,
     color: '#666',
@@ -178,10 +208,14 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   headerGradient: {
-    height: 220,
+    height: screenHeight * 0.3, // 30% da altura da tela
+    maxHeight: 280, // altura máxima para tablets
+    minHeight: 200, // altura mínima para telas pequenas
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
-    paddingTop: 40,
+    // ...existing code...
+paddingTop: (StatusBar.currentHeight ?? 0) + 20, // usa 0 se for undefined
+// ...existing code...
     paddingHorizontal: 20,
     justifyContent: 'center',
     alignItems: 'center',
@@ -192,9 +226,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   profileImageContainer: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: screenHeight * 0.12, // 12% da altura da tela
+    height: screenHeight * 0.12,
+    maxWidth: 110,
+    maxHeight: 110,
+    minWidth: 80,
+    minHeight: 80,
+    borderRadius: screenHeight * 0.06,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
@@ -206,29 +244,31 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: '90%',
+    height: '90%',
+    borderRadius: screenHeight * 0.055,
     resizeMode: 'cover',
   },
-  userName: {
-    fontSize: 21,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 2,
-    textAlign: 'center',
-  },
-  userEmail: {
-    fontSize: 15,
-    color: '#fff',
-    opacity: 0.9,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
+ // ...existing code...
+userName: {
+  fontSize: Math.max(Math.min(screenHeight * 0.025, 21), 18), // limita entre 18 e 21
+  fontWeight: 'bold',
+  color: '#fff',
+  marginBottom: 2,
+  textAlign: 'center',
+},
+userEmail: {
+  fontSize: Math.max(Math.min(screenHeight * 0.018, 15), 12), // limita entre 12 e 15
+  color: '#fff',
+  opacity: 0.9,
+  textAlign: 'center',
+  marginBottom: 10,
+},
+// ...existing code...
   menuContainer: {
-    flex: 1,
     paddingHorizontal: 18,
-    paddingTop: 38,
+    paddingTop: 30,
+    paddingBottom: 40,
   },
   menuItem: {
     flexDirection: 'row',
@@ -237,12 +277,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 18,
     borderRadius: 16,
-    marginBottom: 22,
+    marginBottom: 15,
     shadowColor: '#1163E7',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 6,
+    minHeight: 60, // altura mínima para toque fácil
   },
   menuIconBox: {
     width: 32,
@@ -261,6 +302,9 @@ const styles = StyleSheet.create({
   logoutText: {
     color: '#FF6B6B',
   },
+  spacer: {
+    height: 30,
+  },
   modalOverlay: {
     position: 'absolute',
     top: 0, left: 0, right: 0, bottom: 0,
@@ -271,6 +315,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     width: '85%',
+    maxWidth: 400,
     backgroundColor: '#fff',
     borderRadius: 18,
     padding: 24,
@@ -279,17 +324,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 8,
+    marginHorizontal: 20,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#222',
     textAlign: 'center',
     marginBottom: 18,
   },
   modalImage: {
-    width: 140,
-    height: 120,
+    width: 120,
+    height: 100,
     marginBottom: 18,
     resizeMode: 'contain',
   },
@@ -306,6 +352,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginHorizontal: 6,
     alignItems: 'center',
+    minHeight: 44, // altura mínima para acessibilidade
   },
   modalButtonText: {
     color: '#158EE5',

@@ -1,23 +1,24 @@
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient"; // <<-- import gradient
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    Image,
-    ImageBackground,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Image,
+  ImageBackground,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  SafeAreaView,
 } from "react-native";
 
 import BeaAssistencia from "../assets/images/BeaAssistencia.png";
 import ChatBeaBackground from "../assets/images/ChatBea.png";
 
 export default function ChatBea() {
-  const router = useRouter(); 
+  const router = useRouter();
 
   const [messages, setMessages] = useState([
     { sender: "Bea", text: "Olá, Eu sou a Bea, como posso te ajudar hoje?" },
@@ -32,7 +33,7 @@ export default function ChatBea() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* HEADER COM IMAGEM DE FUNDO */}
       <ImageBackground
         source={ChatBeaBackground}
@@ -40,15 +41,15 @@ export default function ChatBea() {
         resizeMode="cover"
       >
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.push("/Chat")}>
-            <Ionicons
-              name="arrow-back"
-              size={26}
-              color="#fff"
-              style={styles.backButton}
-            />
+          {/* Botão voltar */}
+          <TouchableOpacity
+            onPress={() => router.push("/Chat")}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={26} color="#fff" />
           </TouchableOpacity>
-          
+
+          {/* Título centralizado */}
           <Text style={styles.headerText}>Bea</Text>
         </View>
       </ImageBackground>
@@ -88,36 +89,38 @@ export default function ChatBea() {
           </LinearGradient>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff"
+    backgroundColor: "#fff",
   },
   headerBackground: {
     width: "100%",
-    height: 130, 
+    height: 130,
     justifyContent: "flex-end",
   },
   headerContent: {
-    flexDirection: "row",
+    height: 60,
+    justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 15,
-    paddingBottom: 10,
+    position: "relative",
   },
   backButton: {
-    marginRight: 10,
-    bottom: 80,
+    position: "absolute",
+    left: 15,
+    top: "-50%",
+    transform: [{ translateY: -13 }], // centraliza o ícone verticalmente
   },
   headerText: {
-    fontSize: 24,
-    color: "#ffffffff",
-    bottom: 80,
-    fontWeight: "600", 
-    left: 100,
+    fontSize: 22,
+    color: "#fff",
+    fontWeight: "600",
+    top: -55,
+  
   },
   chatContainer: {
     flex: 1,
@@ -130,6 +133,7 @@ const styles = StyleSheet.create({
   },
   messageBea: {
     justifyContent: "flex-start",
+
   },
   messageUser: {
     justifyContent: "flex-end",

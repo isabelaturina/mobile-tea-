@@ -70,13 +70,7 @@ export default function Login() {
             returnKeyType="next"
             blurOnSubmit={false}
           />
-          {emailError ? (
-            <Text style={styles.emailErrorText}>{emailError}</Text>
-          ) : (
-            <Text style={styles.emailInfoText}>
-              Utilize o mesmo email que você usou no cadastro para acessar sua conta.
-            </Text>
-          )}
+        
 
           <View style={styles.passwordContainer}>
             <TextInput 

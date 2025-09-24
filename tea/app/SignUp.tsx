@@ -1,6 +1,6 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import React, { useMemo, useState } from "react";
 import {
   Alert,
   Image,
@@ -12,21 +12,21 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View
-} from 'react-native';
+  View,
+} from "react-native";
 
-import { useUser } from '../contexts/UserContext';
+import { useUser } from "../contexts/UserContext";
 
-type SupportLevel = 'leve' | 'moderado' | 'severo';
+type SupportLevel = "leve" | "moderado" | "severo";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [supportLevel, setSupportLevel] = useState<SupportLevel | null>(null);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
-  const [grauAutismo, setGrauAutismo] = useState('');
+  const [grauAutismo, setGrauAutismo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
@@ -34,67 +34,66 @@ export default function SignUp() {
 
   const levels = useMemo(
     () => [
-      { label: 'leve', value: 'leve' as const },
-      { label: 'moderado', value: 'moderado' as const },
-      { label: 'severo', value: 'severo' as const },
+      { label: "leve", value: "leve" as const },
+      { label: "moderado", value: "moderado" as const },
+      { label: "severo", value: "severo" as const },
     ],
     []
   );
 
   const levelLabel = useMemo(() => {
-    const found = levels.find(l => l.value === supportLevel);
-    return found?.label ?? 'Nível de suporte';
+    const found = levels.find((l) => l.value === supportLevel);
+    return found?.label ?? "Nível de suporte";
   }, [levels, supportLevel]);
 
-  
   const handleSignUp = async () => {
-   if (!name || !email || !password || !supportLevel) {
-  Alert.alert('Ops!', 'Parece que você esqueceu de preencher algum campo. Tente novamente!');
-  return;
-}
-const regexNome = /^[A-Za-zÀ-ÖØ-öø-ÿ ]+$/;
-if (!regexNome.test(name)) {
-  Alert.alert('Nome inválido', 'O nome deve conter apenas letras.');
-  return;
-}
-    if (password.length < 6) {
-      Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres');
+    if (!name || !email || !password || !supportLevel) {
+      Alert.alert(
+        "Ops!",
+        "Parece que você esqueceu de preencher algum campo. Tente novamente!"
+      );
       return;
     }
-      // 🔹 Validação para aceitar apenas emails do Gmail
-const regexGmail = /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@gmail\.com$/;
-if (!regexGmail.test(email)) {
-  Alert.alert(
-    'Erro',
-    'O email deve ser do Gmail, não começar com ponto e não conter dois pontos seguidos.'
-  );
-  return;
-}
-
+    const regexNome = /^[A-Za-zÀ-ÖØ-öø-ÿ ]+$/;
+    if (!regexNome.test(name)) {
+      Alert.alert("Nome inválido", "O nome deve conter apenas letras.");
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    // 🔹 Validação para aceitar apenas emails do Gmail
+    const regexGmail = /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    if (!regexGmail.test(email)) {
+      Alert.alert(
+        "Erro",
+        "O email deve ser do Gmail, não começar com ponto e não conter dois pontos seguidos."
+      );
+      return;
+    }
 
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const signUpSuccess = await signUp(name, email, password);
 
       if (signUpSuccess) {
-        Alert.alert('Sucesso!', 'Conta criada com sucesso! Bem-vindo ao Tea+', [
+        Alert.alert("Sucesso!", "Conta criada com sucesso! Bem-vindo ao Tea+", [
           {
-            text: 'OK',
-            onPress: () => router.replace('/(tabs)/Home' as any),
+            text: "OK",
+            onPress: () => router.replace("/(tabs)/Home" as any),
           },
         ]);
-        Alert.alert(
-          'Sucesso!',
-          'Conta criada com sucesso! Bem-vindo ao Tea+',
-          [{ text: 'OK', onPress: () => router.replace('/(tabs)/Home' as any) }]
-        );
+        Alert.alert("Sucesso!", "Conta criada com sucesso! Bem-vindo ao Tea+", [
+          { text: "OK", onPress: () => router.replace("/(tabs)/Home" as any) },
+        ]);
       } else {
-        Alert.alert('Erro', 'Erro ao criar a conta');
+        Alert.alert("Erro", "Erro ao criar a conta");
       }
     } catch (error) {
-      Alert.alert('Erro', 'Ocorreu um erro ao criar a conta');
+      Alert.alert("Erro", "Ocorreu um erro ao criar a conta");
     } finally {
       setIsLoading(false);
     }
@@ -109,22 +108,21 @@ if (!regexGmail.test(email)) {
       >
         <View style={styles.backgroundCircle} />
         <Image
-          source={require('../assets/images/logo tea.png')}
+          source={require("../assets/images/logo tea.png")}
           style={styles.image}
         />
 
         <Text style={styles.title}>Crie sua conta</Text>
-        <TouchableOpacity onPress={() => router.push('/Login')}>
+        <TouchableOpacity onPress={() => router.push("/Login")}>
           <Text style={styles.linkText}>
             Já possui uma conta? <Text style={styles.link}>Faça seu Login</Text>
           </Text>
-         
         </TouchableOpacity>
 
         <View style={styles.formContainer}>
           <TextInput
             placeholder="Nome:"
-            placeholderTextColor="#9aa0a6"
+            placeholderTextColor="#575757"
             style={styles.input}
             value={name}
             onChangeText={setName}
@@ -132,7 +130,7 @@ if (!regexGmail.test(email)) {
 
           <TextInput
             placeholder="Email:"
-            placeholderTextColor="#9aa0a6"
+            placeholderTextColor="#575757"
             style={styles.input}
             keyboardType="email-address"
             value={email}
@@ -140,10 +138,10 @@ if (!regexGmail.test(email)) {
             autoCapitalize="none"
           />
 
-       <View style={styles.passwordContainer}>
-           <TextInput
+          <View style={styles.passwordContainer}>
+            <TextInput
               placeholder="Senha:"
-              placeholderTextColor="#9aa0a6"
+              placeholderTextColor="#575757"
               style={styles.inputPassword}
               secureTextEntry={!showPassword}
               value={password}
@@ -158,13 +156,15 @@ if (!regexGmail.test(email)) {
               onPress={() => setShowPassword(!showPassword)}
               style={styles.eyeButton}
               accessibilityRole="button"
-              accessibilityLabel={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              accessibilityLabel={
+                showPassword ? "Ocultar senha" : "Mostrar senha"
+              }
             >
               <Image
                 source={
                   showPassword
-                    ? require('../assets/images/olho-aberto.png')
-                    : require('../assets/images/olho-fechado.png')
+                    ? require("../assets/images/olho-aberto.png")
+                    : require("../assets/images/olho-fechado.png")
                 }
                 style={styles.eyeIcon}
               />
@@ -177,7 +177,12 @@ if (!regexGmail.test(email)) {
             accessibilityRole="button"
             accessibilityLabel="Selecionar nível de suporte"
           >
-            <Text style={[styles.dropdownText, !supportLevel && { color: '#9aa0a6' }]}>
+            <Text
+              style={[
+                styles.dropdownText,
+                !supportLevel && { color: "#575757" },
+              ]}
+            >
               {levelLabel}
             </Text>
             <Text style={styles.dropdownCaret}>▾</Text>
@@ -189,12 +194,14 @@ if (!regexGmail.test(email)) {
             animationType="fade"
             onRequestClose={() => setIsLevelModalOpen(false)}
           >
-            <TouchableWithoutFeedback onPress={() => setIsLevelModalOpen(false)}>
+            <TouchableWithoutFeedback
+              onPress={() => setIsLevelModalOpen(false)}
+            >
               <View style={styles.modalBackdrop} />
             </TouchableWithoutFeedback>
 
             <View style={styles.modalSheet}>
-              {levels.map(item => (
+              {levels.map((item) => (
                 <Pressable
                   key={item.value}
                   onPress={() => {
@@ -211,7 +218,6 @@ if (!regexGmail.test(email)) {
               ))}
             </View>
           </Modal>
-         
 
           <TouchableOpacity
             style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -219,13 +225,13 @@ if (!regexGmail.test(email)) {
             disabled={isLoading}
           >
             <LinearGradient
-              colors={['#00C6FF', '#1163E7']}
+              colors={["#008BEF", "#008BEF"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientButton}
             >
               <Text style={styles.buttonText}>
-                {isLoading ? 'Criando Conta...' : 'Criar Conta'}
+                {isLoading ? "Criando Conta..." : "Criar Conta"}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -236,119 +242,142 @@ if (!regexGmail.test(email)) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: "#fff" },
   scrollContainer: {
     flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 24,
   },
   backgroundCircle: {
-    position: 'absolute',
+    position: "absolute",
     top: -120,
     right: 35,
     width: 500,
     height: 500,
     borderRadius: 250,
-    backgroundColor: '#E0F2FF',
+    backgroundColor: "#E0F2FF",
     zIndex: -1,
   },
-  image: { width: 200, height: 200, marginBottom: 16, resizeMode: 'contain' },
-  title: { fontSize: 32, fontWeight: 'bold', marginBottom: 14, color: '#222', textAlign: 'center' },
-  linkText: { color: '#7b7b7bff', marginBottom: 16, textAlign: 'center', fontSize: 16},
-  link: { color: '#007AFF', fontWeight: 'bold' },
-  formContainer: { width: '100%', marginBottom: 16 },
+  image: { width: 200, height: 200, marginBottom: 16, resizeMode: "contain" },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    marginBottom: 14,
+    color: "#222",
+    textAlign: "center",
+  },
+  linkText: {
+    color: "#7b7b7bff",
+    marginBottom: 16,
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "600"
+  },
+  link: { color: "#007AFF", fontWeight: "bold" },
+  formContainer: { width: "100%", marginBottom: 16 },
 
   // Inputs iguais à 1ª imagem
   input: {
-    width: '100%',
+    width: "100%",
     borderWidth: 1,
-    borderColor: '#00C6FF',
+    borderColor: "#00C6FF",
     borderRadius: 56,
     padding: 12,
     marginBottom: 30,
-    fontSize: 16,
-    backgroundColor: '#fff',
+    fontSize: 14,
+    fontWeight: "600",
+    backgroundColor: "#fff",
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
-  passwordContainer: { flexDirection: 'row', alignItems: 'center', width: '100%', marginBottom: 30 },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    marginBottom: 30,
+  },
   inputPassword: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#00C6FF',
+    borderColor: "#00C6FF",
     borderRadius: 56,
     padding: 12,
-    fontSize: 16,
-    backgroundColor: '#fff',
+    fontSize: 14,
+    fontWeight: "600",
+    backgroundColor: "#fff",
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    
   },
   eyeButton: { marginLeft: -40, padding: 8, zIndex: 1 },
   dropdownTrigger: {
-    width: '45%',
+    width: "45%",
     borderWidth: 1,
-    borderColor: '#00C6FF',
+    borderColor: "#00C6FF",
     borderRadius: 56,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginBottom: 30,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     elevation: 2,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  dropdownText: { fontSize: 16, color: '#000000ff' },
+  dropdownText: { fontSize: 14, color: "#000000ff", fontWeight: "600" },
   dropdownCaret: { fontSize: 16 },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.25)' },
+  modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)" },
   modalSheet: {
-    position: 'absolute',
+    position: "absolute",
     left: 24,
     right: 24,
     bottom: 32,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 16,
     paddingVertical: 8,
     elevation: 6,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
   },
-  optionItem: { paddingVertical: 14, paddingHorizontal: 16 },
-  optionItemActive: { backgroundColor: '#EAF3FF' },
-  optionText: { fontSize: 16, color: '#222' },
-  
-  eyeIcon: { width: 24, height: 24, tintColor: '#7b7b7b', resizeMode: 'contain' },
+  optionItem: { paddingVertical: 13, paddingHorizontal: 16 },
+  optionItemActive: { backgroundColor: "#EAF3FF" },
+  optionText: { fontSize: 16, color: "#222", fontWeight: "600" },
+
+  eyeIcon: {
+    width: 24,
+    height: 24,
+    tintColor: "#7b7b7b",
+    resizeMode: "contain",
+  },
 
   pickerContainer: {
     borderWidth: 1,
-    borderColor: '#00C6FF',
+    borderColor: "#00C6FF",
     borderRadius: 12,
     marginBottom: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
-  picker: { width: '100%', height: 50 },
+  picker: { width: "100%", height: 50 },
 
   button: {
     borderRadius: 12,
     marginTop: 8,
-    width: '80%',
-    overflow: 'hidden',
+    width: "80%",
+    overflow: "hidden",
     elevation: 3,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -356,10 +385,10 @@ const styles = StyleSheet.create({
   },
   gradientButton: {
     paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
   },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 18 },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 18 },
   buttonDisabled: { opacity: 0.7 },
 });

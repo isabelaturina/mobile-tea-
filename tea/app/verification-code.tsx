@@ -1,46 +1,57 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Alert,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 
-export default function ForgotPassword() {
+export default function VerificationCode() {
   const router = useRouter();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
-  const [email, setEmail] = useState("");
-  const [confirmEmail, setConfirmEmail] = useState("");
+  const [code, setCode] = useState<string[]>(["", "", "", ""]);
+  const inputRefs = useRef<Array<TextInput | null>>([]);
 
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    return emailRegex.test(email);
+  const handleCodeChange = (text: string, index: number) => {
+    // Permite apenas números
+    const numericText = text.replace(/[^0-9]/g, '');
+    
+    const newCode = [...code];
+    newCode[index] = numericText;
+    setCode(newCode);
+
+    // Avança para o próximo input
+    if (numericText && index < 3) {
+      inputRefs.current[index + 1]?.focus();
+    }
+
+    // Volta para o input anterior quando apagar
+    if (!numericText && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
   };
 
-  const handleSendCode = () => {
-    if (!email) {
-      Alert.alert("Erro", "Digite seu endereço de email");
+  const handleVerifyCode = () => {
+    const fullCode = code.join('');
+    
+    if (fullCode.length !== 4) {
+      Alert.alert("Erro", "Digite o código completo de 4 dígitos");
       return;
     }
 
-    if (!isValidEmail(email)) {
-      Alert.alert("Erro", "Digite um email @gmail.com válido");
-      return;
-    }
-
-    // Direciona diretamente para a tela verification-code
-    router.push('/verification-code');
+    // Redireciona para nova senha
+    router.push('/new-password');
   };
 
   return (
@@ -68,42 +79,42 @@ export default function ForgotPassword() {
           {/* Imagem */}
           <View style={styles.imageContainer}>
             <Image 
-              source={require('../assets/images/forgot.png')} 
+              source={require('../assets/images/verification-code.png')} 
               style={styles.image}
               resizeMode="contain"
             />
           </View>
-      
+
           {/* Título */}
           <Text style={[styles.title, isDarkMode && styles.titleDark]}>
-            Esqueceu a Senha?
+            Verificar endereços de Email
           </Text>
 
           {/* Descrição */}
           <Text style={[styles.description, isDarkMode && styles.descriptionDark]}>
-            Por favor escreva seu email para receber um código de confirmação 
-            para definir uma nova senha.
+            Digite o código de verificação enviado para seu email.
           </Text>
 
-          {/* Campo de Email */}
-          <TextInput
-            style={[styles.input, isDarkMode && styles.inputDark]}
-            value={email}
-            onChangeText={setEmail}
-            
-            placeholderTextColor={isDarkMode ? "#aaa" : "#999"}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />  
-          <Text style={[styles.label, isDarkMode && styles.labelDark]}>
-            Endereço de Email
-          </Text>
-          
+          {/* Inputs do código */}
+          <View style={styles.codeContainer}>
+            {[0, 1, 2, 3].map((index: number) => (
+              <TextInput
+                key={index}
+                ref={ref => { inputRefs.current[index] = ref; }}
+                style={[styles.codeInput, isDarkMode && styles.codeInputDark]}
+                value={code[index]}
+                onChangeText={(text) => handleCodeChange(text, index)}
+                keyboardType="numeric"
+                maxLength={1}
+                textAlign="center"
+              />
+            ))}
+          </View>
 
-          {/* Botão de Enviar Código */}
+          {/* Botão de Confirmar Código */}
           <TouchableOpacity 
             style={styles.buttonWrapper}
-            onPress={handleSendCode}
+            onPress={handleVerifyCode}
             activeOpacity={0.8}
           >
             <LinearGradient
@@ -112,7 +123,7 @@ export default function ForgotPassword() {
               end={{ x: 1, y: 0 }}
               style={styles.button}
             >
-              <Text style={styles.buttonText}>Confirmar Email</Text>
+              <Text style={styles.buttonText}>Confirmer Código</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -138,37 +149,27 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingBottom: 40,
   },
-  arrowImage: {
-    width: 15,
-    height: 20,
-    tintColor: "#000000ff",
-    top: 15,
-    left: 8,
-  },
-  arrowImageDark: {
-    tintColor: "#70DEFE",
-  },
-  backText: {
-    fontSize: 16,
-    color: "#1163E7",
-    fontWeight: "bold",
-  },
-  backTextDark: {
-    color: "#70DEFE",
-  },
   backButton: {
     marginBottom: 20,
     alignSelf: 'flex-start',
   },
+  arrowImage: {
+    width: 15,
+    height: 20,
+    tintColor: "#000000",
+    top: 20,
+  },
+  arrowImageDark: {
+    tintColor: "#70DEFE",
+  },
   imageContainer: {
     alignItems: 'center',
     marginBottom: 30,
-    marginTop: 30,
+    marginTop: 20,
   },
   image: {
     width: 300,
     height: 250,
-    top: 15,
   },
   title: {
     fontSize: 25,
@@ -181,45 +182,34 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   description: {
-    fontSize: 12,
+    fontSize: 16,
     textAlign: "center",
     color: "#575757",
-    marginBottom: 30,
+    marginBottom: 40,
     fontWeight: "400",
   },
   descriptionDark: {
     color: "#ccc",
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#ddd",
-    marginVertical: 25,
+  codeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 40,
+    gap: 15,
   },
-  dividerDark: {
-    backgroundColor: "#333",
-  },
-  label: {
-    fontSize: 12,
-    color: "#A2AFBC",
-    fontWeight: "medium",
-    top: -65,
-    marginLeft: 5,
-  },
-  labelDark: {
-    color: "#ccc",
-  },
-  input: {
-    backgroundColor: "#ffffffb8",
+  codeInput: {
+    width: 60,
+    height: 60,
+    backgroundColor: "#ffffff",
     borderRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    fontSize: 16,
-    marginBottom: 20,
-    color: "#000",
     borderWidth: 2,
     borderColor: "#A2AFBC",
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#000",
+    textAlign: 'center',
   },
-  inputDark: {
+  codeInputDark: {
     backgroundColor: "#1a1a1a",
     color: "#fff",
     borderColor: "#333",
@@ -229,7 +219,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignSelf: "center",
     width: "70%",
-    marginTop: 30,
+    marginTop: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
