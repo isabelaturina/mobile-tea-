@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useUser } from '../contexts/UserContext';
 
 export default function Login() {
@@ -60,8 +61,12 @@ export default function Login() {
         <View style={styles.formContainer}>
           <TextInput 
             placeholder="Email:" 
-            placeholderTextColor="#9aa0a6"
-            style={styles.input} 
+            placeholderTextColor="#575757"
+            style={[styles.input, { 
+              fontSize: 14,
+              fontWeight: '600',
+              fontFamily: 'System'
+            }]} 
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
@@ -75,8 +80,12 @@ export default function Login() {
           <View style={styles.passwordContainer}>
             <TextInput 
               placeholder="Senha:" 
-              placeholderTextColor="#9aa0a6"
-              style={styles.inputPassword} 
+              placeholderTextColor="#575757"
+              style={[styles.inputPassword, { 
+                fontSize: 14,
+                fontWeight: '600',
+                fontFamily: 'System'
+              }]} 
               secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
@@ -100,10 +109,20 @@ export default function Login() {
             style={[styles.button, isLoading && styles.buttonDisabled]} 
             onPress={handleLogin}
             disabled={isLoading}
+            activeOpacity={0.8}
           >
-            <Text style={styles.buttonTextOutline}>
-              {isLoading ? 'Entrando...' : 'Entrar'}
-            </Text>
+            <LinearGradient
+              colors={['#00C6FF', '#1163E7']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.gradientBorder}
+            >
+              <View style={styles.buttonInner}>
+                <Text style={styles.buttonTextOutline}>
+                  {isLoading ? 'Entrando...' : 'Entrar'}
+                </Text>
+              </View>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
@@ -171,7 +190,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 12,
     marginBottom: 30,
-    fontSize: 16,
+    fontSize: 14,
     backgroundColor: '#fff',
     elevation: 2,
     shadowColor: '#000',
@@ -228,18 +247,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 8,
     width: '50%',
-    borderWidth: 1.6,
-    borderColor: '#00C6FF',
+    left: '25%',
+  },
+  gradientBorder: {
+    borderRadius: 10,
+    padding: 2, 
+  },
+  buttonInner: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    left: '25%',
   },
   buttonTextOutline: {
     color: '#00C6FF',
     fontWeight: 'bold',
     fontSize: 18,
-   
   },
   buttonDisabled: {
     opacity: 0.7,

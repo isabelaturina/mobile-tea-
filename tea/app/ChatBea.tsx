@@ -12,13 +12,20 @@ import {
   TouchableOpacity,
   View,
   SafeAreaView,
+  Dimensions,
 } from "react-native";
+import { useTheme } from '../contexts/ThemeContext';
+
+// Pegar as dimensões da tela
+const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
 import BeaAssistencia from "../assets/images/BeaAssistencia.png";
 import ChatBeaBackground from "../assets/images/ChatBea.png";
 
 export default function ChatBea() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
 
   const [messages, setMessages] = useState([
     { sender: "Bea", text: "Olá, Eu sou a Bea, como posso te ajudar hoje?" },
@@ -33,7 +40,7 @@ export default function ChatBea() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
       {/* HEADER COM IMAGEM DE FUNDO */}
       <ImageBackground
         source={ChatBeaBackground}
@@ -46,7 +53,7 @@ export default function ChatBea() {
             onPress={() => router.push("/Chat")}
             style={styles.backButton}
           >
-            <Ionicons name="arrow-back" size={26} color="#fff" />
+            <Ionicons name="arrow-back" size={screenWidth * 0.065} color="#fff" />
           </TouchableOpacity>
 
           {/* Título centralizado */}
@@ -54,7 +61,7 @@ export default function ChatBea() {
         </View>
       </ImageBackground>
 
-      <ScrollView style={styles.chatContainer}>
+      <ScrollView style={[styles.chatContainer, isDarkMode && styles.chatContainerDark]}>
         {messages.map((message, index) => (
           <View
             key={index}
@@ -66,15 +73,19 @@ export default function ChatBea() {
             {message.sender === "Bea" && (
               <Image source={BeaAssistencia} style={styles.avatar} />
             )}
-            <Text style={styles.messageText}>{message.text}</Text>
+            <Text style={[
+              styles.messageText,
+              message.sender === "Bea" ? styles.messageTextBea : styles.messageTextUser
+            ]}>{message.text}</Text>
           </View>
         ))}
       </ScrollView>
 
-      <View style={styles.inputContainer}>
+      <View style={[styles.inputContainer, isDarkMode && styles.inputContainerDark]}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, isDarkMode && styles.inputDark]}
           placeholder="Digite sua Mensagem"
+          placeholderTextColor={isDarkMode ? "#aaa" : "#999"}
           value={inputMessage}
           onChangeText={setInputMessage}
         />
@@ -100,35 +111,34 @@ const styles = StyleSheet.create({
   },
   headerBackground: {
     width: "100%",
-    height: 130,
+    height: screenHeight * 0.16, // 16% da altura da tela
     justifyContent: "flex-end",
   },
   headerContent: {
-    height: 60,
+    height: screenHeight * 0.075, // 7.5% da altura da tela
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
   },
   backButton: {
     position: "absolute",
-    left: 15,
+    left: screenWidth * 0.04, // 4% da largura da tela
     top: "-50%",
-    transform: [{ translateY: -13 }], // centraliza o ícone verticalmente
+    transform: [{ translateY: -screenHeight * 0.016 }], // Responsivo baseado na altura
   },
   headerText: {
-    fontSize: 22,
+    fontSize: screenWidth * 0.055, // 5.5% da largura da tela
     color: "#fff",
     fontWeight: "600",
-    top: -55,
-  
+    top: -screenHeight * 0.068, // Responsivo baseado na altura
   },
   chatContainer: {
     flex: 1,
-    padding: 15,
+    padding: screenWidth * 0.04, // 4% da largura da tela
   },
   messageContainer: {
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: screenHeight * 0.012, // 1.2% da altura da tela
     alignItems: "flex-start",
   },
   messageBea: {
@@ -139,42 +149,67 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: 10,
+    width: screenWidth * 0.1, // 10% da largura da tela
+    height: screenWidth * 0.1, // 10% da largura da tela (quadrado)
+    borderRadius: screenWidth * 0.05, // 5% da largura da tela
+    marginRight: screenWidth * 0.025, // 2.5% da largura da tela
   },
   messageText: {
     maxWidth: "70%",
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: "#E1E1E1",
+    padding: screenWidth * 0.025, // 2.5% da largura da tela
+    borderRadius: screenWidth * 0.025, // 2.5% da largura da tela
+    fontSize: screenWidth * 0.04, // 4% da largura da tela
+  },
+  messageTextBea: {
+    backgroundColor: "#E1E1E1", // Cinza claro para a Bea
+    color: "#333333",
+  },
+  messageTextUser: {
+    backgroundColor: "#1163E7", // Azul para o usuário
+    color: "#FFFFFF",
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 10,
+    padding: screenWidth * 0.025, // 2.5% da largura da tela
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#ddd",
   },
   input: {
     flex: 1,
-    height: 40,
+    height: screenHeight * 0.05, // 5% da altura da tela
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 20,
-    paddingLeft: 10,
-    marginRight: 10,
+    borderRadius: screenHeight * 0.025, // 2.5% da altura da tela
+    paddingLeft: screenWidth * 0.025, // 2.5% da largura da tela
+    marginRight: screenWidth * 0.025, // 2.5% da largura da tela
+    fontSize: screenWidth * 0.04, // 4% da largura da tela
   },
   sendButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
+    paddingVertical: screenHeight * 0.012, // 1.2% da altura da tela
+    paddingHorizontal: screenWidth * 0.05, // 5% da largura da tela
+    borderRadius: screenHeight * 0.025, // 2.5% da altura da tela
   },
   sendButtonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: screenWidth * 0.04, // 4% da largura da tela
     textAlign: "center",
+  },
+  // Estilos para modo escuro
+  containerDark: {
+    backgroundColor: "#121212",
+  },
+  chatContainerDark: {
+    backgroundColor: "#121212",
+  },
+  inputContainerDark: {
+    backgroundColor: "#1E1E1E",
+    borderTopColor: "#333",
+  },
+  inputDark: {
+    backgroundColor: "#2A2A2A",
+    borderColor: "#444",
+    color: "#fff",
   },
 });

@@ -34,7 +34,16 @@ export default function NovaSenha() {
       return;
     }
 
-  
+    Alert.alert(
+      "Sucesso!", 
+      "Sua senha foi alterada com sucesso!",
+      [
+        {
+          text: "OK",
+          onPress: () => router.push('/(tabs)/Profile')
+        }
+      ]
+    );
   };
 
   return (
@@ -73,6 +82,7 @@ export default function NovaSenha() {
           value={newPassword}
           onChangeText={setNewPassword}
           placeholder="Digite a nova senha"
+          placeholderTextColor="#999"
         />
 
         {/* Campo de Confirmação da Senha */}
@@ -82,6 +92,7 @@ export default function NovaSenha() {
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="Confirme a nova senha"
+          placeholderTextColor="#999"
         />
 
         {/* Botão de Confirmar Código */}
@@ -147,13 +158,13 @@ const styles = StyleSheet.create({
   },
 input: {
 borderRadius: 15,
-  borderWidth: 2, // Largura da borda
-  borderColor: "#A2AFBC", // Cor da borda preta
+  borderWidth: 2,
+  borderColor: "#A2AFBC", 
   paddingVertical: 15,
   paddingHorizontal: 15,
   fontSize: 16,
   marginBottom: 30,
-  color: "#000", // Cor do texto
+
 },
 
   buttonWrapper: {

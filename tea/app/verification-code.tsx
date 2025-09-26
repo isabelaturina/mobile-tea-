@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Image, 
   StyleSheet, 
@@ -21,30 +21,91 @@ import { useTheme } from '../contexts/ThemeContext';
 // Pegar as dimensões da tela
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
-export default function ForgotPassword() {
+export default function VerificationCode() {
   const router = useRouter();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
-  const [email, setEmail] = useState("");
+  
+  const [code, setCode] = useState(['', '', '', '']);
+  const inputRefs = useRef<Array<TextInput | null>>([]);
 
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^(?!\.)(?!.*\.\.)(?!.*\.$)[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    return emailRegex.test(email);
+  const handleCodeChange = (text: string, index: number) => {
+    // Remove qualquer caractere que não seja número
+    const numericText = text.replace(/[^0-9]/g, '');
+    
+    // Se o texto tem mais de 1 caractere, significa que foi colado ou digitado rapidamente
+    if (numericText.length > 1) {
+      const digits = numericText.split('').slice(0, 4);
+      const newCode = ['', '', '', ''];
+      
+      // Preenche os campos com os dígitos
+      digits.forEach((digit, i) => {
+        if (i < 4) {
+          newCode[i] = digit;
+        }
+      });
+      
+      setCode(newCode);
+      
+      // Foca no último campo preenchido ou no próximo vazio
+      const lastFilledIndex = digits.length - 1;
+      if (lastFilledIndex < 3) {
+        inputRefs.current[lastFilledIndex + 1]?.focus();
+      } else {
+        inputRefs.current[3]?.focus();
+      }
+      return;
+    }
+    
+    // Comportamento normal para um único dígito
+    const newCode = [...code];
+    newCode[index] = numericText;
+    setCode(newCode);
+
+    // Auto-avançar para o próximo campo se um número foi digitado
+    if (numericText && index < 3) {
+      inputRefs.current[index + 1]?.focus();
+    }
   };
 
-  const handleSendCode = () => {
-    if (!email) {
-      Alert.alert("Erro", "Digite seu endereço de email");
+  const handleGlobalInput = (text: string) => {
+    // Remove qualquer caractere que não seja número
+    const numericText = text.replace(/[^0-9]/g, '');
+    
+    if (numericText.length > 0) {
+      const digits = numericText.split('').slice(0, 4);
+      const newCode = ['', '', '', ''];
+      
+      // Preenche os campos com os dígitos
+      digits.forEach((digit, i) => {
+        if (i < 4) {
+          newCode[i] = digit;
+        }
+      });
+      
+      setCode(newCode);
+      
+      // Foca no último campo preenchido ou no próximo vazio
+      const lastFilledIndex = digits.length - 1;
+      if (lastFilledIndex < 3) {
+        inputRefs.current[lastFilledIndex + 1]?.focus();
+      } else {
+        inputRefs.current[3]?.focus();
+      }
+    }
+  };
+
+  const handleVerifyCode = () => {
+    const fullCode = code.join('');
+    
+    if (fullCode.length !== 4) {
+      Alert.alert("Erro", "Por favor, digite o código completo de 4 dígitos");
       return;
     }
 
-    if (!isValidEmail(email)) {
-      Alert.alert("Erro", "Digite um email válido");
-      return;
-    }
-
-    // Direciona diretamente para a tela verification-code
-    router.push('/verification-code');
+    // Aqui você pode adicionar validação do código se necessário
+    // Por enquanto, vamos direcionar diretamente para a tela de nova senha
+    router.push('/new-password');
   };
 
   return (
@@ -61,7 +122,7 @@ export default function ForgotPassword() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Botão Voltar */}
-          <Pressable onPress={() => router.push("/(tabs)/Profile")} style={styles.backButton}>
+          <Pressable onPress={() => router.back()} style={styles.backButton}>
             <Image 
               source={require('../assets/images/seta.png')} 
               style={[styles.arrowImage, isDarkMode && styles.arrowImageDark]}
@@ -72,7 +133,7 @@ export default function ForgotPassword() {
           {/* Imagem */}
           <View style={styles.imageContainer}>
             <Image 
-              source={require('../assets/images/forgot.png')} 
+              source={require('../assets/images/verification-code.png')} 
               style={styles.image}
               resizeMode="contain"
             />
@@ -80,30 +141,43 @@ export default function ForgotPassword() {
       
           {/* Título */}
           <Text style={[styles.title, isDarkMode && styles.titleDark]}>
-            Esqueceu a Senha?
+            Verificar endereços de Email
           </Text>
 
-          {/* Descrição */}
-          <Text style={[styles.description, isDarkMode && styles.descriptionDark]}>
-            Por favor escreva seu email para receber um código de confirmação 
-            para definir uma nova senha.
-          </Text>
+          {/* Campos de código */}
+          <View style={styles.codeContainer}>
+            {code.map((digit, index) => (
+              <TextInput
+                key={index}
+                ref={(ref) => {
+                  inputRefs.current[index] = ref;
+                }}
+                style={[styles.codeInput, isDarkMode && styles.codeInputDark]}
+                value={digit}
+                onChangeText={(text) => {
+                  if (index === 0) {
+                    // No primeiro campo, permite entrada de múltiplos dígitos
+                    handleGlobalInput(text);
+                  } else {
+                    // Nos outros campos, comportamento normal
+                    handleCodeChange(text, index);
+                  }
+                }}
+                keyboardType="numeric"
+                maxLength={index === 0 ? 4 : 1}
+                textAlign="center"
+                placeholderTextColor={isDarkMode ? "#aaa" : "#999"}
+                placeholder=""
+                autoFocus={index === 0}
+                selectTextOnFocus
+              />
+            ))}
+          </View>
 
-          {/* Campo de Email */}
-          <TextInput
-            style={[styles.input, isDarkMode && styles.inputDark]}
-            value={email}
-            onChangeText={setEmail}
-            placeholderTextColor={isDarkMode ? "#aaa" : "#999"}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            placeholder="Endereço de email"
-          />  
-
-          {/* Botão de Enviar Código */}
+          {/* Botão de Confirmar Código */}
           <TouchableOpacity 
             style={styles.buttonWrapper}
-            onPress={handleSendCode}
+            onPress={handleVerifyCode}
             activeOpacity={0.8}
           >
             <LinearGradient
@@ -112,7 +186,7 @@ export default function ForgotPassword() {
               end={{ x: 1, y: 0 }}
               style={styles.button}
             >
-              <Text style={styles.buttonText}>Confirmar Email</Text>
+              <Text style={styles.buttonText}>Confirmar Código</Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -134,12 +208,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: screenWidth * 0.05, // 5% da largura da tela
-    paddingTop: screenHeight * 0.05, // 5% da altura da tela
-    paddingBottom: screenHeight * 0.05, // 5% da altura da tela
+    paddingHorizontal: screenWidth * 0.05,
+    paddingTop: screenHeight * 0.05,
+    paddingBottom: screenHeight * 0.05,
   },
   arrowImage: {
-    width: 20, // Ajuste o tamanho da seta de acordo com sua preferência
+    width: 20,
     height: 20,
     tintColor: "#000000ff",
     top: 15,
@@ -154,45 +228,44 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     alignItems: 'center',
-    marginBottom: screenHeight * 0.05, // 5% da altura da tela
-    marginTop: screenHeight * 0.05, // 5% da altura da tela
+    marginBottom: screenHeight * 0.05,
+    marginTop: screenHeight * 0.05,
   },
   image: {
-    width: screenWidth * 0.8, // 80% da largura da tela
-    height: screenHeight * 0.3, // 30% da altura da tela
+    width: screenWidth * 0.8,
+    height: screenHeight * 0.3,
   },
   title: {
-    fontSize: screenWidth * 0.07, // 7% da largura da tela
+    fontSize: screenWidth * 0.06,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 15,
+    marginBottom: screenHeight * 0.04,
     color: "#000",
   },
   titleDark: {
     color: "#fff",
   },
-  description: {
-    fontSize: screenWidth * 0.04, // 4% da largura da tela
-    textAlign: "center",
-    color: "#575757",
-    marginBottom: screenHeight * 0.04, // 4% da altura da tela
-    fontWeight: "500",
+  codeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: screenHeight * 0.06,
+    paddingHorizontal: screenWidth * 0.1,
   },
-  descriptionDark: {
-    color: "#ccc",
-  },
-  input: {
+  codeInput: {
+    width: screenWidth * 0.15,
+    height: screenWidth * 0.15,
     backgroundColor: "#ffffffb8",
     borderRadius: 10,
     paddingVertical: 15,
     paddingHorizontal: 15,
-    fontSize: 16,
-    marginBottom: 20,
+    fontSize: screenWidth * 0.08,
+    fontWeight: "bold",
     color: "#000",
     borderWidth: 2,
     borderColor: "#A2AFBC",
+    textAlign: "center",
   },
-  inputDark: {
+  codeInputDark: {
     backgroundColor: "#1a1a1a",
     color: "#fff",
     borderColor: "#333",
