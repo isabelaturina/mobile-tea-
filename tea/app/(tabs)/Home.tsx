@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -130,18 +129,22 @@ export default function Home() {
         <Text style={styles.informacoesTitle}>Informações</Text>
 
         {/* Clínicas Próximas */}
-        <View style={styles.infoCard}>
-          <View style={styles.infoIconContainer}>
-            <Ionicons name="location" size={22} color="#3B82F6" />
-          </View>
-          <View style={styles.infoTextContainer}>
-            <Text style={styles.infoCardTitle}>Clínicas Próximas</Text>
-            <Text style={styles.infoCardDescription}>
-              Encontre clínicas especializadas em autismo perto de você e
-              garanta apoio profissional para sua família.
-            </Text>
-          </View>
-        </View>
+     <TouchableOpacity
+      style={styles.infoCard}
+      onPress={() => router.push('/ClinicasProximas')} // Navega para a página Home ao clicar
+      activeOpacity={0.7}
+    >
+      <View style={styles.infoIconContainer}>
+        <Ionicons name="location" size={22} color="#3B82F6" />
+      </View>
+      <View style={styles.infoTextContainer}>
+        <Text style={styles.infoCardTitle}>Clínicas Próximas</Text>
+        <Text style={styles.infoCardDescription}>
+          Encontre clínicas especializadas em autismo perto de você e
+          garanta apoio profissional para sua família.
+        </Text>
+      </View>
+    </TouchableOpacity>
 
         {/* Notícias */}
         <View style={styles.infoCard}>
@@ -171,9 +174,12 @@ export default function Home() {
               Sua assistente virtual do TEA+ pronta para acolher, orientar e
               responder dúvidas sobre o espectro autista.
             </Text>
-            <TouchableOpacity style={styles.beaButton}>
-              <Text style={styles.beaButtonText}>Converse com a Bea</Text>
-            </TouchableOpacity>
+           <TouchableOpacity
+      style={styles.beaButton}
+      onPress={() => router.push("/ChatBea")} // Linkagem para a página ChatBea
+    >
+      <Text style={styles.beaButtonText}>Converse com a Bea</Text>
+    </TouchableOpacity>
           </View>
         </View>
 

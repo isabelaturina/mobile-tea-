@@ -19,7 +19,7 @@ export default function CustomTabBar({
 }: BottomTabBarProps) {
   return (
     <LinearGradient
-      colors={["#70DEFE", "#1163E7"]}
+      colors={["#1163E7", "#1163E7"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={styles.tabBar}
