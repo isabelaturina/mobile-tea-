@@ -1,20 +1,20 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import React, { useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import SpeedDialFAB from "../components/SpeedDialFAB";
 import { useCronograma } from "../contexts/CronogramaContext";
+import "../utils/calendarLocale";
 
 interface Event {
   id: string;
@@ -22,14 +22,39 @@ interface Event {
   note: string;
   time: string;
   date: string;
+  hasAlarm?: boolean;
+  alarmTime?: string;
+  repeatAlarm?: boolean;
 }
 
 export default function Cronograma() {
   const [selectedDate, setSelectedDate] = useState("");
   const [activeTab, setActiveTab] = useState<"diario" | "eventos">("diario");
-  const { events, getEventsForDate, isLoading } = useCronograma();
+  const { events, getEventsForDate, isLoading, deleteEvent, forceDeleteEvent, refreshEvents } = useCronograma();
 
   const today = new Date().toISOString().split("T")[0];
+
+  // Recarregar eventos quando a tela for focada
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Tela de cronograma focada, recarregando eventos...');
+      refreshEvents();
+      
+      // Se não há data selecionada, seleciona hoje
+      if (!selectedDate) {
+        setSelectedDate(today);
+        console.log('Data selecionada resetada para hoje:', today);
+      }
+    }, [refreshEvents, selectedDate, today])
+  );
+
+  // Inicializar data selecionada
+  useEffect(() => {
+    if (!selectedDate) {
+      setSelectedDate(today);
+      console.log('Data inicial definida como hoje:', today);
+    }
+  }, [selectedDate, today]);
 
   const markedDates = {
     [selectedDate]: {
@@ -62,8 +87,53 @@ export default function Cronograma() {
     return getEventsForDate(selectedDate);
   };
 
+  const handleEditEvent = (event: Event) => {
+    router.push({
+      pathname: "/EditarEvento",
+      params: {
+        eventId: event.id,
+      },
+    });
+  };
+
+  const handleDeleteEvent = (eventId: string) => {
+    Alert.alert(
+      "Confirmar Exclusão",
+      "Tem certeza que deseja excluir este evento?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              console.log('Tentando excluir evento:', eventId);
+              await forceDeleteEvent(eventId);
+              console.log('Evento excluído com sucesso');
+              // Pequeno delay para garantir que a exclusão foi processada
+              setTimeout(() => {
+                Alert.alert("Sucesso", "Evento excluído com sucesso!");
+              }, 200);
+            } catch (error) {
+              console.error('Erro ao excluir evento:', error);
+              Alert.alert("Erro", "Não foi possível excluir o evento. Tente novamente.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+
   const formatDate = (dateString: string) => {
+    if (!dateString) return "Agenda";
+    
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Agenda";
+    
     const months = [
       "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
       "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
@@ -183,10 +253,24 @@ export default function Cronograma() {
                       <View style={styles.eventInfo}>
                         <Text style={styles.eventTitle}>{event.title}</Text>
                         <Text style={styles.eventNote}>{event.note}</Text>
+                        <View style={styles.eventTime}>
+                          <Ionicons name="notifications" size={16} color="#3B82F6" />
+                          <Text style={styles.eventTimeText}>{event.time}</Text>
+                        </View>
                       </View>
-                      <View style={styles.eventTime}>
-                        <Ionicons name="notifications" size={16} color="#3B82F6" />
-                        <Text style={styles.eventTimeText}>{event.time}</Text>
+                      <View style={styles.eventActions}>
+                        <TouchableOpacity 
+                          style={[styles.actionButton, styles.editButton]}
+                          onPress={() => handleEditEvent(event)}
+                        >
+                          <Ionicons name="create-outline" size={16} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={[styles.actionButton, styles.deleteButton]}
+                          onPress={() => handleDeleteEvent(event.id)}
+                        >
+                          <Ionicons name="trash-outline" size={16} color="#fff" />
+                        </TouchableOpacity>
                       </View>
                     </View>
                   ))
@@ -311,11 +395,35 @@ const styles = StyleSheet.create({
   eventNote: {
     fontSize: 14,
     color: "#666",
+    marginBottom: 8,
   },
   eventTime: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+  },
+  eventActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginLeft: 12,
+  },
+  actionButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  editButton: {
+    backgroundColor: "#3B82F6",
+  },
+  deleteButton: {
+    backgroundColor: "#EF4444",
   },
   eventTimeText: {
     fontSize: 14,

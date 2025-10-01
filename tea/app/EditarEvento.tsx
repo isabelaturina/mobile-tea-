@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import React, { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -15,15 +15,32 @@ import { Calendar } from "react-native-calendars";
 import { useCronograma } from "../contexts/CronogramaContext";
 import "../utils/calendarLocale";
 
-export default function AdicionarEvento() {
+export default function EditarEvento() {
+  const params = useLocalSearchParams();
+  const eventId = params.eventId as string;
+  
   const [selectedDate, setSelectedDate] = useState("");
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [time, setTime] = useState("08:00");
   const [showNotification, setShowNotification] = useState(false);
-  const { addEvent } = useCronograma();
+  const { updateEvent, events } = useCronograma();
 
   const today = new Date().toISOString().split("T")[0];
+
+  // Carregar dados do evento
+  useEffect(() => {
+    if (eventId) {
+      const event = events.find(e => e.id === eventId);
+      if (event) {
+        setTitle(event.title);
+        setNote(event.note);
+        setSelectedDate(event.date);
+        setTime(event.time);
+        setShowNotification(event.hasAlarm || false);
+      }
+    }
+  }, [eventId, events]);
 
   const markedDates = {
     [selectedDate]: {
@@ -40,7 +57,7 @@ export default function AdicionarEvento() {
     setSelectedDate(day.dateString);
   };
 
-  const handleAddEvent = async () => {
+  const handleUpdateEvent = async () => {
     if (!selectedDate || !title.trim()) {
       Alert.alert("Atenção", "Por favor, selecione uma data e preencha o título");
       return;
@@ -48,13 +65,13 @@ export default function AdicionarEvento() {
 
     // Verificar se a data selecionada não é no passado
     if (selectedDate < today) {
-      Alert.alert("Data Inválida", "Não é possível adicionar eventos para datas passadas. Por favor, selecione uma data atual ou futura.");
+      Alert.alert("Data Inválida", "Não é possível alterar um evento para uma data passada. Por favor, selecione uma data atual ou futura.");
       return;
     }
 
     try {
-      // Criar novo evento
-      addEvent({
+      // Atualizar evento existente
+      updateEvent(eventId, {
         title: title.trim(),
         note: note.trim(),
         date: selectedDate,
@@ -64,18 +81,21 @@ export default function AdicionarEvento() {
       
       Alert.alert(
         "Sucesso!",
-        "Evento adicionado com sucesso.",
+        "Evento atualizado com sucesso.",
         [
           {
             text: "OK",
-            onPress: () => router.back()
+            onPress: () => {
+              console.log('Voltando para cronograma após atualização...');
+              router.back();
+            }
           }
         ]
       );
     } catch (error) {
       Alert.alert(
         "Erro",
-        "Não foi possível salvar o evento. Tente novamente.",
+        "Não foi possível atualizar o evento. Tente novamente.",
         [{ text: "OK" }]
       );
     }
@@ -103,7 +123,7 @@ export default function AdicionarEvento() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Adicionar Evento</Text>
+          <Text style={styles.headerTitle}>Editar Evento</Text>
           <View style={{ width: 24 }} />
         </View>
       </LinearGradient>
@@ -219,6 +239,9 @@ export default function AdicionarEvento() {
                     title,
                     note,
                     date: selectedDate,
+                    time,
+                    editMode: "true",
+                    eventId,
                   },
                 });
               }}
@@ -236,16 +259,16 @@ export default function AdicionarEvento() {
         </View>
       </ScrollView>
 
-      {/* Botão de adicionar */}
+      {/* Botão de atualizar */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddEvent}>
+        <TouchableOpacity style={styles.addButton} onPress={handleUpdateEvent}>
           <LinearGradient
             colors={["#8B5CF6", "#3B82F6"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.addButtonGradient}
           >
-            <Text style={styles.addButtonText}>Adicionar</Text>
+            <Text style={styles.addButtonText}>Atualizar</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

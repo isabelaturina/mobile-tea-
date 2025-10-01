@@ -18,6 +18,7 @@ interface CronogramaContextType {
   addEvent: (event: Omit<Event, 'id'>) => void;
   updateEvent: (id: string, event: Partial<Event>) => void;
   deleteEvent: (id: string) => void;
+  forceDeleteEvent: (id: string) => Promise<void>;
   getEventsForDate: (date: string) => Event[];
   refreshEvents: () => Promise<void>;
 }
@@ -76,7 +77,9 @@ export function CronogramaProvider({ children }: CronogramaProviderProps) {
 
   const saveEvents = async () => {
     try {
+      console.log('Salvando eventos no AsyncStorage:', events);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+      console.log('Eventos salvos com sucesso');
     } catch (error) {
       console.error('Erro ao salvar eventos:', error);
     }
@@ -87,19 +90,43 @@ export function CronogramaProvider({ children }: CronogramaProviderProps) {
       ...eventData,
       id: Date.now().toString(),
     };
-    setEvents(prev => [...prev, newEvent]);
+    console.log('Adicionando evento:', newEvent);
+    setEvents(prev => {
+      const updated = [...prev, newEvent];
+      console.log('Lista de eventos atualizada:', updated);
+      return updated;
+    });
   };
 
   const updateEvent = (id: string, eventData: Partial<Event>) => {
-    setEvents(prev => 
-      prev.map(event => 
+    console.log('Atualizando evento:', id, eventData);
+    setEvents(prev => {
+      const updated = prev.map(event => 
         event.id === id ? { ...event, ...eventData } : event
-      )
-    );
+      );
+      console.log('Lista de eventos após atualização:', updated);
+      
+      // Salva imediatamente no AsyncStorage
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+        .then(() => console.log('Evento atualizado salvo no AsyncStorage'))
+        .catch(error => console.error('Erro ao salvar atualização:', error));
+      
+      return updated;
+    });
   };
 
   const deleteEvent = (id: string) => {
-    setEvents(prev => prev.filter(event => event.id !== id));
+    console.log('Excluindo evento com ID:', id);
+    console.log('Lista atual de eventos:', events);
+    
+    setEvents(prev => {
+      const updated = prev.filter(event => {
+        console.log('Comparando evento ID:', event.id, 'com ID para exclusão:', id);
+        return event.id !== id;
+      });
+      console.log('Lista de eventos após exclusão:', updated);
+      return updated;
+    });
   };
 
   const getEventsForDate = (date: string) => {
@@ -107,7 +134,33 @@ export function CronogramaProvider({ children }: CronogramaProviderProps) {
   };
 
   const refreshEvents = async () => {
+    console.log('Forçando refresh dos eventos...');
     await loadEvents();
+  };
+
+  const forceDeleteEvent = async (id: string) => {
+    console.log('Forçando exclusão do evento:', id);
+    try {
+      // Remove do estado atual
+      const updatedEvents = events.filter(event => event.id !== id);
+      console.log('Lista após filtro:', updatedEvents);
+      
+      // Atualiza o estado
+      setEvents(updatedEvents);
+      
+      // Salva imediatamente no AsyncStorage
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEvents));
+      console.log('Exclusão forçada concluída e salva no AsyncStorage');
+      
+      // Força um refresh para garantir consistência
+      setTimeout(() => {
+        loadEvents();
+      }, 100);
+      
+    } catch (error) {
+      console.error('Erro na exclusão forçada:', error);
+      throw error;
+    }
   };
 
   return (
@@ -118,6 +171,7 @@ export function CronogramaProvider({ children }: CronogramaProviderProps) {
         addEvent,
         updateEvent,
         deleteEvent,
+        forceDeleteEvent,
         getEventsForDate,
         refreshEvents,
       }}
