@@ -26,7 +26,8 @@ public class FirebaseConfig {
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("https://SEU-PROJETO.firebaseio.com") // Troque pelo seu project URL
+                    // Se estiver usando Firestore, você não precisa necessariamente definir databaseUrl
+                    //.setDatabaseUrl("https://SEU-PROJETO.firebaseio.com")
                     .build();
 
             if (FirebaseApp.getApps().isEmpty()) {

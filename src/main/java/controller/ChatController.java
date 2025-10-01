@@ -1,3 +1,13 @@
+package com.grupo.chat.controller;
+
+import com.grupo.chat.model.ChatMessage;
+import com.grupo.chat.service.ChatService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 @RestController
 @RequestMapping("/chat")
 @CrossOrigin(origins = "*")
@@ -9,16 +19,15 @@ public class ChatController {
         this.chatService = chatService;
     }
 
-    // Simula usuário logado, na prática você pega da sessão ou token
+    // Exemplo genérico, você deve substituir por autenticação real
     private String getLoggedUserName() {
-        return "Guizola";  // Troque aqui pela lógica real de autenticação
+        return "Usuário";
     }
 
     private String getLoggedUserId() {
-        return "1"; // Id fixo para teste, pode ser int ou string
+        return "1";
     }
 
-    // REST - Enviar mensagem (recebe só o texto)
     @PostMapping("/enviar")
     public String enviarMensagem(@RequestBody Map<String, String> payload) throws ExecutionException, InterruptedException {
         String texto = payload.get("texto");
@@ -35,11 +44,8 @@ public class ChatController {
         return chatService.salvarMensagem(mensagem);
     }
 
-    // REST - Listar mensagens
     @GetMapping("/mensagens")
     public List<ChatMessage> buscarMensagens() throws ExecutionException, InterruptedException {
         return chatService.listarMensagens();
     }
-
-    // ... o resto do controller continua igual
 }
