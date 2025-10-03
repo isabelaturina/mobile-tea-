@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter, Stack } from "expo-router"; // Importando Stack
+import { Stack, useRouter } from "expo-router"; // Importando Stack
 import React, { useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
@@ -24,17 +24,21 @@ export default function EditProfile() {
   const [phone, setPhone] = useState("");
   const [autismLevel, setAutismLevel] = useState("");
 
-  const goPrevIcon = () => {
-    router.replace('/Profile');
-  };
+const goPrevIcon = () => {
+  setSelectedIcon((prev) =>
+    prev === 0 ? profileIcons.length - 1 : prev - 1
+  );
+};
 
-  const goNextIcon = () => {
-    router.replace('/Profile');
-  };
+const goNextIcon = () => {
+  setSelectedIcon((prev) =>
+    prev === profileIcons.length - 1 ? 0 : prev + 1
+  );
+};
 
-  const handleSave = () => {
-    router.back();
-  };
+const handleSave = () => {
+  router.back();
+};
 
   return (
     <>
@@ -48,8 +52,14 @@ export default function EditProfile() {
           style={styles.headerGradient}
         >
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={26} color="#fff" />
-          </TouchableOpacity>
+  <Image
+    source={require("../assets/images/seta.png")} 
+    style={styles.backImage}
+    resizeMode="contain"
+      tintColor="#fff" 
+  />
+</TouchableOpacity>
+
 
           <Text style={styles.headerTitle}>Editar perfil</Text>
 
@@ -99,17 +109,6 @@ export default function EditProfile() {
             onChangeText={setEmail}
             keyboardType="email-address"
           />
-
-          <Text style={styles.label}>Número de celular:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="(99) 99999-9999"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            
-          />
-
           <Text style={styles.label}>Grau autismo:</Text>
           <TextInput
             style={styles.input}
@@ -137,12 +136,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     position: "relative",
   },
-  backButton: {
-    position: "absolute",
-    left: 18,
-    top: 44,
-    zIndex: 2,
-  },
+
   headerTitle: {
     color: "#fff",
     fontSize: 22,
@@ -231,8 +225,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     fontSize: 15,
     marginBottom: 10,
-   
-  
   },
   saveButton: {
     backgroundColor: "#70DEFE",
@@ -250,4 +242,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
+  backButton: {
+  position: "absolute",
+  left: 18,
+  top: 50,
+  zIndex: 2,
+  padding: 8,
+
+},
+
+backImage: {
+  width: 24,
+  height: 24,
+
+}
+
 });

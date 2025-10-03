@@ -146,19 +146,26 @@ export default function Home() {
       </View>
     </TouchableOpacity>
 
-        {/* Notícias */}
-        <View style={styles.infoCard}>
-          <View style={styles.infoIconContainer}>
-            <Ionicons name="newspaper" size={22} color="#3B82F6" />
-          </View>
-          <View style={styles.infoTextContainer}>
-            <Text style={styles.infoCardTitle}>Notícias</Text>
-            <Text style={styles.infoCardDescription}>
-              Notícias atualizadas sobre inclusão, direitos e avanços na área do
-              TEA.
-            </Text>
-          </View>
-        </View>
+     
+
+       {/* Notícias */}
+<TouchableOpacity
+  style={styles.infoCard}
+  onPress={() => router.push("/(tabs)/News")} // Linkagem para a tela de Notícias
+  activeOpacity={0.7}
+>
+  <View style={styles.infoIconContainer}>
+    <Ionicons name="newspaper" size={22} color="#3B82F6" />
+  </View>
+  <View style={styles.infoTextContainer}>
+    <Text style={styles.infoCardTitle}>Notícias</Text>
+    <Text style={styles.infoCardDescription}>
+      Notícias atualizadas sobre inclusão, direitos e avanços na área do
+      TEA.
+    </Text>
+  </View>
+</TouchableOpacity>
+
 
         {/* Bea */}
         <View style={styles.beaCard}>

@@ -2,17 +2,25 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+
+// Importa sua imagem da seta
+import setaImg from "../assets/images/seta.png";
 
 export default function ClinicasProximas() {
+  const navigation = useNavigation();
+
   const [busca, setBusca] = useState("");
   const [clinicas, setClinicas] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +41,7 @@ export default function ClinicasProximas() {
       const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
 
-      // 🔁 Simulação de chamada ao backend (substitua pela sua URL)
+      // Substitua pela sua URL real
       const response = await fetch(
         `https://suaapi.com/clinicas?lat=${latitude}&lng=${longitude}&busca=${busca}`
       );
@@ -74,7 +82,15 @@ export default function ClinicasProximas() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      {/* Botão Voltar */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Image source={setaImg} style={styles.backImage} />
+      </TouchableOpacity>
+
       <Text style={styles.titulo}>Clínicas Próximas</Text>
 
       <View style={styles.searchContainer}>
@@ -89,7 +105,13 @@ export default function ClinicasProximas() {
         </TouchableOpacity>
       </View>
 
-      {loading && <ActivityIndicator size="large" color="#3B82F6" style={{ marginTop: 20 }} />}
+      {loading && (
+        <ActivityIndicator
+          size="large"
+          color="#3B82F6"
+          style={{ marginTop: 20 }}
+        />
+      )}
 
       {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
 
@@ -105,41 +127,58 @@ export default function ClinicasProximas() {
         horizontal={false}
         showsVerticalScrollIndicator={false}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === "android" ? 30 : 0,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  backImage: {
+    width: 24,
+    height: 24,
+    tintColor: "#000", // Se quiser a seta branca, use '#fff'
+    resizeMode: "contain",
+  },
   titulo: {
     fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
-    marginVertical: 12,
+    marginBottom: 12,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 70,
   },
   input: {
-    marginTop: 50,
     flex: 1,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     marginRight: 8,
     backgroundColor: "#f1f1f1",
-    
+    marginBottom: -50,
   },
   searchButton: {
     backgroundColor: "#3B82F6",
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 8,
-    marginTop: 50,
+    marginBottom: -50,
   },
   searchButtonText: {
     color: "#fff",

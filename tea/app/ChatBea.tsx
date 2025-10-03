@@ -48,13 +48,19 @@ export default function ChatBea() {
         resizeMode="cover"
       >
         <View style={styles.headerContent}>
-          {/* Botão voltar */}
-          <TouchableOpacity
-            onPress={() => router.push("/Chat")}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={screenWidth * 0.065} color="#fff" />
-          </TouchableOpacity>
+         {/* Botão voltar */}
+<TouchableOpacity
+  onPress={() => router.push("/Chat")}
+  style={styles.backButton}
+>
+  <Image
+    source={require("../assets/images/seta.png")}
+    style={[styles.backImage, { width: screenWidth * 0.065, height: screenWidth * 0.065 }]}
+    resizeMode="contain"
+    tintColor="#ffffff"
+  />
+</TouchableOpacity>
+
 
           {/* Título centralizado */}
           <Text style={styles.headerText}>Bea</Text>
@@ -120,12 +126,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     position: "relative",
   },
-  backButton: {
-    position: "absolute",
-    left: screenWidth * 0.04, // 4% da largura da tela
-    top: "-50%",
-    transform: [{ translateY: -screenHeight * 0.016 }], // Responsivo baseado na altura
-  },
+ backButton: {
+  position: "absolute",
+  left: 16,
+  top: -50,
+  zIndex: 2,
+  padding: 8,
+},
+
+backImage: {
+  // Tamanho será definido dinamicamente via screenWidth
+  width: screenWidth * 0.065,
+  height: screenWidth * 0.065,
+},
+
   headerText: {
     fontSize: screenWidth * 0.055, // 5.5% da largura da tela
     color: "#fff",

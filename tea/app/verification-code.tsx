@@ -122,7 +122,7 @@ export default function VerificationCode() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Botão Voltar */}
-          <Pressable onPress={() => router.back()} style={styles.backButton}>
+          <Pressable onPress={() => router.push("/forgot-password")} style={styles.backButton}>
             <Image 
               source={require('../assets/images/seta.png')} 
               style={[styles.arrowImage, isDarkMode && styles.arrowImageDark]}
