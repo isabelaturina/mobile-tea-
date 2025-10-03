@@ -26,17 +26,16 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [supportLevel, setSupportLevel] = useState<SupportLevel | null>(null);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
-  const [grauAutismo, setGrauAutismo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const router = useRouter();
   const { signUp } = useUser();
+  const router = useRouter();
 
   const levels = useMemo(
     () => [
-      { label: "leve", value: "leve" as const },
-      { label: "moderado", value: "moderado" as const },
-      { label: "severo", value: "severo" as const },
+      { label: "Leve", value: "leve" as const },
+      { label: "Moderado", value: "moderado" as const },
+      { label: "Severo", value: "severo" as const },
     ],
     []
   );
@@ -48,10 +47,7 @@ export default function SignUp() {
 
   const handleSignUp = async () => {
     if (!name || !email || !password || !supportLevel) {
-      Alert.alert(
-        "Ops!",
-        "Parece que você esqueceu de preencher algum campo. Tente novamente!"
-      );
+      Alert.alert("Campos obrigatórios", "Preencha todos os campos.");
       return;
     }
 
@@ -62,47 +58,31 @@ export default function SignUp() {
     }
 
     if (password.length < 6) {
-      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
+      Alert.alert("Senha fraca", "A senha deve ter pelo menos 6 caracteres.");
       return;
     }
 
-    // Validação para aceitar apenas emails do Gmail
     const regexGmail = /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@gmail\.com$/;
     if (!regexGmail.test(email)) {
       Alert.alert(
-        "Erro",
-        "O email deve ser do Gmail, não começar com ponto e não conter dois pontos seguidos."
+        "Email inválido",
+        "Use um email válido do Gmail, sem pontos duplicados ou começando com ponto."
       );
       return;
     }
 
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Aqui enviamos os campos com os nomes iguais ao backend espera
-      const signUpSuccess = await signUp(
-        name,
-        email,
-        password,
-        supportLevel // passa o nível de suporte para o signUp do contexto
-      );
-
-      if (signUpSuccess) {
-        Alert.alert("Sucesso!", "Conta criada com sucesso! Bem-vindo ao Tea+", [
-          {
-            text: "OK",
-            onPress: () => router.replace("/(tabs)/Home" as any),
-          },
-        ]);
-        Alert.alert("Sucesso!", "Conta criada com sucesso! Bem-vindo ao Tea+", [
-          { text: "OK", onPress: () => router.replace("/(tabs)/Home" as any) },
+      const success = await signUp(name, email, password, supportLevel);
+      if (success) {
+        Alert.alert("Conta criada", "Seja bem-vindo ao Tea+!", [
+          { text: "OK", onPress: () => router.replace("/(tabs)/Home") },
         ]);
       } else {
-        Alert.alert("Erro", "Erro ao criar a conta");
+        Alert.alert("Erro", "Não foi possível criar a conta.");
       }
-    } catch (error) {
-      Alert.alert("Erro", "Ocorreu um erro ao criar a conta");
+    } catch (err) {
+      Alert.alert("Erro", "Ocorreu um erro inesperado.");
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +92,6 @@ export default function SignUp() {
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.backgroundCircle} />
@@ -124,50 +103,40 @@ export default function SignUp() {
         <Text style={styles.title}>Crie sua conta</Text>
         <TouchableOpacity onPress={() => router.push("/Login")}>
           <Text style={styles.linkText}>
-            Já possui uma conta? <Text style={styles.link}>Faça seu Login</Text>
+            Já possui uma conta?{" "}
+            <Text style={styles.link}>Faça seu Login</Text>
           </Text>
         </TouchableOpacity>
 
         <View style={styles.formContainer}>
           <TextInput
-            placeholder="Nome:"
-            placeholderTextColor="#575757"
+            placeholder="Nome"
             style={styles.input}
+            placeholderTextColor="#575757"
             value={name}
             onChangeText={setName}
           />
-
           <TextInput
-            placeholder="Email:"
-            placeholderTextColor="#575757"
+            placeholder="Email"
             style={styles.input}
-            keyboardType="email-address"
+            placeholderTextColor="#575757"
             value={email}
             onChangeText={setEmail}
+            keyboardType="email-address"
             autoCapitalize="none"
           />
-
           <View style={styles.passwordContainer}>
             <TextInput
-              placeholder="Senha:"
-              placeholderTextColor="#575757"
+              placeholder="Senha"
               style={styles.inputPassword}
-              secureTextEntry={!showPassword}
+              placeholderTextColor="#575757"
               value={password}
               onChangeText={setPassword}
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="done"
-              onSubmitEditing={handleSignUp}
+              secureTextEntry={!showPassword}
             />
-
             <TouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               style={styles.eyeButton}
-              accessibilityRole="button"
-              accessibilityLabel={
-                showPassword ? "Ocultar senha" : "Mostrar senha"
-              }
             >
               <Image
                 source={
@@ -183,8 +152,6 @@ export default function SignUp() {
           <Pressable
             onPress={() => setIsLevelModalOpen(true)}
             style={styles.dropdownTrigger}
-            accessibilityRole="button"
-            accessibilityLabel="Selecionar nível de suporte"
           >
             <Text
               style={[
@@ -208,7 +175,6 @@ export default function SignUp() {
             >
               <View style={styles.modalBackdrop} />
             </TouchableWithoutFeedback>
-
             <View style={styles.modalSheet}>
               {levels.map((item) => (
                 <Pressable
@@ -229,18 +195,16 @@ export default function SignUp() {
           </Modal>
 
           <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleSignUp}
+            style={[styles.button, isLoading && styles.buttonDisabled]}
             disabled={isLoading}
           >
             <LinearGradient
               colors={["#008BEF", "#008BEF"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.gradientButton}
+              style={styles.gradient}
             >
               <Text style={styles.buttonText}>
-                {isLoading ? "Criando Conta..." : "Criar Conta"}
+                {isLoading ? "Criando conta..." : "Criar Conta"}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -286,7 +250,6 @@ const styles = StyleSheet.create({
   link: { color: "#007AFF", fontWeight: "bold" },
   formContainer: { width: "100%", marginBottom: 16 },
 
-  // Inputs iguais à 1ª imagem
   input: {
     width: "100%",
     borderWidth: 1,
@@ -393,11 +356,16 @@ const styles = StyleSheet.create({
     left: 35,
   },
 
+  buttonDisabled: {
+    opacity: 0.6,
+  },
+
   gradient: {
     paddingVertical: 14,
     paddingHorizontal: 20,
     alignItems: "center",
   },
+
   buttonText: {
     color: "#fff",
     fontWeight: "bold",

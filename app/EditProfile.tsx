@@ -1,9 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter, Stack } from "expo-router"; // Importando Stack
-import React, { useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useRouter, Stack } from "expo-router";
+import React, { useState, useEffect } from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Alert,
+} from "react-native";
 
+// Ícones de avatar
 const profileIcons = [
   require("../assets/images/gato-icon.png"),
   require("../assets/images/panda-icon.png"),
@@ -15,25 +25,90 @@ const profileIcons = [
   require("../assets/images/blackboy-icon.png"),
 ];
 
+// ⚠️ Substitua pelo IP local do seu computador, se estiver testando em celular físico
+const API_URL = "http://localhost:8080/api/user";
+
 export default function EditProfile() {
   const router = useRouter();
+
+  // Estado dos dados
   const [selectedIcon, setSelectedIcon] = useState(0);
   const [showArrows, setShowArrows] = useState(false);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState(""); // preenchido automaticamente se possível
   const [autismLevel, setAutismLevel] = useState("");
+  const [userId, setUserId] = useState(null);
 
+  // ⚠️ Simulação: substitua por onde você estiver guardando o e-mail do usuário logado
+  const loggedEmail = "teste@email.com";
+
+  // Carrega os dados do usuário com base no e-mail
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch(`${API_URL}/email/${loggedEmail}`);
+        const data = await res.json();
+
+        if (data) {
+          setUserId(data.id);
+          setName(data.nome);
+          setEmail(data.email);
+          setAutismLevel(data.nivelSuporte || "");
+        } else {
+          console.warn("Usuário não encontrado.");
+        }
+      } catch (err) {
+        console.error("Erro ao buscar dados do usuário:", err);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Salvar alterações
+  const handleSave = async () => {
+    if (!userId) {
+      Alert.alert("Erro", "ID do usuário não encontrado.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nome: name,
+          email: email,
+          senha: "123456", // ⚠️ Placeholder — você pode ignorar ou esconder isso
+          nivelSuporte: autismLevel,
+        }),
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        console.log("✅ Usuário atualizado:", updatedUser);
+        Alert.alert("Sucesso", "Perfil atualizado com sucesso!");
+        router.back();
+      } else {
+        const errText = await response.text();
+        console.error("Erro ao atualizar:", errText);
+        Alert.alert("Erro", "Não foi possível atualizar o perfil.");
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      Alert.alert("Erro", "Ocorreu um erro ao atualizar.");
+    }
+  };
+
+  // Navegação entre ícones
   const goPrevIcon = () => {
-    router.replace('/Profile');
+    setSelectedIcon((prev) => (prev - 1 + profileIcons.length) % profileIcons.length);
   };
 
   const goNextIcon = () => {
-    router.replace('/Profile');
-  };
-
-  const handleSave = () => {
-    router.back();
+    setSelectedIcon((prev) => (prev + 1) % profileIcons.length);
   };
 
   return (
@@ -94,23 +169,13 @@ export default function EditProfile() {
           <Text style={styles.label}>E-mail:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Digite seu E-mail"
+            placeholder="Digite seu e-mail"
             value={email}
             onChangeText={setEmail}
-            keyboardType="email-address"
+            editable={false} // normalmente o email não deve ser editável
           />
 
-          <Text style={styles.label}>Número de celular:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="(99) 99999-9999"
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-            
-          />
-
-          <Text style={styles.label}>Grau autismo:</Text>
+          <Text style={styles.label}>Grau de autismo:</Text>
           <TextInput
             style={styles.input}
             placeholder="Opcional"

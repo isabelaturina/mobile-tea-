@@ -2,6 +2,7 @@ import React, { createContext, ReactNode, useContext, useState } from "react";
 import { StyleSheet } from "react-native";
 
 interface UserData {
+  id: string;
   name: string;
   email: string;
   profileImage: any;
@@ -25,9 +26,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const useUser = () => {
   const context = useContext(UserContext);
-  if (context === undefined) {
-    throw new Error("useUser must be used within a UserProvider");
-  }
+  if (!context) throw new Error("useUser must be used within a UserProvider");
   return context;
 };
 
@@ -51,16 +50,15 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!email || !password) return false;
 
-      if (!email || !password) {
-        return false;
-      }
-
+      const mockId = "123e4567-e89b-12d3-a456-426614174000";
       const userName = extractNameFromEmail(email);
 
       const mockUserData: UserData = {
+        id: mockId,
         name: userName,
-        email: email,
+        email,
         profileImage: require("../assets/images/familia 1.png"),
       };
 
@@ -81,20 +79,19 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     try {
       const response = await fetch("http://localhost:8080/api/user", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, email, senha, nivelSuporte }),
       });
 
       if (!response.ok) {
-        console.error("Erro na resposta da API:", response.status);
+        console.error("Erro da API:", response.status);
         return false;
       }
 
       const data = await response.json();
 
       const userFromApi: UserData = {
+        id: data.id,
         name: data.nome || nome,
         email: data.email || email,
         profileImage: require("../assets/images/familia 1.png"),
@@ -112,19 +109,22 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     setUserData(null);
   };
 
-  const value: UserContextType = {
-    userData,
-    setUserData,
-    isLoggedIn: userData !== null,
-    login,
-    signUp,
-    logout,
-  };
-
   return (
-    <UserContext.Provider value={value}>{children}</UserContext.Provider>
+    <UserContext.Provider
+      value={{
+        userData,
+        setUserData,
+        isLoggedIn: userData !== null,
+        login,
+        signUp,
+        logout,
+      }}
+    >
+      {children}
+    </UserContext.Provider>
   );
 };
+
 
 // Estilos (opcional)
 export const styles = StyleSheet.create({
