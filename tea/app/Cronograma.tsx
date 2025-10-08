@@ -150,17 +150,16 @@ export default function Cronograma() {
         end={{ x: 1, y: 0 }}
         style={styles.header}
       >
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>
-            {selectedDate ? formatDate(selectedDate) : "Agenda"}
-          </Text>
-          <TouchableOpacity>
-            <Ionicons name="arrow-forward" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
+      <View style={styles.headerContent}>
+  <TouchableOpacity onPress={() => router.push("../../Home")}>
+    <Ionicons name="arrow-back" size={24} color="#fff" />
+  </TouchableOpacity>
+  <Text style={styles.headerTitle}>
+    {selectedDate ? formatDate(selectedDate) : "Agenda"}
+  </Text>
+  <View style={{ width: 24 }} /> {/* Espaço vazio para manter alinhamento */}
+</View>
+
       </LinearGradient>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

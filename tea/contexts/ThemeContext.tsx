@@ -29,4 +29,5 @@ export const useTheme = () => {
     throw new Error("useTheme deve ser usado dentro do ThemeProvider");
   }
   return context;
+  
 };
