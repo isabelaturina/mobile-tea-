@@ -1,8 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Stack, useRouter } from "expo-router"; // Importando Stack
+import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const profileIcons = [
   require("../assets/images/gato-icon.png"),
@@ -15,6 +25,9 @@ const profileIcons = [
   require("../assets/images/blackboy-icon.png"),
 ];
 
+// Pegamos largura e altura da tela
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+
 export default function EditProfile() {
   const router = useRouter();
   const [selectedIcon, setSelectedIcon] = useState(0);
@@ -24,21 +37,37 @@ export default function EditProfile() {
   const [phone, setPhone] = useState("");
   const [autismLevel, setAutismLevel] = useState("");
 
-const goPrevIcon = () => {
-  setSelectedIcon((prev) =>
-    prev === 0 ? profileIcons.length - 1 : prev - 1
-  );
-};
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
 
-const goNextIcon = () => {
-  setSelectedIcon((prev) =>
-    prev === profileIcons.length - 1 ? 0 : prev + 1
-  );
-};
+  const goPrevIcon = () => {
+    setSelectedIcon((prev) =>
+      prev === 0 ? profileIcons.length - 1 : prev - 1
+    );
+  };
 
-const handleSave = () => {
-  router.back();
-};
+  const goNextIcon = () => {
+    setSelectedIcon((prev) =>
+      prev === profileIcons.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const handleSave = () => {
+    if (!name.trim() || !email.trim()) {
+      setWarningMessage("Por favor, preencha seu nome e e-mail.");
+      setShowWarning(true);
+      return;
+    }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      setWarningMessage("Digite um e-mail válido.");
+      setShowWarning(true);
+      return;
+    }
+
+    router.back();
+  };
 
   return (
     <>
@@ -51,32 +80,43 @@ const handleSave = () => {
           end={{ x: 1, y: 1 }}
           style={styles.headerGradient}
         >
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-  <Image
-    source={require("../assets/images/seta.png")} 
-    style={styles.backImage}
-    resizeMode="contain"
-      tintColor="#fff" 
-  />
-</TouchableOpacity>
-
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Image
+              source={require("../assets/images/seta.png")}
+              style={styles.backImage}
+              resizeMode="contain"
+              tintColor="#fff"
+            />
+          </TouchableOpacity>
 
           <Text style={styles.headerTitle}>Editar perfil</Text>
 
           <View style={styles.selectedIconContainer}>
             <View style={styles.avatarWrapper}>
               {showArrows && (
-                <TouchableOpacity style={styles.arrowLeft} onPress={goPrevIcon}>
+                <TouchableOpacity
+                  style={styles.arrowLeft}
+                  onPress={goPrevIcon}
+                >
                   <Ionicons name="chevron-back" size={34} color="#fff" />
                 </TouchableOpacity>
               )}
 
               <View style={styles.avatarCircle}>
-                <Image source={profileIcons[selectedIcon]} style={styles.selectedIconImage} />
+                <Image
+                  source={profileIcons[selectedIcon]}
+                  style={styles.selectedIconImage}
+                />
               </View>
 
               {showArrows && (
-                <TouchableOpacity style={styles.arrowRight} onPress={goNextIcon}>
+                <TouchableOpacity
+                  style={styles.arrowRight}
+                  onPress={goNextIcon}
+                >
                   <Ionicons name="chevron-forward" size={34} color="#fff" />
                 </TouchableOpacity>
               )}
@@ -97,6 +137,7 @@ const handleSave = () => {
           <TextInput
             style={styles.input}
             placeholder="Digite seu nome"
+            placeholderTextColor="#999"
             value={name}
             onChangeText={setName}
           />
@@ -105,6 +146,7 @@ const handleSave = () => {
           <TextInput
             style={styles.input}
             placeholder="Digite seu E-mail"
+            placeholderTextColor="#999"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -113,15 +155,45 @@ const handleSave = () => {
           <TextInput
             style={styles.input}
             placeholder="Opcional"
+            placeholderTextColor="#999"
             value={autismLevel}
             onChangeText={setAutismLevel}
           />
 
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <TouchableOpacity
+            style={[
+              styles.saveButton,
+              (!name.trim() || !email.trim()) && { opacity: 0.5 },
+            ]}
+            disabled={!name.trim() || !email.trim()}
+            onPress={handleSave}
+          >
             <Text style={styles.saveButtonText}>Salvar informações</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Modal personalizado */}
+      <Modal
+        transparent
+        visible={showWarning}
+        animationType="fade"
+        onRequestClose={() => setShowWarning(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Ionicons name="warning-outline" size={40} color="#8B5CF6" />
+            <Text style={styles.modalText}>{warningMessage}</Text>
+
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setShowWarning(false)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -164,14 +236,14 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: "#8B5CF6",
     backgroundColor: "#fff",
-    overflow: "hidden", // força a imagem a ficar dentro do círculo
+    overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
   },
   selectedIconImage: {
     width: "120%",
     height: "125%",
-    resizeMode: "contain", 
+    resizeMode: "contain",
   },
   arrowLeft: {
     position: "absolute",
@@ -243,18 +315,61 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   backButton: {
-  position: "absolute",
-  left: 18,
-  top: 50,
-  zIndex: 2,
-  padding: 8,
+    position: "absolute",
+    left: 18,
+    top: 50,
+    zIndex: 2,
+    padding: 8,
+  },
 
-},
+  backImage: {
+    width: 24,
+    height: 24,
+  },
 
-backImage: {
-  width: 24,
-  height: 24,
+  /* Estilos do Modal */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,  // Espaço nas laterais para telas pequenas
+  },
 
-}
+  modalBox: {
+    width: "100%",
+    maxWidth: 400,            // Máximo pra telas maiores, sem ser fixo absoluto
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 20,    // Padding em %, sem valor fixo grande
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 10,
+  },
 
+  modalText: {
+    fontSize: 16,
+    color: "#333",
+    textAlign: "center",
+    marginVertical: 20,
+    fontWeight: "500",
+  },
+
+  modalButton: {
+    backgroundColor: "#8B5CF6",
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 14,
+    minWidth: 120,
+    alignItems: "center",
+  },
+
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });

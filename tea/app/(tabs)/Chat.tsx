@@ -37,7 +37,7 @@ export default function Chat() {
     background: isDarkMode ? "#121212" : "#F8F9FA",
     textPrimary: isDarkMode ? "#fff" : "#333",
     textSecondary: isDarkMode ? "#ccc" : "#333",
-    cardBackground: isDarkMode ? "#1E1E1E" : "#fff",
+    cardBackground: isDarkMode ? "#1E293B" : "#fff",
     avatarBackground: isDarkMode ? "#333" : "#E3F2FD",
     subtitleColor: isDarkMode ? "#90CAF9" : "#2196F3",
   };

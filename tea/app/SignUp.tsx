@@ -1,8 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
-  Alert,
   Image,
   Modal,
   Pressable,
@@ -13,6 +12,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
+  Alert,
 } from "react-native";
 
 import { useUser } from "../contexts/UserContext";
@@ -26,11 +26,22 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [supportLevel, setSupportLevel] = useState<SupportLevel | null>(null);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
-  const [grauAutismo, setGrauAutismo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const router = useRouter();
   const { signUp } = useUser();
+
+  // ✅ Fecha o modal automaticamente após 2,5 segundos
+  useEffect(() => {
+    if (showSuccessModal) {
+      const timer = setTimeout(() => {
+        setShowSuccessModal(false);
+        router.replace("/(tabs)/Home" as any);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessModal]);
 
   const levels = useMemo(
     () => [
@@ -43,17 +54,18 @@ export default function SignUp() {
 
   const levelLabel = useMemo(() => {
     const found = levels.find((l) => l.value === supportLevel);
-    return found?.label ?? "Nível de suporte";
+    return found?.label ?? "Nível de suporte (opcional)";
   }, [levels, supportLevel]);
 
   const handleSignUp = async () => {
-    if (!name || !email || !password || !supportLevel) {
+    if (!name || !email || !password) {
       Alert.alert(
         "Ops!",
         "Parece que você esqueceu de preencher algum campo. Tente novamente!"
       );
       return;
     }
+
     const regexNome = /^[A-Za-zÀ-ÖØ-öø-ÿ ]+$/;
     if (!regexNome.test(name)) {
       Alert.alert("Nome inválido", "O nome deve conter apenas letras.");
@@ -63,7 +75,7 @@ export default function SignUp() {
       Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
       return;
     }
-    // 🔹 Validação para aceitar apenas emails do Gmail
+
     const regexGmail = /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@gmail\.com$/;
     if (!regexGmail.test(email)) {
       Alert.alert(
@@ -76,19 +88,10 @@ export default function SignUp() {
     setIsLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
       const signUpSuccess = await signUp(name, email, password);
 
       if (signUpSuccess) {
-        Alert.alert("Sucesso!", "Conta criada com sucesso! Bem-vindo ao Tea+", [
-          {
-            text: "OK",
-            onPress: () => router.replace("/(tabs)/Home" as any),
-          },
-        ]);
-        Alert.alert("Sucesso!", "Conta criada com sucesso! Bem-vindo ao Tea+", [
-          { text: "OK", onPress: () => router.replace("/(tabs)/Home" as any) },
-        ]);
+        setShowSuccessModal(true);
       } else {
         Alert.alert("Erro", "Erro ao criar a conta");
       }
@@ -237,6 +240,24 @@ export default function SignUp() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* 🔹 Modal de sucesso estilizado e automático */}
+      <Modal visible={showSuccessModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.successModal}>
+            <LinearGradient
+              colors={["#1163E7", "#00C6FF"]}
+              style={styles.modalHeader}
+            >
+              <Text style={styles.modalTitle}>Sucesso!</Text>
+            </LinearGradient>
+
+            <Text style={styles.modalMessage}>
+              Conta criada com sucesso! Bem-vindo ao Tea+
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -272,12 +293,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
     fontSize: 16,
-    fontWeight: "600"
+    fontWeight: "600",
   },
   link: { color: "#007AFF", fontWeight: "bold" },
   formContainer: { width: "100%", marginBottom: 16 },
-
-  // Inputs iguais à 1ª imagem
   input: {
     width: "100%",
     borderWidth: 1,
@@ -354,23 +373,12 @@ const styles = StyleSheet.create({
   optionItem: { paddingVertical: 13, paddingHorizontal: 16 },
   optionItemActive: { backgroundColor: "#EAF3FF" },
   optionText: { fontSize: 16, color: "#222", fontWeight: "600" },
-
   eyeIcon: {
     width: 24,
     height: 24,
     tintColor: "#7b7b7b",
     resizeMode: "contain",
   },
-
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#00C6FF",
-    borderRadius: 12,
-    marginBottom: 12,
-    overflow: "hidden",
-  },
-  picker: { width: "100%", height: 50 },
-
   button: {
     borderRadius: 15,
     marginTop: 8,
@@ -391,4 +399,34 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 18 },
   buttonDisabled: { opacity: 0.7 },
+
+  // 🔹 Estilos do modal de sucesso
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  successModal: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    overflow: "hidden",
+    elevation: 8,
+  },
+  modalHeader: {
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  modalTitle: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  modalMessage: {
+    padding: 20,
+    fontSize: 16,
+    color: "#333",
+    textAlign: "center",
+  },
 });

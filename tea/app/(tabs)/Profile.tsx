@@ -283,7 +283,7 @@ userEmail: {
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 6,
-    minHeight: 60, // altura mínima para toque fácil
+    minHeight: 60,
   },
   menuIconBox: {
     width: 32,

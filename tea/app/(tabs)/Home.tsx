@@ -13,11 +13,14 @@ import {
   View,
 } from "react-native";
 import { useUser } from "../../contexts/UserContext";
+import { useTheme } from "../../contexts/ThemeContext";
 
 const { width: screenWidth } = Dimensions.get("window");
 
 export default function Home() {
   const { userData } = useUser();
+  const { theme } = useTheme(); // ✅ lê o tema global
+  const isDarkMode = theme === "dark";
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   const featureCards = [
@@ -48,30 +51,51 @@ export default function Home() {
     },
   ];
 
+  // 🎨 Define cores com base no tema
+  const colors = isDarkMode
+    ? {
+        background: "#000000ff",
+        textPrimary: "#F8FAFC",
+        textSecondary: "#94A3B8",
+        card: "#1E293B",
+        accent: "#3B82F6",
+        lightAccent: "#60A5FA",
+        iconBg: "#334155",
+      }
+    : {
+        background: "#F9FAFB",
+        textPrimary: "#111",
+        textSecondary: "#555",
+        card: "#FFFFFF",
+        accent: "#3B82F6",
+        lightAccent: "#70DEFE",
+        iconBg: "#E0F2FF",
+      };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <LinearGradient
-        colors={["#3B82F6", "#2563EB"]}
+        colors={[colors.accent, colors.lightAccent]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={styles.header}
       >
         <View style={styles.headerContent}>
-          <Text style={styles.welcomeTitle}>
-            Bem Vindo{" "}
-            <Text style={styles.userName}>
-              {userData?.name || "Alex"}!
+          <Text style={[styles.welcomeTitle, { color: "#fff" }]}>
+            Bem-vindo{" "}
+            <Text style={{ color: "#E0F2FF" }}>
+              {userData?.name || "Usuário"}!
             </Text>
           </Text>
-          <Text style={styles.headerSubtitle}>
+          <Text style={[styles.headerSubtitle, { color: "#E0E7FF" }]}>
             Conecte-se com outras famílias e encontre apoio no dia a dia.
           </Text>
         </View>
       </LinearGradient>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Carrossel de Cards Principais */}
+        {/* Carrossel */}
         <View style={styles.carouselContainer}>
           <FlatList
             data={featureCards}
@@ -86,7 +110,12 @@ export default function Home() {
             }}
             renderItem={({ item }) => (
               <View style={styles.carouselCard}>
-                <View style={styles.cardContent}>
+                <View
+                  style={[
+                    styles.cardContent,
+                    { backgroundColor: colors.card },
+                  ]}
+                >
                   <View style={styles.cardImageContainer}>
                     <Image
                       source={item.image}
@@ -94,12 +123,24 @@ export default function Home() {
                       resizeMode="contain"
                     />
                   </View>
-                  <Text style={styles.cardTitle}>{item.title}</Text>
-                  <Text style={styles.cardDescription}>
+                  <Text
+                    style={[styles.cardTitle, { color: colors.textPrimary }]}
+                  >
+                    {item.title}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.cardDescription,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
                     {item.description}
                   </Text>
                   <TouchableOpacity
-                    style={styles.cardButton}
+                    style={[
+                      styles.cardButton,
+                      { backgroundColor: colors.accent },
+                    ]}
                     onPress={item.onPress}
                   >
                     <Text style={styles.cardButtonText}>
@@ -111,14 +152,19 @@ export default function Home() {
             )}
             keyExtractor={(item) => item.id.toString()}
           />
-          {/* Indicadores */}
+
           <View style={styles.paginationContainer}>
             {featureCards.map((_, index) => (
               <View
                 key={index}
                 style={[
                   styles.paginationDot,
-                  index === currentCardIndex && styles.paginationDotActive,
+                  {
+                    backgroundColor:
+                      index === currentCardIndex
+                        ? colors.accent
+                        : "#cbd5e1",
+                  },
                 ]}
               />
             ))}
@@ -126,84 +172,127 @@ export default function Home() {
         </View>
 
         {/* Informações */}
-        <Text style={styles.informacoesTitle}>Informações</Text>
+        <Text style={[styles.informacoesTitle, { color: colors.textPrimary }]}>
+          Informações
+        </Text>
 
         {/* Clínicas Próximas */}
-     <TouchableOpacity
-      style={styles.infoCard}
-      onPress={() => router.push('/ClinicasProximas')} // Navega para a página Home ao clicar
-      activeOpacity={0.7}
-    >
-      <View style={styles.infoIconContainer}>
-        <Ionicons name="location" size={22} color="#3B82F6" />
-      </View>
-      <View style={styles.infoTextContainer}>
-        <Text style={styles.infoCardTitle}>Clínicas Próximas</Text>
-        <Text style={styles.infoCardDescription}>
-          Encontre clínicas especializadas em autismo perto de você e
-          garanta apoio profissional para sua família.
-        </Text>
-      </View>
-    </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.infoCard, { backgroundColor: colors.card }]}
+          onPress={() => router.push("/ClinicasProximas")}
+          activeOpacity={0.7}
+        >
+          <View
+            style={[
+              styles.infoIconContainer,
+              { backgroundColor: colors.iconBg },
+            ]}
+          >
+            <Ionicons name="location" size={22} color={colors.accent} />
+          </View>
+          <View style={styles.infoTextContainer}>
+            <Text
+              style={[styles.infoCardTitle, { color: colors.textPrimary }]}
+            >
+              Clínicas Próximas
+            </Text>
+            <Text
+              style={[
+                styles.infoCardDescription,
+                { color: colors.textSecondary },
+              ]}
+            >
+              Encontre clínicas especializadas em autismo perto de você e garanta
+              apoio profissional.
+            </Text>
+          </View>
+        </TouchableOpacity>
 
-     
-
-       {/* Notícias */}
-<TouchableOpacity
-  style={styles.infoCard}
-  onPress={() => router.push("/(tabs)/News")} // Linkagem para a tela de Notícias
-  activeOpacity={0.7}
->
-  <View style={styles.infoIconContainer}>
-    <Ionicons name="newspaper" size={22} color="#3B82F6" />
-  </View>
-  <View style={styles.infoTextContainer}>
-    <Text style={styles.infoCardTitle}>Notícias</Text>
-    <Text style={styles.infoCardDescription}>
-      Notícias atualizadas sobre inclusão, direitos e avanços na área do
-      TEA.
-    </Text>
-  </View>
-</TouchableOpacity>
-
+        {/* Notícias */}
+        <TouchableOpacity
+          style={[styles.infoCard, { backgroundColor: colors.card }]}
+          onPress={() => router.push("/(tabs)/News")}
+          activeOpacity={0.7}
+        >
+          <View
+            style={[
+              styles.infoIconContainer,
+              { backgroundColor: colors.iconBg },
+            ]}
+          >
+            <Ionicons name="newspaper" size={22} color={colors.accent} />
+          </View>
+          <View style={styles.infoTextContainer}>
+            <Text
+              style={[styles.infoCardTitle, { color: colors.textPrimary }]}
+            >
+              Notícias
+            </Text>
+            <Text
+              style={[
+                styles.infoCardDescription,
+                { color: colors.textSecondary },
+              ]}
+            >
+              Notícias atualizadas sobre inclusão, direitos e avanços na área do
+              TEA.
+            </Text>
+          </View>
+        </TouchableOpacity>
 
         {/* Bea */}
-        <View style={styles.beaCard}>
+        <View style={[styles.beaCard, { backgroundColor: colors.card }]}>
           <Image
             source={require("../../assets/images/bea.png")}
             style={styles.beaImage}
           />
           <View style={styles.beaTextContainer}>
-            <Text style={styles.beaTitle}>
-              Conheça a <Text style={styles.beaName}>Bea</Text>
+            <Text style={[styles.beaTitle, { color: colors.textPrimary }]}>
+              Conheça a <Text style={{ color: colors.accent }}>Bea</Text>
             </Text>
-            <Text style={styles.beaDescription}>
+            <Text
+              style={[styles.beaDescription, { color: colors.textSecondary }]}
+            >
               Sua assistente virtual do TEA+ pronta para acolher, orientar e
               responder dúvidas sobre o espectro autista.
             </Text>
-           <TouchableOpacity
-      style={styles.beaButton}
-      onPress={() => router.push("/ChatBea")} // Linkagem para a página ChatBea
-    >
-      <Text style={styles.beaButtonText}>Converse com a Bea</Text>
-    </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.beaButton, { backgroundColor: colors.accent }]}
+              onPress={() => router.push("/ChatBea")}
+            >
+              <Text style={styles.beaButtonText}>Converse com a Bea</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Autismo */}
-        <View style={styles.autismCard}>
-          <View style={styles.autismIconContainer}>
+        <View style={[styles.autismCard, { backgroundColor: colors.card }]}>
+          <View
+            style={[
+              styles.autismIconContainer,
+              { backgroundColor: colors.iconBg },
+            ]}
+          >
             <Text style={styles.brainIcon}>🧠</Text>
           </View>
           <View style={styles.autismTextContainer}>
-            <Text style={styles.autismTitle}>
+            <Text
+              style={[styles.autismTitle, { color: colors.textPrimary }]}
+            >
               Quer saber mais sobre o autismo?
             </Text>
-            <Text style={styles.autismDescription}>
+            <Text
+              style={[
+                styles.autismDescription,
+                { color: colors.textSecondary },
+              ]}
+            >
               Se você está usando o TeaMais e ainda não conhece muito sobre o
               tema, clique abaixo e acesse nosso site.
             </Text>
-            <TouchableOpacity style={styles.autismButton}>
+            <TouchableOpacity
+              style={[styles.autismButton, { backgroundColor: colors.accent }]}
+            >
               <Text style={styles.autismButtonText}>Clique Aqui</Text>
             </TouchableOpacity>
           </View>
@@ -214,9 +303,7 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F9FAFB" },
-
-  // === Header ===
+  container: { flex: 1 },
   header: {
     paddingTop: 60,
     paddingBottom: 40,
@@ -228,29 +315,17 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 6,
     textAlign: "center",
   },
-  userName: { color: "#70DEFE" },
   headerSubtitle: {
     fontSize: 15,
-    color: "#E0E7FF",
     textAlign: "center",
     lineHeight: 20,
   },
-
-  // === Conteúdo ===
   content: { flex: 1, paddingHorizontal: 20, paddingTop: 20 },
-
-  // === Carrossel ===
   carouselContainer: { marginBottom: 24 },
-  carouselCard: {
-    width: screenWidth - 60,
-    marginHorizontal: 10,
-  },
+  carouselCard: { width: screenWidth - 60, marginHorizontal: 10 },
   cardContent: {
-    backgroundColor: "#fff",
     borderRadius: 20,
     padding: 20,
     alignItems: "center",
@@ -268,21 +343,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   cardImage: { width: 100, height: 100 },
-  cardTitle: {
-    fontSize: 17,
-    fontWeight: "bold",
-    color: "#111",
-    textAlign: "center",
-  },
+  cardTitle: { fontSize: 17, fontWeight: "bold", textAlign: "center" },
   cardDescription: {
     fontSize: 14,
-    color: "#555",
     textAlign: "center",
     marginBottom: 12,
     lineHeight: 20,
   },
   cardButton: {
-    backgroundColor: "#3B82F6",
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -302,47 +370,27 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#d1d5db",
     marginHorizontal: 4,
   },
-  paginationDotActive: { backgroundColor: "#3B82F6", width: 20 },
-
-  // === Informações ===
-  informacoesTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#111",
-    marginBottom: 12,
-  },
+  informacoesTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
   infoCard: {
-    backgroundColor: "#F1F8FF",
     borderRadius: 16,
     padding: 14,
     marginBottom: 14,
     flexDirection: "row",
-    alignItems: "flex-start",
   },
   infoIconContainer: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: "#E0F2FF",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
   },
   infoTextContainer: { flex: 1 },
-  infoCardTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#111",
-    marginBottom: 4,
-  },
-  infoCardDescription: { fontSize: 13, color: "#555", lineHeight: 18 },
-
-  // === Bea ===
+  infoCardTitle: { fontSize: 15, fontWeight: "bold" },
+  infoCardDescription: { fontSize: 13, lineHeight: 18 },
   beaCard: {
-    backgroundColor: "#F1F8FF",
     borderRadius: 16,
     padding: 14,
     marginBottom: 14,
@@ -351,21 +399,16 @@ const styles = StyleSheet.create({
   },
   beaImage: { width: 60, height: 120, marginRight: 12 },
   beaTextContainer: { flex: 1 },
-  beaTitle: { fontSize: 15, fontWeight: "bold", color: "#111" },
-  beaName: { color: "#3B82F6" },
-  beaDescription: { fontSize: 13, color: "#555", marginVertical: 8 },
+  beaTitle: { fontSize: 15, fontWeight: "bold" },
+  beaDescription: { fontSize: 13, marginVertical: 8 },
   beaButton: {
-    backgroundColor: "#3B82F6",
     borderRadius: 12,
     paddingVertical: 8,
     paddingHorizontal: 14,
     alignSelf: "flex-start",
   },
   beaButtonText: { color: "#fff", fontWeight: "bold", fontSize: 13 },
-
-  // === Autismo ===
   autismCard: {
-    backgroundColor: "#F1F8FF",
     borderRadius: 16,
     padding: 14,
     marginBottom: 30,
@@ -376,22 +419,15 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: "#E0F2FF",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
   },
   brainIcon: { fontSize: 24 },
   autismTextContainer: { flex: 1 },
-  autismTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#111",
-    marginBottom: 4,
-  },
-  autismDescription: { fontSize: 13, color: "#555", marginBottom: 10 },
+  autismTitle: { fontSize: 15, fontWeight: "bold", marginBottom: 4 },
+  autismDescription: { fontSize: 13, marginBottom: 10 },
   autismButton: {
-    backgroundColor: "#3B82F6",
     borderRadius: 12,
     paddingVertical: 8,
     paddingHorizontal: 14,
