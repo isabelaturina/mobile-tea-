@@ -1,20 +1,19 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { 
-  Image, 
-  StyleSheet, 
-  Text, 
-  TouchableOpacity, 
-  View, 
-  ScrollView, 
-  Dimensions, 
-  StatusBar,
-  Platform,
-  KeyboardAvoidingView,
-  Pressable,
+import {
   Alert,
-  TextInput
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 

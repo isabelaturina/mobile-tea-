@@ -1,4 +1,3 @@
-// app/_layout.tsx
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -9,7 +8,6 @@ import { KeyboardAvoidingView, Platform } from 'react-native';
 import { CronogramaProvider } from '../contexts/CronogramaContext';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { UserProvider } from '../contexts/UserContext';
-
 
 // Componente para passar o tema certo para o React Navigation
 function NavigationThemeWrapper({ children }: { children: React.ReactNode }) {

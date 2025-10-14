@@ -1,4 +1,3 @@
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -11,12 +10,40 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from "../contexts/ThemeContext";
 
 export default function NovaSenha() {
   const router = useRouter();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
+
+  // 🎨 Define cores com base no tema
+  const colors = isDarkMode
+    ? {
+        background: "#000000",
+        textPrimary: "#F8FAFC",
+        textSecondary: "#94A3B8",
+        card: "#1E293B",
+        accent: "#1163E7", // botão azul fixo
+        border: "#334155",
+        placeholder: "#64748B",
+        successBg: "#065F46",
+        successBorder: "#10B981",
+        successText: "#D1FAE5",
+      }
+    : {
+        background: "#fff",
+        textPrimary: "#111",
+        textSecondary: "#575757",
+        card: "#fff",
+        accent: "#1163E7", // botão azul fixo
+        border: "#A2AFBC",
+        placeholder: "#999",
+        successBg: "#D1FADF",
+        successBorder: "#12B76A",
+        successText: "#027A48",
+      };
+
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [successMessage, setSuccessMessage] = useState(false);
@@ -42,23 +69,27 @@ export default function NovaSenha() {
   };
 
   const showError = (message: string) => {
-   
     alert(message);
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <View style={styles.innerContainer}>
-        {/* Botão de Voltar com a seta */}
-        <Pressable onPress={() => router.replace("/(tabs)/Profile")} style={styles.backButton}>
-            <Image 
-              source={require('../assets/images/seta.png')} 
-              style={[styles.arrowImage, isDarkMode && styles.arrowImageDark]}
-              resizeMode="contain"
-            />
-          </Pressable>
+        {/* Botão de Voltar */}
+        <Pressable
+          onPress={() => router.replace("/(tabs)/Profile")}
+          style={styles.backButton}
+        >
+          <Image
+            source={require("../assets/images/seta.png")}
+            style={[styles.arrowImage, { tintColor: colors.textPrimary }]}
+            resizeMode="contain"
+          />
+        </Pressable>
 
-        {/* Imagem "New Password" */}
+        {/* Imagem "Nova Senha" */}
         <View style={styles.imageContainer}>
           <Image
             source={require("../assets/images/new-password.png")}
@@ -68,53 +99,75 @@ export default function NovaSenha() {
         </View>
 
         {/* Título */}
-        <Text style={styles.title}>Nova Senha</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          Nova Senha
+        </Text>
 
         {/* Descrição */}
-        <Text style={styles.description}>
+        <Text style={[styles.description, { color: colors.textSecondary }]}>
           Por favor, escreva sua nova senha.
         </Text>
 
-        {/* Campo de Nova Senha */}
+        {/* Campo Nova Senha */}
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.textPrimary,
+            },
+          ]}
           secureTextEntry
           value={newPassword}
           onChangeText={setNewPassword}
           placeholder="Digite a nova senha"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
         />
 
-        {/* Campo de Confirmação da Senha */}
+        {/* Campo Confirmar Senha */}
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.textPrimary,
+            },
+          ]}
           secureTextEntry
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="Confirme a nova senha"
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.placeholder}
         />
 
-        {/* Botão de Confirmar Código */}
+        {/* Botão Confirmar */}
         <TouchableOpacity
-          style={styles.buttonWrapper}
+          style={[styles.button, { backgroundColor: "#1163E7" }]}
           onPress={handleSavePassword}
           activeOpacity={0.8}
         >
-          <LinearGradient
-            colors={["#1163E7", "#1163E7"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>Confirmar Código</Text>
-          </LinearGradient>
+          <Text style={styles.buttonText}>Confirmar Código</Text>
         </TouchableOpacity>
 
-        {/* Mensagem de sucesso estilizada */}
+        {/* Mensagem de sucesso */}
         {successMessage && (
-          <View style={styles.successMessageBox}>
-            <Text style={styles.successMessageText}>
+          <View
+            style={[
+              styles.successMessageBox,
+              {
+                backgroundColor: colors.successBg,
+                borderColor: colors.successBorder,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.successMessageText,
+                { color: colors.successText },
+              ]}
+            >
               ✅ Senha alterada com sucesso!
             </Text>
           </View>
@@ -127,7 +180,6 @@ export default function NovaSenha() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     paddingHorizontal: 24,
   },
   innerContainer: {
@@ -139,21 +191,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     cursor: "pointer",
     top: 40,
-    zIndex: 10, // Adicione esta linha
-  },
-  backImage: {
-    width: 20,
-    height: 20,
+    zIndex: 10,
   },
   arrowImage: {
     width: 20,
     height: 20,
-    tintColor: "#000000ff",
     top: 15,
     left: 8,
-  },
-    arrowImageDark: {
-    tintColor: "#70DEFE",
   },
   imageContainer: {
     alignItems: "center",
@@ -172,33 +216,28 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 15,
     textAlign: "center",
-    color: "#575757",
     bottom: 20,
     fontWeight: "500",
   },
   input: {
     borderRadius: 15,
     borderWidth: 2,
-    borderColor: "#A2AFBC",
     paddingVertical: 15,
     paddingHorizontal: 15,
     fontSize: 16,
     marginBottom: 30,
   },
-  buttonWrapper: {
+  button: {
     borderRadius: 15,
-    overflow: "hidden",
     alignSelf: "center",
     width: "70%",
     marginTop: 30,
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  button: {
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   buttonText: {
     color: "#fff",
@@ -206,8 +245,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
   successMessageBox: {
-    backgroundColor: "#D1FADF",
-    borderColor: "#12B76A",
     borderWidth: 1,
     padding: 15,
     borderRadius: 12,
@@ -216,7 +253,6 @@ const styles = StyleSheet.create({
     width: "90%",
   },
   successMessageText: {
-    color: "#027A48",
     fontSize: 16,
     textAlign: "center",
     fontWeight: "600",

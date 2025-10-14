@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import * as Location from "expo-location";
 import React, { useState } from "react";
 import {
@@ -13,13 +14,40 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../contexts/ThemeContext";
 
 // Importa sua imagem da seta
 import setaImg from "../assets/images/seta.png";
 
 export default function ClinicasProximas() {
   const navigation = useNavigation();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+
+  // 🎨 Define cores com base no tema
+  const colors = isDarkMode
+    ? {
+        background: "#000000",
+        textPrimary: "#F8FAFC",
+        textSecondary: "#94A3B8",
+        card: "#1E293B",
+        accent: "#3B82F6",
+        lightAccent: "#60A5FA",
+        border: "#334155",
+        placeholder: "#64748B",
+        cardLight: "#334155",
+      }
+    : {
+        background: "#fff",
+        textPrimary: "#111",
+        textSecondary: "#555",
+        card: "#FFFFFF",
+        accent: "#3B82F6",
+        lightAccent: "#70DEFE",
+        border: "#E5E7EB",
+        placeholder: "#999",
+        cardLight: "#F1F8FF",
+      };
 
   const [busca, setBusca] = useState("");
   const [clinicas, setClinicas] = useState([]);
@@ -57,50 +85,51 @@ export default function ClinicasProximas() {
   };
 
   const renderItem = ({ item }: any) => (
-    <View style={styles.card}>
-      <Text style={styles.nome}>{item.nome}</Text>
+    <View style={[styles.card, { backgroundColor: colors.cardLight }]}>
+      <Text style={[styles.nome, { color: colors.textPrimary }]}>{item.nome}</Text>
       <Image
         source={{ uri: item.imagemUrl }}
         style={styles.imagem}
         resizeMode="cover"
       />
       <View style={styles.info}>
-        <Ionicons name="location" size={16} color="#333" />
-        <Text style={styles.texto}>{item.endereco}</Text>
+        <Ionicons name="location" size={16} color={colors.textSecondary} />
+        <Text style={[styles.texto, { color: colors.textSecondary }]}>{item.endereco}</Text>
       </View>
       <View style={styles.info}>
-        <Ionicons name="time" size={16} color="#333" />
-        <Text style={styles.texto}>{item.horario}</Text>
+        <Ionicons name="time" size={16} color={colors.textSecondary} />
+        <Text style={[styles.texto, { color: colors.textSecondary }]}>{item.horario}</Text>
       </View>
-      <Text style={styles.especialidade}>
+      <Text style={[styles.especialidade, { color: colors.textSecondary }]}>
         Especialidade: {item.especialidade}
       </Text>
-      <TouchableOpacity style={styles.botao}>
+      <TouchableOpacity style={[styles.botao, { backgroundColor: colors.accent }]}>
         <Text style={styles.botaoTexto}>Saiba Mais</Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Botão Voltar */}
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
       >
-        <Image source={setaImg} style={styles.backImage} />
+        <Image source={setaImg} style={[styles.backImage, { tintColor: colors.textPrimary }]} />
       </TouchableOpacity>
 
-      <Text style={styles.titulo}>Clínicas Próximas</Text>
+      <Text style={[styles.titulo, { color: colors.textPrimary }]}>Clínicas Próximas</Text>
 
       <View style={styles.searchContainer}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
           placeholder="Busque por clínicas próximas a você"
+          placeholderTextColor={colors.placeholder}
           value={busca}
           onChangeText={setBusca}
         />
-        <TouchableOpacity style={styles.searchButton} onPress={buscarClinicas}>
+        <TouchableOpacity style={[styles.searchButton, { backgroundColor: colors.accent }]} onPress={buscarClinicas}>
           <Text style={styles.searchButtonText}>Clique Aqui</Text>
         </TouchableOpacity>
       </View>
@@ -108,15 +137,15 @@ export default function ClinicasProximas() {
       {loading && (
         <ActivityIndicator
           size="large"
-          color="#3B82F6"
+          color={colors.accent}
           style={{ marginTop: 20 }}
         />
       )}
 
-      {erro !== "" && <Text style={styles.erro}>{erro}</Text>}
+      {erro !== "" && <Text style={[styles.erro, { color: "#EF4444" }]}>{erro}</Text>}
 
       {!loading && clinicas.length === 0 && erro === "" && (
-        <Text style={styles.vazio}>Nenhuma clínica encontrada.</Text>
+        <Text style={[styles.vazio, { color: colors.textSecondary }]}>Nenhuma clínica encontrada.</Text>
       )}
 
       <FlatList
@@ -134,7 +163,6 @@ export default function ClinicasProximas() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     paddingHorizontal: 16,
     paddingTop: Platform.OS === "android" ? 30 : 0,
   },
@@ -148,7 +176,6 @@ const styles = StyleSheet.create({
   backImage: {
     width: 24,
     height: 24,
-    tintColor: "#000", // Se quiser a seta branca, use '#fff'
     resizeMode: "contain",
   },
   titulo: {
@@ -165,16 +192,13 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginRight: 8,
-    backgroundColor: "#f1f1f1",
     marginBottom: -50,
   },
   searchButton: {
-    backgroundColor: "#3B82F6",
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 8,
@@ -186,7 +210,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   card: {
-    backgroundColor: "#F1F8FF",
     borderRadius: 16,
     padding: 14,
     marginBottom: 16,
@@ -214,16 +237,13 @@ const styles = StyleSheet.create({
   texto: {
     marginLeft: 6,
     fontSize: 13,
-    color: "#333",
   },
   especialidade: {
     marginTop: 6,
     fontSize: 13,
-    color: "#555",
   },
   botao: {
     marginTop: 10,
-    backgroundColor: "#1D4ED8",
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: "center",
@@ -233,13 +253,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   erro: {
-    color: "red",
     textAlign: "center",
     marginTop: 10,
   },
   vazio: {
     textAlign: "center",
-    color: "#999",
     marginTop: 20,
   },
   lista: {

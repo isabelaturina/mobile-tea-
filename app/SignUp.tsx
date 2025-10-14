@@ -1,7 +1,8 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Image,
   Modal,
   Pressable,
@@ -12,9 +13,9 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
-  Alert,
 } from "react-native";
 
+import { useTheme } from "../contexts/ThemeContext";
 import { useUser } from "../contexts/UserContext";
 
 type SupportLevel = "leve" | "moderado" | "severo";
@@ -31,6 +32,35 @@ export default function SignUp() {
 
   const router = useRouter();
   const { signUp } = useUser();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+
+  // 🎨 Define cores com base no tema
+  const colors = isDarkMode
+    ? {
+        background: "#000000",
+        textPrimary: "#F8FAFC",
+        textSecondary: "#94A3B8",
+        card: "#1E293B",
+        accent: "#3B82F6",
+        lightAccent: "#60A5FA",
+        border: "#334155",
+        placeholder: "#64748B",
+        circle: "#1E293B",
+        modal: "#1E293B",
+      }
+    : {
+        background: "#fff",
+        textPrimary: "#222",
+        textSecondary: "#7b7b7bff",
+        card: "#fff",
+        accent: "#1163E7",
+        lightAccent: "#00C6FF",
+        border: "#00C6FF",
+        placeholder: "#575757",
+        circle: "#E0F2FF",
+        modal: "#fff",
+      };
 
   // ✅ Fecha o modal automaticamente após 2,5 segundos
   useEffect(() => {
@@ -103,38 +133,38 @@ export default function SignUp() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.backgroundCircle} />
+        <View style={[styles.backgroundCircle, { backgroundColor: colors.circle }]} />
         <Image
           source={require("../assets/images/logo tea.png")}
           style={styles.image}
         />
 
-        <Text style={styles.title}>Crie sua conta</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>Crie sua conta</Text>
         <TouchableOpacity onPress={() => router.push("/Login")}>
-          <Text style={styles.linkText}>
-            Já possui uma conta? <Text style={styles.link}>Faça seu Login</Text>
+          <Text style={[styles.linkText, { color: colors.textSecondary }]}>
+            Já possui uma conta? <Text style={[styles.link, { color: colors.accent }]}>Faça seu Login</Text>
           </Text>
         </TouchableOpacity>
 
         <View style={styles.formContainer}>
           <TextInput
             placeholder="Nome:"
-            placeholderTextColor="#575757"
-            style={styles.input}
+            placeholderTextColor={colors.placeholder}
+            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
             value={name}
             onChangeText={setName}
           />
 
           <TextInput
             placeholder="Email:"
-            placeholderTextColor="#575757"
-            style={styles.input}
+            placeholderTextColor={colors.placeholder}
+            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
@@ -144,8 +174,8 @@ export default function SignUp() {
           <View style={styles.passwordContainer}>
             <TextInput
               placeholder="Senha:"
-              placeholderTextColor="#575757"
-              style={styles.inputPassword}
+              placeholderTextColor={colors.placeholder}
+              style={[styles.inputPassword, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
               secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
@@ -176,19 +206,19 @@ export default function SignUp() {
 
           <Pressable
             onPress={() => setIsLevelModalOpen(true)}
-            style={styles.dropdownTrigger}
+            style={[styles.dropdownTrigger, { backgroundColor: colors.card, borderColor: colors.border }]}
             accessibilityRole="button"
             accessibilityLabel="Selecionar nível de suporte"
           >
             <Text
               style={[
                 styles.dropdownText,
-                !supportLevel && { color: "#575757" },
+                { color: supportLevel ? colors.textPrimary : colors.placeholder },
               ]}
             >
               {levelLabel}
             </Text>
-            <Text style={styles.dropdownCaret}>▾</Text>
+            <Text style={[styles.dropdownCaret, { color: colors.textPrimary }]}>▾</Text>
           </Pressable>
 
           <Modal
@@ -203,7 +233,7 @@ export default function SignUp() {
               <View style={styles.modalBackdrop} />
             </TouchableWithoutFeedback>
 
-            <View style={styles.modalSheet}>
+            <View style={[styles.modalSheet, { backgroundColor: colors.modal }]}>
               {levels.map((item) => (
                 <Pressable
                   key={item.value}
@@ -213,10 +243,10 @@ export default function SignUp() {
                   }}
                   style={[
                     styles.optionItem,
-                    supportLevel === item.value && styles.optionItemActive,
+                    supportLevel === item.value && { backgroundColor: colors.accent + '20' },
                   ]}
                 >
-                  <Text style={styles.optionText}>{item.label}</Text>
+                  <Text style={[styles.optionText, { color: colors.textPrimary }]}>{item.label}</Text>
                 </Pressable>
               ))}
             </View>
@@ -228,7 +258,7 @@ export default function SignUp() {
             disabled={isLoading}
           >
             <LinearGradient
-              colors={["#1163E7", "#1163E7"]}
+              colors={[colors.accent, colors.lightAccent]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientButton}
@@ -244,15 +274,15 @@ export default function SignUp() {
       {/* 🔹 Modal de sucesso estilizado e automático */}
       <Modal visible={showSuccessModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.successModal}>
+          <View style={[styles.successModal, { backgroundColor: colors.modal }]}>
             <LinearGradient
-              colors={["#1163E7", "#00C6FF"]}
+              colors={[colors.accent, colors.lightAccent]}
               style={styles.modalHeader}
             >
               <Text style={styles.modalTitle}>Sucesso!</Text>
             </LinearGradient>
 
-            <Text style={styles.modalMessage}>
+            <Text style={[styles.modalMessage, { color: colors.textPrimary }]}>
               Conta criada com sucesso! Bem-vindo ao Tea+
             </Text>
           </View>
@@ -263,7 +293,7 @@ export default function SignUp() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1 },
   scrollContainer: {
     flexGrow: 1,
     alignItems: "center",
@@ -277,7 +307,6 @@ const styles = StyleSheet.create({
     width: 500,
     height: 500,
     borderRadius: 250,
-    backgroundColor: "#E0F2FF",
     zIndex: -1,
   },
   image: { width: 200, height: 200, marginBottom: 16, resizeMode: "contain" },
@@ -285,28 +314,24 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 14,
-    color: "#222",
     textAlign: "center",
   },
   linkText: {
-    color: "#7b7b7bff",
     marginBottom: 16,
     textAlign: "center",
     fontSize: 16,
     fontWeight: "600",
   },
-  link: { color: "#007AFF", fontWeight: "bold" },
+  link: { fontWeight: "bold" },
   formContainer: { width: "100%", marginBottom: 16 },
   input: {
     width: "100%",
     borderWidth: 1,
-    borderColor: "#00C6FF",
     borderRadius: 56,
     padding: 12,
     marginBottom: 30,
     fontSize: 14,
     fontWeight: "600",
-    backgroundColor: "#fff",
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -322,12 +347,10 @@ const styles = StyleSheet.create({
   inputPassword: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#00C6FF",
     borderRadius: 56,
     padding: 12,
     fontSize: 14,
     fontWeight: "600",
-    backgroundColor: "#fff",
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -338,12 +361,10 @@ const styles = StyleSheet.create({
   dropdownTrigger: {
     width: "45%",
     borderWidth: 1,
-    borderColor: "#00C6FF",
     borderRadius: 56,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginBottom: 30,
-    backgroundColor: "#fff",
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -353,7 +374,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  dropdownText: { fontSize: 14, color: "#000000ff", fontWeight: "600" },
+  dropdownText: { fontSize: 14, fontWeight: "600" },
   dropdownCaret: { fontSize: 16 },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)" },
   modalSheet: {
@@ -361,7 +382,6 @@ const styles = StyleSheet.create({
     left: 24,
     right: 24,
     bottom: 32,
-    backgroundColor: "#fff",
     borderRadius: 16,
     paddingVertical: 8,
     elevation: 6,
@@ -371,8 +391,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   optionItem: { paddingVertical: 13, paddingHorizontal: 16 },
-  optionItemActive: { backgroundColor: "#EAF3FF" },
-  optionText: { fontSize: 16, color: "#222", fontWeight: "600" },
+  optionText: { fontSize: 16, fontWeight: "600" },
   eyeIcon: {
     width: 24,
     height: 24,
@@ -409,7 +428,6 @@ const styles = StyleSheet.create({
   },
   successModal: {
     width: "80%",
-    backgroundColor: "#fff",
     borderRadius: 20,
     overflow: "hidden",
     elevation: 8,
@@ -426,7 +444,6 @@ const styles = StyleSheet.create({
   modalMessage: {
     padding: 20,
     fontSize: 16,
-    color: "#333",
     textAlign: "center",
   },
 });

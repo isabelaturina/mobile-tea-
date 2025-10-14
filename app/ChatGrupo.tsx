@@ -32,17 +32,32 @@ export default function ChatGrupo() {
   const GRADIENT_START = "#70DEFE";
   const GRADIENT_END = "#0095FF";
 
-  const colors = {
-    background: "#F8F9FA",
-    textPrimary: "#333",
-    textSecondary: "#666",
-    inputBackground: "#fff",
-    borderColor: "#ddd",
-    otherMessageBg: "#E8E8E8",
-    myMessageBg: "#0095FF",
-    footerBackground: "#F0F0F0",
-    messageShadow: "#00000020",
-  };
+  // 🎨 Define cores com base no tema
+  const colors = isDarkMode
+    ? {
+        background: "#000000",
+        textPrimary: "#F8FAFC",
+        textSecondary: "#94A3B8",
+        inputBackground: "#1E293B",
+        borderColor: "#334155",
+        otherMessageBg: "#334155",
+        myMessageBg: "#3B82F6",
+        footerBackground: "#0F172A",
+        messageShadow: "#00000040",
+        emptyText: "#64748B",
+      }
+    : {
+        background: "#F8F9FA",
+        textPrimary: "#333",
+        textSecondary: "#666",
+        inputBackground: "#fff",
+        borderColor: "#ddd",
+        otherMessageBg: "#E8E8E8",
+        myMessageBg: "#0095FF",
+        footerBackground: "#F0F0F0",
+        messageShadow: "#00000020",
+        emptyText: "#999",
+      };
 
   const sendMessage = () => {
     if (inputText.trim()) {
@@ -147,7 +162,7 @@ export default function ChatGrupo() {
         ]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={() => (
-          <Text style={styles.emptyMessageText}>
+          <Text style={[styles.emptyMessageText, { color: colors.emptyText }]}>
             Seja o primeiro a enviar uma mensagem!
           </Text>
         )}
@@ -298,9 +313,7 @@ const styles = StyleSheet.create({
   },
   emptyMessageText: {
     fontSize: 16,
-    color: "#999",
     textAlign: "center",
     paddingHorizontal: 20,
-    
   },
 });

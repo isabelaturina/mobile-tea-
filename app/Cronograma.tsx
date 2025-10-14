@@ -14,6 +14,7 @@ import {
 import { Calendar } from "react-native-calendars";
 import SpeedDialFAB from "../components/SpeedDialFAB";
 import { useCronograma } from "../contexts/CronogramaContext";
+import { useTheme } from "../contexts/ThemeContext";
 import "../utils/calendarLocale";
 
 interface Event {
@@ -31,6 +32,31 @@ export default function Cronograma() {
   const [selectedDate, setSelectedDate] = useState("");
   const [activeTab, setActiveTab] = useState<"diario" | "eventos">("diario");
   const { events, getEventsForDate, isLoading, deleteEvent, forceDeleteEvent, refreshEvents } = useCronograma();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+
+  // 🎨 Define cores com base no tema
+  const colors = isDarkMode
+    ? {
+        background: "#000000",
+        textPrimary: "#F8FAFC",
+        textSecondary: "#94A3B8",
+        card: "#1E293B",
+        accent: "#3B82F6",
+        lightAccent: "#60A5FA",
+        border: "#334155",
+        tabInactive: "#64748B",
+      }
+    : {
+        background: "#F8F9FA",
+        textPrimary: "#111",
+        textSecondary: "#555",
+        card: "#FFFFFF",
+        accent: "#3B82F6",
+        lightAccent: "#70DEFE",
+        border: "#E5E7EB",
+        tabInactive: "#666",
+      };
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -142,7 +168,7 @@ export default function Cronograma() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <LinearGradient
         colors={["#8B5CF6", "#3B82F6"]}
@@ -164,24 +190,24 @@ export default function Cronograma() {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Calendário */}
-        <View style={styles.calendarContainer}>
+        <View style={[styles.calendarContainer, { backgroundColor: colors.card }]}>
           <Calendar
             onDayPress={handleDateSelect}
             markedDates={markedDates}
             theme={{
-              backgroundColor: "#fff",
-              calendarBackground: "#fff",
-              textSectionTitleColor: "#3B82F6",
+              backgroundColor: colors.card,
+              calendarBackground: colors.card,
+              textSectionTitleColor: colors.accent,
               selectedDayBackgroundColor: "#8B5CF6",
               selectedDayTextColor: "#fff",
-              todayTextColor: "#3B82F6",
-              dayTextColor: "#333",
-              textDisabledColor: "#ccc",
-              dotColor: "#3B82F6",
+              todayTextColor: colors.accent,
+              dayTextColor: colors.textPrimary,
+              textDisabledColor: colors.textSecondary,
+              dotColor: colors.accent,
               selectedDotColor: "#fff",
-              arrowColor: "#3B82F6",
-              monthTextColor: "#333",
-              indicatorColor: "#3B82F6",
+              arrowColor: colors.accent,
+              monthTextColor: colors.textPrimary,
+              indicatorColor: colors.accent,
               textDayFontWeight: "500",
               textMonthFontWeight: "bold",
               textDayHeaderFontWeight: "600",
@@ -199,18 +225,18 @@ export default function Cronograma() {
         </View>
 
         {/* Tabs */}
-        <View style={styles.tabsContainer}>
+        <View style={[styles.tabsContainer, { backgroundColor: colors.card }]}>
           <TouchableOpacity
             style={[
               styles.tab,
-              activeTab === "diario" && styles.activeTab,
+              activeTab === "diario" && { backgroundColor: colors.accent },
             ]}
             onPress={() => setActiveTab("diario")}
           >
             <Text
               style={[
                 styles.tabText,
-                activeTab === "diario" && styles.activeTabText,
+                { color: activeTab === "diario" ? "#fff" : colors.tabInactive },
               ]}
             >
               Diário
@@ -219,14 +245,14 @@ export default function Cronograma() {
           <TouchableOpacity
             style={[
               styles.tab,
-              activeTab === "eventos" && styles.activeTab,
+              activeTab === "eventos" && { backgroundColor: colors.accent },
             ]}
             onPress={() => setActiveTab("eventos")}
           >
             <Text
               style={[
                 styles.tabText,
-                activeTab === "eventos" && styles.activeTabText,
+                { color: activeTab === "eventos" ? "#fff" : colors.tabInactive },
               ]}
             >
               Eventos
@@ -236,25 +262,25 @@ export default function Cronograma() {
 
         {/* Conteúdo das tabs */}
         <View style={styles.tabContent}>
-          <Text style={styles.tabContentTitle}>informações do dia</Text>
+          <Text style={[styles.tabContentTitle, { color: colors.textSecondary }]}>informações do dia</Text>
           
           {isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#3B82F6" />
-              <Text style={styles.loadingText}>Carregando eventos...</Text>
+              <ActivityIndicator size="large" color={colors.accent} />
+              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Carregando eventos...</Text>
             </View>
           ) : (
             activeTab === "eventos" && selectedDate && (
               <View style={styles.eventsContainer}>
                 {getEventsForSelectedDate().length > 0 ? (
                   getEventsForSelectedDate().map((event) => (
-                    <View key={event.id} style={styles.eventCard}>
+                    <View key={event.id} style={[styles.eventCard, { backgroundColor: colors.card }]}>
                       <View style={styles.eventInfo}>
-                        <Text style={styles.eventTitle}>{event.title}</Text>
-                        <Text style={styles.eventNote}>{event.note}</Text>
+                        <Text style={[styles.eventTitle, { color: colors.textPrimary }]}>{event.title}</Text>
+                        <Text style={[styles.eventNote, { color: colors.textSecondary }]}>{event.note}</Text>
                         <View style={styles.eventTime}>
-                          <Ionicons name="notifications" size={16} color="#3B82F6" />
-                          <Text style={styles.eventTimeText}>{event.time}</Text>
+                          <Ionicons name="notifications" size={16} color={colors.accent} />
+                          <Text style={[styles.eventTimeText, { color: colors.accent }]}>{event.time}</Text>
                         </View>
                       </View>
                       <View style={styles.eventActions}>
@@ -275,8 +301,8 @@ export default function Cronograma() {
                   ))
                 ) : (
                   <View style={styles.emptyState}>
-                    <Ionicons name="calendar-outline" size={48} color="#ccc" />
-                    <Text style={styles.emptyStateText}>Nenhum evento para esta data</Text>
+                    <Ionicons name="calendar-outline" size={48} color={colors.textSecondary} />
+                    <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>Nenhum evento para esta data</Text>
                   </View>
                 )}
               </View>
@@ -294,7 +320,6 @@ export default function Cronograma() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
   },
   header: {
     paddingTop: 60,
@@ -318,7 +343,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   calendarContainer: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     marginTop: 20,
     padding: 16,
@@ -330,7 +354,6 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flexDirection: "row",
-    backgroundColor: "#fff",
     borderRadius: 12,
     marginTop: 20,
     padding: 4,
@@ -346,16 +369,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 8,
   },
-  activeTab: {
-    backgroundColor: "#3B82F6",
-  },
   tabText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#666",
-  },
-  activeTabText: {
-    color: "#fff",
   },
   tabContent: {
     marginTop: 20,
@@ -363,14 +379,12 @@ const styles = StyleSheet.create({
   },
   tabContentTitle: {
     fontSize: 16,
-    color: "#666",
     marginBottom: 16,
   },
   eventsContainer: {
     gap: 12,
   },
   eventCard: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     flexDirection: "row",
@@ -388,12 +402,10 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 4,
   },
   eventNote: {
     fontSize: 14,
-    color: "#666",
     marginBottom: 8,
   },
   eventTime: {
@@ -426,7 +438,6 @@ const styles = StyleSheet.create({
   },
   eventTimeText: {
     fontSize: 14,
-    color: "#3B82F6",
     fontWeight: "600",
   },
   loadingContainer: {
@@ -436,7 +447,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: "#666",
     marginTop: 12,
   },
   emptyState: {
@@ -446,7 +456,6 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 16,
-    color: "#999",
     marginTop: 12,
     textAlign: "center",
   },

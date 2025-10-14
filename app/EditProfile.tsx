@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useTheme } from "../contexts/ThemeContext";
 
 const profileIcons = [
   require("../assets/images/gato-icon.png"),
@@ -30,6 +31,36 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function EditProfile() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+
+  // 🎨 Define cores com base no tema
+  const colors = isDarkMode
+    ? {
+        background: "#000000",
+        textPrimary: "#F8FAFC",
+        textSecondary: "#94A3B8",
+        card: "#1E293B",
+        accent: "#3B82F6",
+        lightAccent: "#60A5FA",
+        border: "#334155",
+        placeholder: "#64748B",
+        modal: "#1E293B",
+        modalText: "#F8FAFC",
+      }
+    : {
+        background: "#F8F9FA",
+        textPrimary: "#222",
+        textSecondary: "#666",
+        card: "#fff",
+        accent: "#8B5CF6",
+        lightAccent: "#70DEFE",
+        border: "#70DEFE",
+        placeholder: "#999",
+        modal: "#fff",
+        modalText: "#333",
+      };
+
   const [selectedIcon, setSelectedIcon] = useState(0);
   const [showArrows, setShowArrows] = useState(false);
   const [name, setName] = useState("");
@@ -73,9 +104,9 @@ export default function EditProfile() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <ScrollView style={{ flex: 1, backgroundColor: "#F8F9FA" }}>
+      <ScrollView style={{ flex: 1, backgroundColor: colors.background }}>
         <LinearGradient
-          colors={["#70DEFE", "#8B5CF6"]}
+          colors={[colors.lightAccent, colors.accent]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.headerGradient}
@@ -133,29 +164,29 @@ export default function EditProfile() {
         </LinearGradient>
 
         <View style={styles.formContainer}>
-          <Text style={styles.label}>Nome:</Text>
+          <Text style={[styles.label, { color: colors.textPrimary }]}>Nome:</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
             placeholder="Digite seu nome"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.placeholder}
             value={name}
             onChangeText={setName}
           />
 
-          <Text style={styles.label}>E-mail:</Text>
+          <Text style={[styles.label, { color: colors.textPrimary }]}>E-mail:</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
             placeholder="Digite seu E-mail"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.placeholder}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
           />
-          <Text style={styles.label}>Grau autismo:</Text>
+          <Text style={[styles.label, { color: colors.textPrimary }]}>Grau autismo:</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
             placeholder="Opcional"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.placeholder}
             value={autismLevel}
             onChangeText={setAutismLevel}
           />
@@ -163,6 +194,7 @@ export default function EditProfile() {
           <TouchableOpacity
             style={[
               styles.saveButton,
+              { backgroundColor: colors.lightAccent },
               (!name.trim() || !email.trim()) && { opacity: 0.5 },
             ]}
             disabled={!name.trim() || !email.trim()}
@@ -181,12 +213,12 @@ export default function EditProfile() {
         onRequestClose={() => setShowWarning(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalBox}>
-            <Ionicons name="warning-outline" size={40} color="#8B5CF6" />
-            <Text style={styles.modalText}>{warningMessage}</Text>
+          <View style={[styles.modalBox, { backgroundColor: colors.modal }]}>
+            <Ionicons name="warning-outline" size={40} color={colors.accent} />
+            <Text style={[styles.modalText, { color: colors.modalText }]}>{warningMessage}</Text>
 
             <TouchableOpacity
-              style={styles.modalButton}
+              style={[styles.modalButton, { backgroundColor: colors.accent }]}
               onPress={() => setShowWarning(false)}
             >
               <Text style={styles.modalButtonText}>OK</Text>
@@ -283,28 +315,23 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
-    color: "#222",
     marginBottom: 6,
     marginTop: 10,
     fontWeight: "600",
   },
   input: {
-    backgroundColor: "#fff",
     borderRadius: 10,
     borderWidth: 1.5,
-    borderColor: "#70DEFE",
     paddingVertical: 10,
     paddingHorizontal: 14,
     fontSize: 15,
     marginBottom: 10,
   },
   saveButton: {
-    backgroundColor: "#70DEFE",
     borderRadius: 18,
     paddingVertical: 13,
     alignItems: "center",
     marginTop: 18,
-    shadowColor: "#70DEFE",
     shadowOpacity: 0.18,
     shadowRadius: 6,
     elevation: 2,
@@ -339,7 +366,6 @@ const styles = StyleSheet.create({
   modalBox: {
     width: "100%",
     maxWidth: 400,            // Máximo pra telas maiores, sem ser fixo absoluto
-    backgroundColor: "#fff",
     borderRadius: 20,
     paddingVertical: 24,
     paddingHorizontal: 20,    // Padding em %, sem valor fixo grande
@@ -352,14 +378,12 @@ const styles = StyleSheet.create({
 
   modalText: {
     fontSize: 16,
-    color: "#333",
     textAlign: "center",
     marginVertical: 20,
     fontWeight: "500",
   },
 
   modalButton: {
-    backgroundColor: "#8B5CF6",
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 14,

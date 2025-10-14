@@ -1,7 +1,8 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '../contexts/ThemeContext';
 import { useUser } from '../contexts/UserContext';
 
 export default function Login() {
@@ -12,6 +13,33 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useUser();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+
+  // 🎨 Define cores com base no tema
+  const colors = isDarkMode
+    ? {
+        background: "#000000",
+        textPrimary: "#F8FAFC",
+        textSecondary: "#94A3B8",
+        card: "#1E293B",
+        accent: "#3B82F6",
+        lightAccent: "#60A5FA",
+        border: "#334155",
+        placeholder: "#64748B",
+        circle: "#1E293B",
+      }
+    : {
+        background: "#fff",
+        textPrimary: "#222",
+        textSecondary: "#7b7b7bff",
+        card: "#fff",
+        accent: "#00C6FF",
+        lightAccent: "#1163E7",
+        border: "#00C6FF",
+        placeholder: "#575757",
+        circle: "#E0F2FF",
+      };
 
   const handleLogin = async () => {
     setEmailError('');
@@ -43,29 +71,32 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.backgroundCircle} />
+        <View style={[styles.backgroundCircle, { backgroundColor: colors.circle }]} />
         <Image source={require('../assets/images/logo tea.png')} style={styles.image} />
-        <Text style={styles.title}>Faça seu Login</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>Faça seu Login</Text>
         <TouchableOpacity onPress={() => router.push('/SignUp')}>
-          <Text style={styles.linkText}>
-            não possui uma conta? <Text style={styles.link}>Faça seu Cadastro</Text>
+          <Text style={[styles.linkText, { color: colors.textSecondary }]}>
+            não possui uma conta? <Text style={[styles.link, { color: colors.accent }]}>Faça seu Cadastro</Text>
           </Text>
         </TouchableOpacity>
         
         <View style={styles.formContainer}>
           <TextInput 
             placeholder="Email:" 
-            placeholderTextColor="#575757"
+            placeholderTextColor={colors.placeholder}
             style={[styles.input, { 
               fontSize: 14,
               fontWeight: '600',
-              fontFamily: 'System'
+              fontFamily: 'System',
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.textPrimary
             }]} 
             keyboardType="email-address"
             value={email}
@@ -80,11 +111,14 @@ export default function Login() {
           <View style={styles.passwordContainer}>
             <TextInput 
               placeholder="Senha:" 
-              placeholderTextColor="#575757"
+              placeholderTextColor={colors.placeholder}
               style={[styles.inputPassword, { 
                 fontSize: 14,
                 fontWeight: '600',
-                fontFamily: 'System'
+                fontFamily: 'System',
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                color: colors.textPrimary
               }]} 
               secureTextEntry={!showPassword}
               value={password}
@@ -112,13 +146,13 @@ export default function Login() {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#00C6FF', '#1163E7']}
+              colors={[colors.accent, colors.lightAccent]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientBorder}
             >
-              <View style={styles.buttonInner}>
-                <Text style={styles.buttonTextOutline}>
+              <View style={[styles.buttonInner, { backgroundColor: colors.background }]}>
+                <Text style={[styles.buttonTextOutline, { color: colors.accent }]}>
                   {isLoading ? 'Entrando...' : 'Entrar'}
                 </Text>
               </View>
@@ -134,8 +168,6 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-   
   },
   scrollContainer: {
     flexGrow: 1,
@@ -151,9 +183,7 @@ const styles = StyleSheet.create({
     width: 500,
     height: 500,
     borderRadius: 250,
-    backgroundColor: '#E0F2FF',
     zIndex: -1,
-    
   },
   image: {
     width: 200,
@@ -165,19 +195,15 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#222',
     textAlign: 'center',
   },
   linkText: {
-    color: '#7b7b7bff',
     marginBottom: 20,
     textAlign: 'center',
     fontSize: 16,
   },
   link: {
-    color: '#007AFF',
     fontWeight: 'bold',
-    
   },
   formContainer: {
     width: '100%',
@@ -186,12 +212,10 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     borderWidth: 1,
-    borderColor: '#00C6FF',
     borderRadius: 20,
     padding: 12,
     marginBottom: 30,
     fontSize: 14,
-    backgroundColor: '#fff',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -221,11 +245,9 @@ const styles = StyleSheet.create({
   inputPassword: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#00C6FF',
     borderRadius: 20,
     padding: 12,
     fontSize: 16,
-    backgroundColor: '#fff',
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -254,14 +276,12 @@ const styles = StyleSheet.create({
     padding: 2, 
   },
   buttonInner: {
-    backgroundColor: '#FFFFFF',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
   },
   buttonTextOutline: {
-    color: '#00C6FF',
     fontWeight: 'bold',
     fontSize: 18,
   },
