@@ -25,6 +25,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-dev-client",
       [
         "expo-splash-screen",
         {
@@ -34,8 +35,19 @@
           "backgroundColor": "#ffffff"
         }
       ],
+<<<<<<< HEAD:app.json
       "expo-font",
       "expo-web-browser"
+=======
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#3B82F6",
+          "defaultChannel": "default"
+        }
+      ]
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app.json
     ],
     "experiments": {
       "typedRoutes": true

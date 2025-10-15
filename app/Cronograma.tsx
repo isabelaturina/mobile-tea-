@@ -14,7 +14,10 @@ import {
 import { Calendar } from "react-native-calendars";
 import SpeedDialFAB from "../components/SpeedDialFAB";
 import { useCronograma } from "../contexts/CronogramaContext";
+<<<<<<< HEAD:app/Cronograma.tsx
 import { useTheme } from "../contexts/ThemeContext";
+=======
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/Cronograma.tsx
 import "../utils/calendarLocale";
 
 interface Event {
@@ -31,6 +34,7 @@ interface Event {
 export default function Cronograma() {
   const [selectedDate, setSelectedDate] = useState("");
   const [activeTab, setActiveTab] = useState<"diario" | "eventos">("diario");
+<<<<<<< HEAD:app/Cronograma.tsx
   const { events, getEventsForDate, isLoading, deleteEvent, forceDeleteEvent, refreshEvents } = useCronograma();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
@@ -57,6 +61,9 @@ export default function Cronograma() {
         border: "#E5E7EB",
         tabInactive: "#666",
       };
+=======
+  const { events, getEventsForDate, getDiaryEntryForDate, isLoading, forceDeleteEvent, forceDeleteDiaryEntry, refreshEvents } = useCronograma();
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/Cronograma.tsx
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -106,13 +113,23 @@ export default function Cronograma() {
   };
 
   const handleAddNote = () => {
-    Alert.alert("Anotar Dia", "Funcionalidade em desenvolvimento");
+    router.push({
+      pathname: "/AnotarDia",
+      params: { date: selectedDate },
+    });
   };
 
   const getEventsForSelectedDate = () => {
     return getEventsForDate(selectedDate);
   };
 
+<<<<<<< HEAD:app/Cronograma.tsx
+=======
+  const getDiaryEntryForSelectedDate = () => {
+    return getDiaryEntryForDate(selectedDate);
+  };
+
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/Cronograma.tsx
   const handleEditEvent = (event: Event) => {
     router.push({
       pathname: "/EditarEvento",
@@ -153,6 +170,47 @@ export default function Cronograma() {
     );
   };
 
+<<<<<<< HEAD:app/Cronograma.tsx
+=======
+  const handleEditDiaryEntry = (date: string) => {
+    router.push({
+      pathname: "/EditarAnotacao",
+      params: { date },
+    });
+  };
+
+  const handleDeleteDiaryEntry = (entryId: string) => {
+    Alert.alert(
+      "Confirmar Exclusão",
+      "Tem certeza que deseja excluir esta anotação?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              console.log('Tentando excluir anotação:', entryId);
+              await forceDeleteDiaryEntry(entryId);
+              console.log('Anotação excluída com sucesso');
+              // Pequeno delay para garantir que a exclusão foi processada
+              setTimeout(() => {
+                Alert.alert("Sucesso", "Anotação excluída com sucesso!");
+              }, 200);
+            } catch (error) {
+              console.error('Erro ao excluir anotação:', error);
+              Alert.alert("Erro", "Não foi possível excluir a anotação. Tente novamente.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/Cronograma.tsx
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "Agenda";
@@ -165,6 +223,36 @@ export default function Cronograma() {
       "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
     ];
     return `${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
+
+  const formatSelectedDate = (dateString: string) => {
+    if (!dateString) return "";
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    
+    const day = date.getDate();
+    const months = [
+      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+    ];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${day} de ${month}, ${year}`;
+  };
+
+  const getMoodEmoji = (mood: string) => {
+    const moodMap: { [key: string]: string } = {
+      "muito_feliz": "😁",
+      "feliz": "😊",
+      "neutro": "😐",
+      "triste": "😔",
+      "muito_triste": "😢",
+      "ansioso": "😰",
+      "irritado": "😡",
+    };
+    return moodMap[mood] || "😐";
   };
 
   return (
@@ -266,6 +354,7 @@ export default function Cronograma() {
           
           {isLoading ? (
             <View style={styles.loadingContainer}>
+<<<<<<< HEAD:app/Cronograma.tsx
               <ActivityIndicator size="large" color={colors.accent} />
               <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Carregando eventos...</Text>
             </View>
@@ -303,9 +392,91 @@ export default function Cronograma() {
                   <View style={styles.emptyState}>
                     <Ionicons name="calendar-outline" size={48} color={colors.textSecondary} />
                     <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>Nenhum evento para esta data</Text>
+=======
+              <ActivityIndicator size="large" color="#3B82F6" />
+              <Text style={styles.loadingText}>Carregando...</Text>
+            </View>
+          ) : (
+            selectedDate && (
+              <>
+                {activeTab === "diario" && (
+                  <View style={styles.diaryContainer}>
+                    {getDiaryEntryForSelectedDate() ? (
+                      <View style={styles.diaryCard}>
+                        <View style={styles.diaryHeader}>
+                          <Text style={styles.diaryDate}>
+                            {formatSelectedDate(selectedDate)}
+                          </Text>
+                          <Text style={styles.diaryMood}>
+                            {getMoodEmoji(getDiaryEntryForSelectedDate()?.mood || "")}
+                          </Text>
+                        </View>
+                        <Text style={styles.diaryNote}>
+                          {getDiaryEntryForSelectedDate()?.note}
+                        </Text>
+                        <View style={styles.diaryActions}>
+                          <TouchableOpacity 
+                            style={[styles.actionButton, styles.editButton]}
+                            onPress={() => handleEditDiaryEntry(selectedDate)}
+                          >
+                            <Ionicons name="create-outline" size={16} color="#fff" />
+                          </TouchableOpacity>
+                          <TouchableOpacity 
+                            style={[styles.actionButton, styles.deleteButton]}
+                            onPress={() => handleDeleteDiaryEntry(getDiaryEntryForSelectedDate()?.id || "")}
+                          >
+                            <Ionicons name="trash-outline" size={16} color="#fff" />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ) : (
+                      <View style={styles.emptyState}>
+                        <Ionicons name="journal-outline" size={48} color="#ccc" />
+                        <Text style={styles.emptyStateText}>Nenhuma anotação para esta data</Text>
+                      </View>
+                    )}
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/Cronograma.tsx
                   </View>
                 )}
-              </View>
+
+                {activeTab === "eventos" && (
+                  <View style={styles.eventsContainer}>
+                    {getEventsForSelectedDate().length > 0 ? (
+                      getEventsForSelectedDate().map((event) => (
+                        <View key={event.id} style={styles.eventCard}>
+                          <View style={styles.eventInfo}>
+                            <Text style={styles.eventTitle}>{event.title}</Text>
+                            <Text style={styles.eventNote}>{event.note}</Text>
+                            <View style={styles.eventTime}>
+                              <Ionicons name="notifications" size={16} color="#3B82F6" />
+                              <Text style={styles.eventTimeText}>{event.time}</Text>
+                            </View>
+                          </View>
+                          <View style={styles.eventActions}>
+                            <TouchableOpacity 
+                              style={[styles.actionButton, styles.editButton]}
+                              onPress={() => handleEditEvent(event)}
+                            >
+                              <Ionicons name="create-outline" size={16} color="#fff" />
+                            </TouchableOpacity>
+                            <TouchableOpacity 
+                              style={[styles.actionButton, styles.deleteButton]}
+                              onPress={() => handleDeleteEvent(event.id)}
+                            >
+                              <Ionicons name="trash-outline" size={16} color="#fff" />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      ))
+                    ) : (
+                      <View style={styles.emptyState}>
+                        <Ionicons name="calendar-outline" size={48} color="#ccc" />
+                        <Text style={styles.emptyStateText}>Nenhum evento para esta data</Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </>
             )
           )}
         </View>
@@ -406,6 +577,10 @@ const styles = StyleSheet.create({
   },
   eventNote: {
     fontSize: 14,
+<<<<<<< HEAD:app/Cronograma.tsx
+=======
+    color: "#666",
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/Cronograma.tsx
     marginBottom: 8,
   },
   eventTime: {
@@ -458,5 +633,43 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 12,
     textAlign: "center",
+  },
+  diaryContainer: {
+    gap: 12,
+  },
+  diaryCard: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  diaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  diaryDate: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  diaryMood: {
+    fontSize: 24,
+  },
+  diaryNote: {
+    fontSize: 14,
+    color: "#666",
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  diaryActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 8,
   },
 });

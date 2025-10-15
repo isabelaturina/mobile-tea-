@@ -3,9 +3,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+<<<<<<< HEAD:app/EditarEvento.tsx
   Alert,
   ScrollView,
   StyleSheet,
+<<<<<<<< HEAD:app/EditarEvento.tsx
+========
+  Switch,
+>>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
   Text,
   TextInput,
   TouchableOpacity,
@@ -13,6 +18,24 @@ import {
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useCronograma } from "../contexts/CronogramaContext";
+<<<<<<<< HEAD:app/EditarEvento.tsx
+========
+import { NotificationService } from "../services/notificationService";
+>>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
+=======
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { Calendar } from "react-native-calendars";
+import { useCronograma } from "../contexts/CronogramaContext";
+import { NotificationService } from "../services/notificationService";
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
 import "../utils/calendarLocale";
 
 export default function EditarEvento() {
@@ -65,23 +88,111 @@ export default function EditarEvento() {
 
     // Verificar se a data selecionada não é no passado
     if (selectedDate < today) {
+<<<<<<< HEAD:app/EditarEvento.tsx
+<<<<<<<< HEAD:app/EditarEvento.tsx
       Alert.alert("Data Inválida", "Não é possível alterar um evento para uma data passada. Por favor, selecione uma data atual ou futura.");
+========
+      Alert.alert("Data Inválida", "Não é possível adicionar eventos para datas passadas. Por favor, selecione uma data atual ou futura.");
+>>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
+=======
+      Alert.alert("Data Inválida", "Não é possível alterar um evento para uma data passada. Por favor, selecione uma data atual ou futura.");
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
       return;
     }
 
     try {
+<<<<<<< HEAD:app/EditarEvento.tsx
+<<<<<<<< HEAD:app/EditarEvento.tsx
       // Atualizar evento existente
       updateEvent(eventId, {
+========
+      let notificationId = null;
+      
+      // Se notificação estiver ativada, agendar
+=======
+      // Cancelar notificação anterior se existir
+      const oldEvent = events.find(e => e.id === eventId);
+      if (oldEvent && oldEvent.hasAlarm) {
+        await NotificationService.cancelNotification(oldEvent.title + oldEvent.date);
+      }
+
+      let notificationId = null;
+      
+      // Se notificação estiver ativada, agendar nova
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
+      if (showNotification) {
+        const hasPermission = await NotificationService.requestPermissions();
+        if (hasPermission) {
+          notificationId = await NotificationService.scheduleEventNotification({
+            title: title.trim(),
+            body: note.trim() || 'Lembrete de evento',
+            date: selectedDate,
+            time: time,
+          });
+          
+          if (!notificationId) {
+            Alert.alert(
+              "Aviso",
+<<<<<<< HEAD:app/EditarEvento.tsx
+              "Evento criado, mas não foi possível agendar a notificação. Verifique as configurações de notificação do seu dispositivo.",
+=======
+              "Evento atualizado, mas não foi possível agendar a notificação. Verifique as configurações de notificação do seu dispositivo.",
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
+              [{ text: "OK" }]
+            );
+          }
+        } else {
+          Alert.alert(
+            "Permissão Necessária",
+            "Para receber lembretes de eventos, é necessário permitir notificações. Você pode ativar nas configurações do seu dispositivo.",
+            [{ text: "OK" }]
+          );
+        }
+      }
+
+<<<<<<< HEAD:app/EditarEvento.tsx
+      // Criar novo evento
+      addEvent({
+>>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
+=======
+      // Atualizar evento existente
+      updateEvent(eventId, {
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
         title: title.trim(),
         note: note.trim(),
         date: selectedDate,
         time: time,
         hasAlarm: showNotification,
+<<<<<<< HEAD:app/EditarEvento.tsx
+<<<<<<<< HEAD:app/EditarEvento.tsx
+========
+        alarmTime: showNotification ? time : undefined,
+>>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
       });
+      
+      const successMessage = showNotification && notificationId 
+        ? "Evento adicionado com sucesso! Você receberá uma notificação no horário agendado."
+        : "Evento adicionado com sucesso!";
       
       Alert.alert(
         "Sucesso!",
+<<<<<<<< HEAD:app/EditarEvento.tsx
         "Evento atualizado com sucesso.",
+========
+        successMessage,
+>>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
+=======
+        alarmTime: showNotification ? time : undefined,
+      });
+      
+      const successMessage = showNotification && notificationId 
+        ? "Evento atualizado com sucesso! Você receberá uma notificação no horário agendado."
+        : "Evento atualizado com sucesso!";
+      
+      Alert.alert(
+        "Sucesso!",
+        successMessage,
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
         [
           {
             text: "OK",
@@ -93,6 +204,11 @@ export default function EditarEvento() {
         ]
       );
     } catch (error) {
+<<<<<<< HEAD:app/EditarEvento.tsx
+      console.error('Erro ao adicionar evento:', error);
+=======
+      console.error('Erro ao atualizar evento:', error);
+>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
       Alert.alert(
         "Erro",
         "Não foi possível atualizar o evento. Tente novamente.",
@@ -206,21 +322,32 @@ export default function EditarEvento() {
           </View>
 
           {/* Notificação */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Notificação</Text>
-            <TouchableOpacity
-              style={styles.sectionButton}
-              onPress={() => setShowNotification(!showNotification)}
-            >
-              <Text style={styles.sectionButtonText}>
-                {showNotification ? "Notificação ativada" : "Adicionar notificação"}
-              </Text>
-              <Ionicons
-                name={showNotification ? "checkmark-circle" : "add-circle-outline"}
-                size={20}
-                color="#3B82F6"
+          <View style={styles.notificationContainer}>
+            <View style={styles.notificationHeader}>
+              <View style={styles.notificationInfo}>
+                <Ionicons name="notifications" size={20} color="#3B82F6" />
+                <View style={styles.notificationTextContainer}>
+                  <Text style={styles.notificationTitle}>Lembrete de Evento</Text>
+                  <Text style={styles.notificationSubtitle}>
+                    Receber notificação no horário do evento
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={showNotification}
+                onValueChange={setShowNotification}
+                trackColor={{ false: "#E5E7EB", true: "#3B82F6" }}
+                thumbColor={showNotification ? "#fff" : "#f4f3f4"}
+                ios_backgroundColor="#E5E7EB"
               />
-            </TouchableOpacity>
+            </View>
+            {showNotification && (
+              <View style={styles.notificationDetails}>
+                <Text style={styles.notificationDetailsText}>
+                  📅 Você receberá uma notificação em {formatDate(selectedDate)} às {time}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Alarme */}
@@ -394,5 +521,51 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  notificationContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  notificationHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  notificationInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  notificationTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  notificationTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 2,
+  },
+  notificationSubtitle: {
+    fontSize: 14,
+    color: "#666",
+  },
+  notificationDetails: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#F3F4F6",
+  },
+  notificationDetailsText: {
+    fontSize: 14,
+    color: "#059669",
+    fontWeight: "500",
   },
 });

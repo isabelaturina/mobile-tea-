@@ -52,6 +52,9 @@ export default function RootLayout() {
                 <Stack.Screen name="Cronograma" />
                 <Stack.Screen name="AdicionarEvento" />
                 <Stack.Screen name="AdicionarTimer" />
+                <Stack.Screen name="AnotarDia" />
+                <Stack.Screen name="DiarioSalvo" />
+                <Stack.Screen name="EditarAnotacao" />
                 <Stack.Screen name="(tabs)" />
               </Stack>
               <StatusBar style="auto" />
