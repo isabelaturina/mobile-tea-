@@ -3,14 +3,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-<<<<<<< HEAD:app/EditarEvento.tsx
   Alert,
   ScrollView,
   StyleSheet,
-<<<<<<<< HEAD:app/EditarEvento.tsx
-========
   Switch,
->>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
   Text,
   TextInput,
   TouchableOpacity,
@@ -18,30 +14,13 @@ import {
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useCronograma } from "../contexts/CronogramaContext";
-<<<<<<<< HEAD:app/EditarEvento.tsx
-========
 import { NotificationService } from "../services/notificationService";
->>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
-=======
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
-import { Calendar } from "react-native-calendars";
-import { useCronograma } from "../contexts/CronogramaContext";
-import { NotificationService } from "../services/notificationService";
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
 import "../utils/calendarLocale";
 
 export default function EditarEvento() {
   const params = useLocalSearchParams();
   const eventId = params.eventId as string;
-  
+
   const [selectedDate, setSelectedDate] = useState("");
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
@@ -54,7 +33,7 @@ export default function EditarEvento() {
   // Carregar dados do evento
   useEffect(() => {
     if (eventId) {
-      const event = events.find(e => e.id === eventId);
+      const event = events.find((e) => e.id === eventId);
       if (event) {
         setTitle(event.title);
         setNote(event.note);
@@ -88,56 +67,37 @@ export default function EditarEvento() {
 
     // Verificar se a data selecionada não é no passado
     if (selectedDate < today) {
-<<<<<<< HEAD:app/EditarEvento.tsx
-<<<<<<<< HEAD:app/EditarEvento.tsx
-      Alert.alert("Data Inválida", "Não é possível alterar um evento para uma data passada. Por favor, selecione uma data atual ou futura.");
-========
-      Alert.alert("Data Inválida", "Não é possível adicionar eventos para datas passadas. Por favor, selecione uma data atual ou futura.");
->>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
-=======
-      Alert.alert("Data Inválida", "Não é possível alterar um evento para uma data passada. Por favor, selecione uma data atual ou futura.");
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
+      Alert.alert(
+        "Data Inválida",
+        "Não é possível alterar um evento para uma data passada. Por favor, selecione uma data atual ou futura."
+      );
       return;
     }
 
     try {
-<<<<<<< HEAD:app/EditarEvento.tsx
-<<<<<<<< HEAD:app/EditarEvento.tsx
-      // Atualizar evento existente
-      updateEvent(eventId, {
-========
-      let notificationId = null;
-      
-      // Se notificação estiver ativada, agendar
-=======
       // Cancelar notificação anterior se existir
-      const oldEvent = events.find(e => e.id === eventId);
+      const oldEvent = events.find((e) => e.id === eventId);
       if (oldEvent && oldEvent.hasAlarm) {
         await NotificationService.cancelNotification(oldEvent.title + oldEvent.date);
       }
 
       let notificationId = null;
-      
+
       // Se notificação estiver ativada, agendar nova
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
       if (showNotification) {
         const hasPermission = await NotificationService.requestPermissions();
         if (hasPermission) {
           notificationId = await NotificationService.scheduleEventNotification({
             title: title.trim(),
-            body: note.trim() || 'Lembrete de evento',
+            body: note.trim() || "Lembrete de evento",
             date: selectedDate,
             time: time,
           });
-          
+
           if (!notificationId) {
             Alert.alert(
               "Aviso",
-<<<<<<< HEAD:app/EditarEvento.tsx
-              "Evento criado, mas não foi possível agendar a notificação. Verifique as configurações de notificação do seu dispositivo.",
-=======
               "Evento atualizado, mas não foi possível agendar a notificação. Verifique as configurações de notificação do seu dispositivo.",
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
               [{ text: "OK" }]
             );
           }
@@ -150,78 +110,53 @@ export default function EditarEvento() {
         }
       }
 
-<<<<<<< HEAD:app/EditarEvento.tsx
-      // Criar novo evento
-      addEvent({
->>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
-=======
       // Atualizar evento existente
       updateEvent(eventId, {
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
         title: title.trim(),
         note: note.trim(),
         date: selectedDate,
         time: time,
         hasAlarm: showNotification,
-<<<<<<< HEAD:app/EditarEvento.tsx
-<<<<<<<< HEAD:app/EditarEvento.tsx
-========
-        alarmTime: showNotification ? time : undefined,
->>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
-      });
-      
-      const successMessage = showNotification && notificationId 
-        ? "Evento adicionado com sucesso! Você receberá uma notificação no horário agendado."
-        : "Evento adicionado com sucesso!";
-      
-      Alert.alert(
-        "Sucesso!",
-<<<<<<<< HEAD:app/EditarEvento.tsx
-        "Evento atualizado com sucesso.",
-========
-        successMessage,
->>>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/AdicionarEvento.tsx
-=======
         alarmTime: showNotification ? time : undefined,
       });
-      
-      const successMessage = showNotification && notificationId 
-        ? "Evento atualizado com sucesso! Você receberá uma notificação no horário agendado."
-        : "Evento atualizado com sucesso!";
-      
-      Alert.alert(
-        "Sucesso!",
-        successMessage,
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              console.log('Voltando para cronograma após atualização...');
-              router.back();
-            }
-          }
-        ]
-      );
+
+      const successMessage =
+        showNotification && notificationId
+          ? "Evento atualizado com sucesso! Você receberá uma notificação no horário agendado."
+          : "Evento atualizado com sucesso!";
+
+      Alert.alert("Sucesso!", successMessage, [
+        {
+          text: "OK",
+          onPress: () => {
+            console.log("Voltando para cronograma após atualização...");
+            router.back();
+          },
+        },
+      ]);
     } catch (error) {
-<<<<<<< HEAD:app/EditarEvento.tsx
-      console.error('Erro ao adicionar evento:', error);
-=======
-      console.error('Erro ao atualizar evento:', error);
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app/EditarEvento.tsx
-      Alert.alert(
-        "Erro",
-        "Não foi possível atualizar o evento. Tente novamente.",
-        [{ text: "OK" }]
-      );
+      console.error("Erro ao atualizar evento:", error);
+      Alert.alert("Erro", "Não foi possível atualizar o evento. Tente novamente.", [
+        { text: "OK" },
+      ]);
     }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const months = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
     ];
     return `${months[date.getMonth()]} ${date.getFullYear()}`;
   };
@@ -276,7 +211,7 @@ export default function EditarEvento() {
             disableMonthChange={false}
             enableSwipeMonths={true}
             style={styles.calendar}
-            monthFormat={'MMMM yyyy'}
+            monthFormat={"MMMM yyyy"}
           />
         </View>
 
@@ -373,14 +308,8 @@ export default function EditarEvento() {
                 });
               }}
             >
-              <Text style={styles.sectionButtonText}>
-                adicione um alarme para te lembrar
-              </Text>
-              <Ionicons
-                name="time-outline"
-                size={20}
-                color="#3B82F6"
-              />
+              <Text style={styles.sectionButtonText}>adicione um alarme para te lembrar</Text>
+              <Ionicons name="time-outline" size={20} color="#3B82F6" />
             </TouchableOpacity>
           </View>
         </View>

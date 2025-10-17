@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "tea",
-    "slug": "tea",
+    "name": "mobile-tea",
+    "slug": "mobile-tea",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "tea",
+    "scheme": "mobile-tea",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -35,10 +35,8 @@
           "backgroundColor": "#ffffff"
         }
       ],
-<<<<<<< HEAD:app.json
       "expo-font",
-      "expo-web-browser"
-=======
+      "expo-web-browser",
       [
         "expo-notifications",
         {
@@ -47,7 +45,6 @@
           "defaultChannel": "default"
         }
       ]
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/app.json
     ],
     "experiments": {
       "typedRoutes": true

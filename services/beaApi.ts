@@ -1,4 +1,4 @@
-import { API_CONFIG, ENV_CONFIG } from '../config/api';
+import { API_CONFIG, ENV_CONFIG } from '../tea/config/api';
 
 export interface BeaMessage {
   role: 'user' | 'assistant';

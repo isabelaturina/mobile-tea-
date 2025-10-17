@@ -24,21 +24,14 @@
     "expo": "54.0.13",
     "expo-blur": "~15.0.7",
     "expo-constants": "~18.0.9",
-<<<<<<< HEAD:package.json
-    "expo-font": "14.0.9",
-=======
     "expo-dev-client": "~6.0.15",
-    "expo-font": "~14.0.8",
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/package.json
+    "expo-font": "14.0.9",
     "expo-haptics": "~15.0.7",
     "expo-image": "3.0.9",
     "expo-linear-gradient": "~15.0.7",
     "expo-linking": "~8.0.8",
-<<<<<<< HEAD:package.json
     "expo-location": "~19.0.7",
-=======
     "expo-notifications": "^0.32.12",
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/package.json
     "expo-router": "~6.0.7",
     "expo-splash-screen": "~31.0.10",
     "expo-status-bar": "~3.0.8",

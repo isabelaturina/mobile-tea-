@@ -185,8 +185,7 @@ export function CronogramaProvider({ children }: CronogramaProviderProps) {
   const forceDeleteEvent = async (id: string) => {
     console.log('Forçando exclusão do evento:', id);
     try {
-<<<<<<< HEAD:contexts/CronogramaContext.tsx
-=======
+
       // Encontrar o evento antes de excluir para cancelar notificação
       const eventToDelete = events.find(event => event.id === id);
       if (eventToDelete && eventToDelete.hasAlarm) {
@@ -195,8 +194,7 @@ export function CronogramaProvider({ children }: CronogramaProviderProps) {
         console.log('Notificação cancelada para evento:', eventToDelete.title);
       }
 
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/contexts/CronogramaContext.tsx
-      // Remove do estado atual
+
       const updatedEvents = events.filter(event => event.id !== id);
       console.log('Lista após filtro:', updatedEvents);
       
@@ -218,8 +216,7 @@ export function CronogramaProvider({ children }: CronogramaProviderProps) {
     }
   };
 
-<<<<<<< HEAD:contexts/CronogramaContext.tsx
-=======
+
   const addDiaryEntry = (entryData: Omit<DiaryEntry, 'id' | 'createdAt'>) => {
     const newEntry: DiaryEntry = {
       ...entryData,
@@ -297,7 +294,7 @@ export function CronogramaProvider({ children }: CronogramaProviderProps) {
     }
   };
 
->>>>>>> 59be562 (fiz as telas de anotações diarias, implementei a notificação LOCALMENTE não esta conectado com o banco de dados):tea/contexts/CronogramaContext.tsx
+
   return (
     <CronogramaContext.Provider
       value={{
