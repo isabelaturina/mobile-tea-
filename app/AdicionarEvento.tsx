@@ -4,13 +4,13 @@ import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useCronograma } from "../contexts/CronogramaContext";
@@ -65,6 +65,7 @@ export default function AdicionarEvento() {
         time: time,
         hasAlarm: showNotification,
       });
+      
       // Agenda notificação se solicitado
       if (showNotification) {
         try {

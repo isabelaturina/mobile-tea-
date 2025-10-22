@@ -18,7 +18,8 @@ import {
 import { useTheme } from "../contexts/ThemeContext";
 import { useUser } from "../contexts/UserContext";
 
-type SupportLevel = "leve" | "moderado" | "severo" | "nao_possui";
+<<<<<<< HEAD
+type SupportLevel = "leve" | "moderado" | "severo";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -75,10 +76,10 @@ export default function SignUp() {
 
   const levels = useMemo(
     () => [
-      { label: "Leve", value: "leve" as const, description: "Suporte leve" },
-      { label: "Moderado", value: "moderado" as const, description: "Suporte moderado" },
-      { label: "Severo", value: "severo" as const, description: "Suporte severo" },
-      { label: "Não possuo o espectro", value: "nao_possui" as const, description: "Pai, mãe ou cuidador" },
+<<<<<<< HEAD
+      { label: "leve", value: "leve" as const },
+      { label: "moderado", value: "moderado" as const },
+      { label: "severo", value: "severo" as const },
     ],
     []
   );
@@ -88,11 +89,7 @@ export default function SignUp() {
     return found?.label ?? "Nível de suporte (opcional)";
   }, [levels, supportLevel]);
 
-  const levelDescription = useMemo(() => {
-    const found = levels.find((l) => l.value === supportLevel);
-    return found?.description ?? "";
-  }, [levels, supportLevel]);
-
+<<<<<<< HEAD
   const handleSignUp = async () => {
     if (!name || !email || !password) {
       Alert.alert(
@@ -216,21 +213,15 @@ export default function SignUp() {
             accessibilityRole="button"
             accessibilityLabel="Selecionar nível de suporte"
           >
-            <View style={styles.dropdownContent}>
-              <Text
-                style={[
-                  styles.dropdownText,
-                  { color: supportLevel ? colors.textPrimary : colors.placeholder },
-                ]}
-              >
-                {levelLabel}
-              </Text>
-              {supportLevel && levelDescription && (
-                <Text style={[styles.dropdownDescription, { color: colors.textSecondary }]}>
-                  {levelDescription}
-                </Text>
-              )}
-            </View>
+<<<<<<< HEAD
+            <Text
+              style={[
+                styles.dropdownText,
+                { color: supportLevel ? colors.textPrimary : colors.placeholder },
+              ]}
+            >
+              {levelLabel}
+            </Text>
             <Text style={[styles.dropdownCaret, { color: colors.textPrimary }]}>▾</Text>
           </Pressable>
 
@@ -259,15 +250,8 @@ export default function SignUp() {
                     supportLevel === item.value && { backgroundColor: colors.accent + '20' },
                   ]}
                 >
-                  <View style={styles.optionContent}>
-                    <Text style={[styles.optionText, { color: colors.textPrimary }]}>{item.label}</Text>
-                    <Text style={[styles.optionDescription, { color: colors.textSecondary }]}>
-                      {item.description}
-                    </Text>
-                  </View>
-                  {supportLevel === item.value && (
-                    <Text style={[styles.checkmark, { color: colors.accent }]}>✓</Text>
-                  )}
+<<<<<<< HEAD
+                  <Text style={[styles.optionText, { color: colors.textPrimary }]}>{item.label}</Text>
                 </Pressable>
               ))}
             </View>
@@ -380,7 +364,8 @@ const styles = StyleSheet.create({
   },
   eyeButton: { marginLeft: -40, padding: 8, zIndex: 1 },
   dropdownTrigger: {
-    width: "100%",
+<<<<<<< HEAD
+    width: "45%",
     borderWidth: 1,
     borderRadius: 56,
     paddingHorizontal: 16,
@@ -395,11 +380,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  dropdownContent: {
-    flex: 1,
-  },
+<<<<<<< HEAD
   dropdownText: { fontSize: 14, fontWeight: "600" },
-  dropdownDescription: { fontSize: 12, marginTop: 2 },
   dropdownCaret: { fontSize: 16 },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)" },
   modalSheet: {
@@ -415,19 +397,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
   },
-  optionItem: { 
-    paddingVertical: 13, 
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  optionContent: {
-    flex: 1,
-  },
+<<<<<<< HEAD
+  optionItem: { paddingVertical: 13, paddingHorizontal: 16 },
   optionText: { fontSize: 16, fontWeight: "600" },
-  optionDescription: { fontSize: 14, marginTop: 2 },
-  checkmark: { fontSize: 18, fontWeight: "bold" },
   eyeIcon: {
     width: 24,
     height: 24,

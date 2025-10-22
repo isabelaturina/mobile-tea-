@@ -1,13 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
-    Alert,
     ScrollView,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
@@ -23,63 +21,28 @@ const MOOD_OPTIONS = [
   { emoji: "😡", value: "irritado", label: "Irritado" },
 ];
 
-export default function AnotarDia() {
+export default function DiarioSalvo() {
   const { date } = useLocalSearchParams();
-  const { addDiaryEntry, getDiaryEntryForDate } = useCronograma();
-  const [selectedMood, setSelectedMood] = useState<string>("");
-  const [note, setNote] = useState<string>("");
+  const { getDiaryEntryForDate } = useCronograma();
+  
+  const diaryEntry = getDiaryEntryForDate(date as string);
 
-  const handleSave = () => {
-    if (!selectedMood) {
-      Alert.alert("Atenção", "Por favor, selecione como você se sentiu hoje.");
-      return;
-    }
 
-    if (!note.trim()) {
-      Alert.alert("Atenção", "Por favor, escreva uma anotação sobre o seu dia.");
-      return;
-    }
-
-    // Verificar se já existe uma entrada para esta data
-    const existingEntry = getDiaryEntryForDate(date as string);
-    
-    if (existingEntry) {
-      Alert.alert(
-        "Entrada existente",
-        "Já existe uma anotação para esta data. Deseja substituí-la?",
-        [
-          {
-            text: "Cancelar",
-            style: "cancel",
-          },
-          {
-            text: "Substituir",
-            onPress: () => {
-              addDiaryEntry({
-                date: date as string,
-                mood: selectedMood,
-                note: note.trim(),
-              });
-              router.push({
-                pathname: "/DiarioSalvo",
-                params: { date: date as string },
-              });
-            },
-          },
-        ]
-      );
-    } else {
-      addDiaryEntry({
-        date: date as string,
-        mood: selectedMood,
-        note: note.trim(),
-      });
-      router.push({
-        pathname: "/DiarioSalvo",
-        params: { date: date as string },
-      });
-    }
+  const handleFinish = () => {
+    router.push("/Cronograma");
   };
+
+  const handleTalkToBea = () => {
+    router.push("/ChatBea");
+  };
+
+  if (!diaryEntry) {
+    return (
+      <View style={styles.container}>
+        <Text>Entrada não encontrada</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -102,56 +65,57 @@ export default function AnotarDia() {
       </LinearGradient>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Seleção de Humor */}
+        {/* Seleção de Humor - Mostrando o selecionado */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Registre com os emojis como você se sentiu hoje
           </Text>
           <View style={styles.moodContainer}>
             {MOOD_OPTIONS.map((mood) => (
-              <TouchableOpacity
+              <View
                 key={mood.value}
                 style={[
                   styles.moodButton,
-                  selectedMood === mood.value && styles.selectedMoodButton,
+                  diaryEntry.mood === mood.value && styles.selectedMoodButton,
                 ]}
-                onPress={() => setSelectedMood(mood.value)}
               >
                 <Text style={styles.moodEmoji}>{mood.emoji}</Text>
-              </TouchableOpacity>
+              </View>
             ))}
           </View>
         </View>
 
-        {/* Campo de Nota */}
+        {/* Campo de Nota - Mostrando a nota salva */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
             Anote como você se sentiu hoje
           </Text>
           <View style={styles.noteContainer}>
-            <TextInput
-              style={styles.noteInput}
-              placeholder="Faça sua anotação aqui..."
-              placeholderTextColor="#999"
-              value={note}
-              onChangeText={setNote}
-              multiline
-              textAlignVertical="top"
-              maxLength={500}
-            />
-            <View style={styles.noteFooter}>
-              <TouchableOpacity style={styles.addNoteButton}>
-                <Text style={styles.addNoteButtonText}>Adicionar nota</Text>
-              </TouchableOpacity>
+            <Text style={styles.noteText}>{diaryEntry.note}</Text>
+          </View>
+        </View>
+
+        {/* Confirmação */}
+        <View style={styles.confirmationContainer}>
+          <View style={styles.confirmationCard}>
+            <Text style={styles.confirmationTitle}>Pronto!</Text>
+            <View style={styles.beaIllustration}>
+              <Ionicons name="person-circle" size={80} color="#8B5CF6" />
             </View>
+            <Text style={styles.confirmationMessage}>
+              Sua anotação foi salva! a Bea está disponível caso queira conversar, tirar dúvidas ou receber ajuda sempre que precisar
+            </Text>
           </View>
         </View>
       </ScrollView>
 
-      {/* Botão Salvar */}
-      <View style={styles.saveButtonContainer}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Salvar</Text>
+      {/* Botões de Ação */}
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity style={styles.finishButton} onPress={handleFinish}>
+          <Text style={styles.finishButtonText}>Finalizar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.beaButton} onPress={handleTalkToBea}>
+          <Text style={styles.beaButtonText}>falar com a bea</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -237,34 +201,52 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    minHeight: 200,
+    minHeight: 150,
   },
-  noteInput: {
+  noteText: {
     fontSize: 16,
     color: "#333",
-    minHeight: 150,
-    textAlignVertical: "top",
+    lineHeight: 24,
   },
-  noteFooter: {
-    alignItems: "flex-end",
-    marginTop: 12,
+  confirmationContainer: {
+    marginTop: 30,
+    marginBottom: 20,
   },
-  addNoteButton: {
+  confirmationCard: {
     backgroundColor: "#333",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  addNoteButtonText: {
+  confirmationTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
     color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
+    marginBottom: 16,
   },
-  saveButtonContainer: {
+  beaIllustration: {
+    marginBottom: 16,
+  },
+  confirmationMessage: {
+    fontSize: 14,
+    color: "#fff",
+    textAlign: "center",
+    lineHeight: 20,
+    opacity: 0.9,
+  },
+  buttonsContainer: {
+    flexDirection: "row",
     padding: 20,
     paddingBottom: 40,
+    gap: 12,
   },
-  saveButton: {
+  finishButton: {
+    flex: 1,
     backgroundColor: "#3B82F6",
     paddingVertical: 16,
     borderRadius: 12,
@@ -275,9 +257,26 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  saveButtonText: {
+  finishButtonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  beaButton: {
+    flex: 1,
+    backgroundColor: "#8B5CF6",
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  beaButtonText: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });

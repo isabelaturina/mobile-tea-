@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Alert,
     ScrollView,
@@ -23,11 +23,19 @@ const MOOD_OPTIONS = [
   { emoji: "😡", value: "irritado", label: "Irritado" },
 ];
 
-export default function AnotarDia() {
-  const { date } = useLocalSearchParams();
-  const { addDiaryEntry, getDiaryEntryForDate } = useCronograma();
+export default function EditarAnotacao() {
+  const { date, entryId } = useLocalSearchParams();
+  const { getDiaryEntryForDate, updateDiaryEntry, forceDeleteDiaryEntry } = useCronograma();
   const [selectedMood, setSelectedMood] = useState<string>("");
   const [note, setNote] = useState<string>("");
+
+  useEffect(() => {
+    const entry = getDiaryEntryForDate(date as string);
+    if (entry) {
+      setSelectedMood(entry.mood);
+      setNote(entry.note);
+    }
+  }, [date, getDiaryEntryForDate]);
 
   const handleSave = () => {
     if (!selectedMood) {
@@ -40,45 +48,53 @@ export default function AnotarDia() {
       return;
     }
 
-    // Verificar se já existe uma entrada para esta data
-    const existingEntry = getDiaryEntryForDate(date as string);
-    
-    if (existingEntry) {
-      Alert.alert(
-        "Entrada existente",
-        "Já existe uma anotação para esta data. Deseja substituí-la?",
-        [
-          {
-            text: "Cancelar",
-            style: "cancel",
-          },
-          {
-            text: "Substituir",
-            onPress: () => {
-              addDiaryEntry({
-                date: date as string,
-                mood: selectedMood,
-                note: note.trim(),
-              });
-              router.push({
-                pathname: "/DiarioSalvo",
-                params: { date: date as string },
-              });
-            },
-          },
-        ]
-      );
-    } else {
-      addDiaryEntry({
-        date: date as string,
+    const entry = getDiaryEntryForDate(date as string);
+    if (entry) {
+      updateDiaryEntry(entry.id, {
         mood: selectedMood,
         note: note.trim(),
       });
-      router.push({
-        pathname: "/DiarioSalvo",
-        params: { date: date as string },
-      });
+      
+      Alert.alert("Sucesso", "Anotação atualizada com sucesso!", [
+        {
+          text: "OK",
+          onPress: () => router.push("/Cronograma"),
+        },
+      ]);
     }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Confirmar Exclusão",
+      "Tem certeza que deseja excluir esta anotação?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            const entry = getDiaryEntryForDate(date as string);
+            if (entry) {
+              try {
+                await forceDeleteDiaryEntry(entry.id);
+                Alert.alert("Sucesso", "Anotação excluída com sucesso!", [
+                  {
+                    text: "OK",
+                    onPress: () => router.push("/Cronograma"),
+                  },
+                ]);
+              } catch (error) {
+                Alert.alert("Erro", "Não foi possível excluir a anotação. Tente novamente.");
+              }
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -94,10 +110,10 @@ export default function AnotarDia() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Meu humor diário</Text>
-          <View style={styles.heartIcon}>
-            <Ionicons name="heart" size={20} color="#fff" />
-          </View>
+          <Text style={styles.headerTitle}>Editar anotação</Text>
+          <TouchableOpacity onPress={handleDelete}>
+            <Ionicons name="trash-outline" size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
       </LinearGradient>
 
@@ -151,7 +167,7 @@ export default function AnotarDia() {
       {/* Botão Salvar */}
       <View style={styles.saveButtonContainer}>
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Salvar</Text>
+          <Text style={styles.saveButtonText}>Atualizar</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -181,10 +197,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     flex: 1,
     textAlign: "center",
-  },
-  heartIcon: {
-    width: 24,
-    alignItems: "center",
   },
   content: {
     flex: 1,

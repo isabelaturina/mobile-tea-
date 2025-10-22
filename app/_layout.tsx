@@ -10,6 +10,7 @@ import { CronogramaProvider } from '../contexts/CronogramaContext';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { UserProvider } from '../contexts/UserContext';
 
+<<<<<<< HEAD
 // Handler de notificações DEVE estar no escopo de módulo (top-level)
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -21,6 +22,7 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
 
 // Componente para passar o tema certo para o React Navigation
 function NavigationThemeWrapper({ children }: { children: React.ReactNode }) {
@@ -39,6 +41,7 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
+<<<<<<< HEAD
   // Permissões e canal Android
   useEffect(() => {
     (async () => {
@@ -53,6 +56,7 @@ export default function RootLayout() {
       } catch {}
     })();
   }, []);
+
 
   if (!loaded) return null;
 
@@ -78,9 +82,12 @@ export default function RootLayout() {
                 <Stack.Screen name="Login" />
                 <Stack.Screen name="AlterarSenha" />
                 <Stack.Screen name="Cronograma" />
-              <Stack.Screen name="AnotarDia" />
+<<<<<<< HEAD
                 <Stack.Screen name="AdicionarEvento" />
                 <Stack.Screen name="AdicionarTimer" />
+                <Stack.Screen name="AnotarDia" />
+                <Stack.Screen name="DiarioSalvo" />
+                <Stack.Screen name="EditarAnotacao" />
                 <Stack.Screen name="(tabs)" />
               </Stack>
               <StatusBar style="auto" />

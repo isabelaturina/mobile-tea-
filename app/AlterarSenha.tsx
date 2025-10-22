@@ -2,19 +2,19 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 
 export default function AlterarSenha() {
   const router = useRouter();
-  const { theme } = useTheme(); 
+  const { theme } = useTheme();
   const isDarkMode = theme === "dark";
 
   const [currentPassword, setCurrentPassword] = useState("");

@@ -3,44 +3,145 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Switch,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useCronograma } from "../contexts/CronogramaContext";
+import { NotificationService } from "../services/notificationService";
 import "../utils/calendarLocale";
 
 export default function EditarEvento() {
   const params = useLocalSearchParams();
   const eventId = params.eventId as string;
-  
+  const { events, updateEvent } = useCronograma();
+
   const [selectedDate, setSelectedDate] = useState("");
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [time, setTime] = useState("08:00");
   const [showNotification, setShowNotification] = useState(false);
-  const { updateEvent, events } = useCronograma();
 
-  const today = new Date().toISOString().split("T")[0];
-
-  // Carregar dados do evento
   useEffect(() => {
-    if (eventId) {
-      const event = events.find(e => e.id === eventId);
+    if (eventId && events.length > 0) {
+      const event = events.find((e) => e.id === eventId);
       if (event) {
+        setSelectedDate(event.date);
         setTitle(event.title);
         setNote(event.note);
-        setSelectedDate(event.date);
         setTime(event.time);
         setShowNotification(event.hasAlarm || false);
       }
     }
   }, [eventId, events]);
+
+  const handleSave = async () => {
+    if (!selectedDate || !title.trim()) {
+      Alert.alert("Atenção", "Por favor, selecione uma data e preencha o título");
+      return;
+    }
+
+    // Verificar se a data selecionada não é no passado
+    const today = new Date().toISOString().split("T")[0];
+    if (selectedDate < today) {
+      Alert.alert(
+        "Data Inválida",
+        "Não é possível alterar um evento para uma data passada. Por favor, selecione uma data atual ou futura."
+      );
+      return;
+    }
+
+    try {
+      // Cancelar notificação anterior se existir
+      const oldEvent = events.find((e) => e.id === eventId);
+      if (oldEvent && oldEvent.hasAlarm) {
+        await NotificationService.cancelNotification(oldEvent.title + oldEvent.date);
+      }
+
+      let notificationId = null;
+
+      // Se notificação estiver ativada, agendar nova
+      if (showNotification) {
+        const hasPermission = await NotificationService.requestPermissions();
+        if (hasPermission) {
+          notificationId = await NotificationService.scheduleEventNotification({
+            title: title.trim(),
+            body: note.trim() || "Lembrete de evento",
+            date: selectedDate,
+            time: time,
+          });
+
+          if (!notificationId) {
+            Alert.alert(
+              "Aviso",
+              "Evento atualizado, mas não foi possível agendar a notificação. Verifique as configurações de notificação do seu dispositivo.",
+              [{ text: "OK" }]
+            );
+          }
+        } else {
+          Alert.alert(
+            "Permissão Necessária",
+            "Para receber lembretes de eventos, é necessário permitir notificações. Você pode ativar nas configurações do seu dispositivo.",
+            [{ text: "OK" }]
+          );
+        }
+      }
+
+      updateEvent(eventId, {
+        title: title.trim(),
+        note: note.trim(),
+        date: selectedDate,
+        time: time,
+        hasAlarm: showNotification,
+        alarmTime: showNotification ? time : undefined,
+      });
+
+      const successMessage =
+        showNotification && notificationId
+          ? "Evento atualizado com sucesso! Você receberá uma notificação no horário agendado."
+          : "Evento atualizado com sucesso!";
+
+      Alert.alert("Sucesso!", successMessage, [
+        {
+          text: "OK",
+          onPress: () => {
+            console.log("Voltando para cronograma após atualização...");
+            router.back();
+          },
+        },
+      ]);
+    } catch (error) {
+      console.error("Erro ao atualizar evento:", error);
+      Alert.alert("Erro", "Não foi possível atualizar o evento. Tente novamente.", [
+        { text: "OK" },
+      ]);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const months = [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro",
+    ];
+    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+  };
 
   const markedDates = {
     [selectedDate]: {
@@ -50,65 +151,7 @@ export default function EditarEvento() {
     },
   };
 
-  // Desabilitar datas passadas
-  const minDate = today;
-
-  const handleDateSelect = (day: any) => {
-    setSelectedDate(day.dateString);
-  };
-
-  const handleUpdateEvent = async () => {
-    if (!selectedDate || !title.trim()) {
-      Alert.alert("Atenção", "Por favor, selecione uma data e preencha o título");
-      return;
-    }
-
-    // Verificar se a data selecionada não é no passado
-    if (selectedDate < today) {
-      Alert.alert("Data Inválida", "Não é possível alterar um evento para uma data passada. Por favor, selecione uma data atual ou futura.");
-      return;
-    }
-
-    try {
-      // Atualizar evento existente
-      updateEvent(eventId, {
-        title: title.trim(),
-        note: note.trim(),
-        date: selectedDate,
-        time: time,
-        hasAlarm: showNotification,
-      });
-      
-      Alert.alert(
-        "Sucesso!",
-        "Evento atualizado com sucesso.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              console.log('Voltando para cronograma após atualização...');
-              router.back();
-            }
-          }
-        ]
-      );
-    } catch (error) {
-      Alert.alert(
-        "Erro",
-        "Não foi possível atualizar o evento. Tente novamente.",
-        [{ text: "OK" }]
-      );
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const months = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-    ];
-    return `${months[date.getMonth()]} ${date.getFullYear()}`;
-  };
+  const today = new Date().toISOString().split("T")[0];
 
   return (
     <View style={styles.container}>
@@ -133,9 +176,9 @@ export default function EditarEvento() {
         <View style={styles.calendarContainer}>
           <Text style={styles.calendarTitle}>Calendário</Text>
           <Calendar
-            onDayPress={handleDateSelect}
+            onDayPress={(day) => setSelectedDate(day.dateString)}
             markedDates={markedDates}
-            minDate={minDate}
+            minDate={today}
             theme={{
               backgroundColor: "#fff",
               calendarBackground: "#fff",
@@ -143,10 +186,10 @@ export default function EditarEvento() {
               selectedDayBackgroundColor: "#8B5CF6",
               selectedDayTextColor: "#fff",
               todayTextColor: "#3B82F6",
-              dayTextColor: "#333",
-              textDisabledColor: "#ccc",
+              dayTextColor: "#111",
+              textDisabledColor: "#999",
               arrowColor: "#3B82F6",
-              monthTextColor: "#333",
+              monthTextColor: "#111",
               textDayFontWeight: "500",
               textMonthFontWeight: "bold",
               textDayHeaderFontWeight: "600",
@@ -160,7 +203,7 @@ export default function EditarEvento() {
             disableMonthChange={false}
             enableSwipeMonths={true}
             style={styles.calendar}
-            monthFormat={'MMMM yyyy'}
+            monthFormat={"MMMM yyyy"}
           />
         </View>
 
@@ -206,21 +249,32 @@ export default function EditarEvento() {
           </View>
 
           {/* Notificação */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Notificação</Text>
-            <TouchableOpacity
-              style={styles.sectionButton}
-              onPress={() => setShowNotification(!showNotification)}
-            >
-              <Text style={styles.sectionButtonText}>
-                {showNotification ? "Notificação ativada" : "Adicionar notificação"}
-              </Text>
-              <Ionicons
-                name={showNotification ? "checkmark-circle" : "add-circle-outline"}
-                size={20}
-                color="#3B82F6"
+          <View style={styles.notificationContainer}>
+            <View style={styles.notificationHeader}>
+              <View style={styles.notificationInfo}>
+                <Ionicons name="notifications" size={20} color="#3B82F6" />
+                <View style={styles.notificationTextContainer}>
+                  <Text style={styles.notificationTitle}>Lembrete de Evento</Text>
+                  <Text style={styles.notificationSubtitle}>
+                    Receber notificação no horário do evento
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={showNotification}
+                onValueChange={setShowNotification}
+                trackColor={{ false: "#E5E7EB", true: "#3B82F6" }}
+                thumbColor={showNotification ? "#fff" : "#f4f3f4"}
+                ios_backgroundColor="#E5E7EB"
               />
-            </TouchableOpacity>
+            </View>
+            {showNotification && (
+              <View style={styles.notificationDetails}>
+                <Text style={styles.notificationDetailsText}>
+                  📅 Você receberá uma notificação em {formatDate(selectedDate)} às {time}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Alarme */}
@@ -239,36 +293,27 @@ export default function EditarEvento() {
                     title,
                     note,
                     date: selectedDate,
-                    time,
-                    editMode: "true",
-                    eventId,
                   },
                 });
               }}
             >
-              <Text style={styles.sectionButtonText}>
-                adicione um alarme para te lembrar
-              </Text>
-              <Ionicons
-                name="time-outline"
-                size={20}
-                color="#3B82F6"
-              />
+              <Text style={styles.sectionButtonText}>adicione um alarme para te lembrar</Text>
+              <Ionicons name="time-outline" size={20} color="#3B82F6" />
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
 
-      {/* Botão de atualizar */}
+      {/* Botão de salvar */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.addButton} onPress={handleUpdateEvent}>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <LinearGradient
             colors={["#8B5CF6", "#3B82F6"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
-            style={styles.addButtonGradient}
+            style={styles.saveButtonGradient}
           >
-            <Text style={styles.addButtonText}>Atualizar</Text>
+            <Text style={styles.saveButtonText}>Salvar Alterações</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -316,9 +361,9 @@ const styles = StyleSheet.create({
   calendarTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 12,
     textAlign: "center",
+    color: "#333",
   },
   calendar: {
     borderRadius: 12,
@@ -333,17 +378,17 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
     marginBottom: 8,
+    color: "#333",
   },
   textInput: {
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: "#333",
     borderWidth: 1,
     borderColor: "#E5E7EB",
+    color: "#333",
   },
   textArea: {
     height: 80,
@@ -354,8 +399,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
     marginBottom: 8,
+    color: "#333",
   },
   sectionButton: {
     backgroundColor: "#fff",
@@ -369,14 +414,14 @@ const styles = StyleSheet.create({
   },
   sectionButtonText: {
     fontSize: 16,
-    color: "#666",
     flex: 1,
+    color: "#666",
   },
   buttonContainer: {
     paddingHorizontal: 20,
     paddingBottom: 30,
   },
-  addButton: {
+  saveButton: {
     borderRadius: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -384,15 +429,61 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  addButtonGradient: {
+  saveButtonGradient: {
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 12,
   },
-  addButtonText: {
+  saveButtonText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  notificationContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  notificationHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  notificationInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  notificationTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  notificationTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 2,
+  },
+  notificationSubtitle: {
+    fontSize: 14,
+    color: "#666",
+  },
+  notificationDetails: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#F3F4F6",
+  },
+  notificationDetailsText: {
+    fontSize: 14,
+    color: "#059669",
+    fontWeight: "500",
   },
 });
