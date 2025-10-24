@@ -18,7 +18,6 @@ import {
 import { useTheme } from "../contexts/ThemeContext";
 import { useUser } from "../contexts/UserContext";
 
-<<<<<<< HEAD
 type SupportLevel = "leve" | "moderado" | "severo";
 
 export default function SignUp() {
@@ -63,7 +62,7 @@ export default function SignUp() {
         modal: "#fff",
       };
 
-  // ✅ Fecha o modal automaticamente após 2,5 segundos
+  // Fecha o modal automaticamente após 2,5 segundos
   useEffect(() => {
     if (showSuccessModal) {
       const timer = setTimeout(() => {
@@ -72,11 +71,10 @@ export default function SignUp() {
       }, 2500);
       return () => clearTimeout(timer);
     }
-  }, [showSuccessModal]);
+  }, [showSuccessModal, router]);
 
   const levels = useMemo(
     () => [
-<<<<<<< HEAD
       { label: "leve", value: "leve" as const },
       { label: "moderado", value: "moderado" as const },
       { label: "severo", value: "severo" as const },
@@ -89,7 +87,6 @@ export default function SignUp() {
     return found?.label ?? "Nível de suporte (opcional)";
   }, [levels, supportLevel]);
 
-<<<<<<< HEAD
   const handleSignUp = async () => {
     if (!name || !email || !password) {
       Alert.alert(
@@ -213,7 +210,6 @@ export default function SignUp() {
             accessibilityRole="button"
             accessibilityLabel="Selecionar nível de suporte"
           >
-<<<<<<< HEAD
             <Text
               style={[
                 styles.dropdownText,
@@ -247,10 +243,9 @@ export default function SignUp() {
                   }}
                   style={[
                     styles.optionItem,
-                    supportLevel === item.value && { backgroundColor: colors.accent + '20' },
+                    supportLevel === item.value && { backgroundColor: colors.accent + "20" },
                   ]}
                 >
-<<<<<<< HEAD
                   <Text style={[styles.optionText, { color: colors.textPrimary }]}>{item.label}</Text>
                 </Pressable>
               ))}
@@ -276,7 +271,7 @@ export default function SignUp() {
         </View>
       </ScrollView>
 
-      {/* 🔹 Modal de sucesso estilizado e automático */}
+      {/* Modal de sucesso */}
       <Modal visible={showSuccessModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.successModal, { backgroundColor: colors.modal }]}>
@@ -364,7 +359,6 @@ const styles = StyleSheet.create({
   },
   eyeButton: { marginLeft: -40, padding: 8, zIndex: 1 },
   dropdownTrigger: {
-<<<<<<< HEAD
     width: "45%",
     borderWidth: 1,
     borderRadius: 56,
@@ -380,7 +374,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-<<<<<<< HEAD
   dropdownText: { fontSize: 14, fontWeight: "600" },
   dropdownCaret: { fontSize: 16 },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)" },
@@ -397,7 +390,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
   },
-<<<<<<< HEAD
   optionItem: { paddingVertical: 13, paddingHorizontal: 16 },
   optionText: { fontSize: 16, fontWeight: "600" },
   eyeIcon: {
@@ -427,7 +419,7 @@ const styles = StyleSheet.create({
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 18 },
   buttonDisabled: { opacity: 0.7 },
 
-  // 🔹 Estilos do modal de sucesso
+  // Estilos do modal de sucesso
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",

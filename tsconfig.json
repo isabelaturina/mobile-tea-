@@ -17,14 +17,17 @@
     "isolatedModules": true,
     "jsx": "react-native",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "expo-env.d.ts",
-    "types/**/*.ts"
+    "types/**/*.ts",
+    ".expo/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
