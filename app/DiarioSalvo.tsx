@@ -57,12 +57,15 @@ export default function DiarioSalvo() {
         style={styles.header}
       >
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ padding: 8 }}
+          >
             <Ionicons name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Meu humor diário</Text>
           <View style={styles.heartIcon}>
-            <Ionicons name="heart" size={20} color="#fff" />
+            <Ionicons name="heart" size={24} color="#fff" />
           </View>
         </View>
       </LinearGradient>
@@ -98,15 +101,24 @@ export default function DiarioSalvo() {
 
         {/* Confirmação */}
         <View style={styles.confirmationContainer}>
-          <View style={[styles.confirmationCard, isDark && styles.confirmationCardDark]}>
+          <View
+            style={[
+              styles.confirmationCard,
+              isDark && styles.confirmationCardDark,
+            ]}
+          >
             <Text style={styles.confirmationTitle}>Pronto!</Text>
             <View style={styles.beaIllustration}>
-              <Ionicons name="person-circle" size={80} color={isDark ? "#8B5CF6" : "#8B5CF6"} />
+              <Ionicons
+                name="person-circle"
+                size={80}
+                color={isDark ? "#8B5CF6" : "#8B5CF6"}
+              />
             </View>
 
             <Text style={styles.confirmationMessage}>
-              Sua anotação foi salva! A Bea está disponível caso queira conversar, tirar dúvidas ou
-              receber ajuda sempre que precisar.
+              Sua anotação foi salva! A Bea está disponível caso queira conversar,
+              tirar dúvidas ou receber ajuda sempre que precisar.
             </Text>
           </View>
         </View>
@@ -147,6 +159,7 @@ const getStyles = (isDark: boolean) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
+      paddingHorizontal: 10,
     },
     headerTitle: {
       fontSize: 20,
@@ -154,10 +167,13 @@ const getStyles = (isDark: boolean) =>
       color: "#fff",
       flex: 1,
       textAlign: "center",
+      marginHorizontal: 10,
     },
     heartIcon: {
       width: 24,
       alignItems: "center",
+      justifyContent: "center",
+      height: 24,
     },
     content: {
       flex: 1,
@@ -197,7 +213,7 @@ const getStyles = (isDark: boolean) =>
     },
     selectedMoodButton: {
       borderColor: "#3B82F6",
-      backgroundColor: isDark ?"#3B82F6" : "#EBF4FF",
+      backgroundColor: isDark ? "#3B82F6" : "#EBF4FF",
     },
     moodEmoji: {
       fontSize: 28,

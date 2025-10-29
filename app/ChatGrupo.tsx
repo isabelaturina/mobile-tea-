@@ -9,9 +9,11 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  Platform,
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 interface Message {
   id: string;
@@ -131,7 +133,11 @@ export default function ChatGrupo() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar 
+        barStyle={Platform.OS === 'android' ? 'light-content' : 'dark-content'} 
+        backgroundColor={GRADIENT_START}
+        translucent={Platform.OS === 'android'}
+      />
 
       {/* Header com Degradê */}
       <LinearGradient
@@ -140,9 +146,17 @@ export default function ChatGrupo() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backText}>←</Text>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => router.back()}
+        >
+          <MaterialCommunityIcons 
+            name="arrow-left" 
+            size={28} 
+            color="#fff" 
+          />
         </TouchableOpacity>
+        
         <Text style={styles.headerTitle}>Chat em Grupo</Text>
         <View style={styles.headerRight} />
       </LinearGradient>
@@ -219,24 +233,29 @@ export default function ChatGrupo() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 16,
-    height: 60,
+    height: Platform.OS === "android" ? 56 : 60,
+    elevation: Platform.OS === "android" ? 4 : 0,
   },
   backButton: {
-    padding: 4,
+    padding: Platform.OS === "android" ? 1 : 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
   },
   backText: {
-    fontSize: 24,
+    fontSize: Platform.OS === "android" ? 22 : 24,
     fontWeight: "bold",
     color: "#fff",
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: Platform.OS === "android" ? 16 : 18,
     fontWeight: "bold",
     flex: 1,
     textAlign: "center",
@@ -260,20 +279,20 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   messageCard: {
-    padding: 12,
+    padding: Platform.OS === "android" ? 10 : 12,
     borderRadius: 12,
     maxWidth: "80%",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: Platform.OS === "android" ? 1 : 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowOpacity: Platform.OS === "android" ? 0.2 : 0.1,
+    shadowRadius: Platform.OS === "android" ? 1 : 3,
+    elevation: Platform.OS === "android" ? 2 : 0,
   },
   messageText: {
-    fontSize: 16,
-    lineHeight: 20,
+    fontSize: Platform.OS === "android" ? 14 : 16,
+    lineHeight: Platform.OS === "android" ? 20 : 22,
   },
   timestamp: {
     fontSize: 12,
@@ -284,32 +303,33 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
+    paddingBottom: Platform.OS === "android" ? 8 : 12,
   },
   textInput: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: Platform.OS === "android" ? 0.5 : 1,
     borderRadius: 25,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingVertical: Platform.OS === "android" ? 8 : 10,
     marginRight: 8,
-    maxHeight: 100,
-    fontSize: 14,
-    fontWeight: "bold",
+    maxHeight: Platform.OS === "android" ? 80 : 100,
+    fontSize: Platform.OS === "android" ? 13 : 14,
+    fontWeight: Platform.OS === "android" ? "normal" : "bold",
   },
   sendButton: {
     borderRadius: 25,
     overflow: "hidden",
   },
   sendButtonTouchable: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: Platform.OS === "android" ? 14 : 16,
+    paddingVertical: Platform.OS === "android" ? 8 : 10,
     justifyContent: "center",
     alignItems: "center",
   },
   sendButtonText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: Platform.OS === "android" ? 14 : 16,
   },
   emptyMessageText: {
     fontSize: 16,

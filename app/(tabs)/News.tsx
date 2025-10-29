@@ -38,7 +38,7 @@ export default function NoticiasScreen() {
   const colors = {
     background: isDarkMode ? "#121212" : "#F8F9FA",
     headerGradient: isDarkMode
-      ? (["#4B0082", "#1E40AF"] as [string, string])
+      ? (["#158EE5", "#A05BF0"] as [string, string])
       : (["#00C6FF", "#96bfffff"] as [string, string]),
     textPrimary: isDarkMode ? "#fff" : "#333",
     textSecondary: isDarkMode ? "#ccc" : "#666",

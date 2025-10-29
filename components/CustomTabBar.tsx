@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, Platform, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { LinearGradient } from "expo-linear-gradient";
@@ -75,24 +75,28 @@ export default function CustomTabBar({
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
-    height: 70,
-    elevation: 10,
+    paddingBottom: Platform.OS === 'android' ? 0 : 10,
+    elevation: Platform.OS === 'android' ? 8 : 0,
     shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    shadowOffset: { width: 0, height: -2 },
+    shadowOffset: { 
+      width: 0, 
+      height: Platform.OS === 'android' ? 2 : -2 
+    },
     alignItems: "center",
     justifyContent: "space-around",
-    paddingHorizontal: 8,
-    
+    paddingHorizontal: '2%',
+    paddingTop: Platform.OS === 'android' ? 10 : 5,
   },
   tab: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: Platform.OS === 'android' ? 8 : 10,
   },
   label: {
-    fontSize: 12,
+    fontSize: Dimensions.get('window').width * 0.03,
     color: "#222",
     marginTop: 4,
     fontWeight: "600",
