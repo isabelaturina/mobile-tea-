@@ -57,7 +57,7 @@ export default function ChatBea() {
     source={require("../assets/images/seta.png")}
     style={[styles.backImage, { width: screenWidth * 0.065, height: screenWidth * 0.065 }]}
     resizeMode="contain"
-    tintColor="#ffffff"
+    tintColor="#000000ff"
   />
 </TouchableOpacity>
 

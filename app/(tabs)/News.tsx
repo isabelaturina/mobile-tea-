@@ -1,7 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,49 +14,32 @@ import {
 } from "react-native";
 import { useTheme } from "../../contexts/ThemeContext";
 
-export default function News() {
+// Interface atualizada para garantir 'link' e 'imagem'
+interface Noticia {
+  id: string | number;
+  titulo: string;
+  descricao: string;
+  link: string; // OBRIGATÓRIO para o "Ler mais"
+  imagem: string; // OBRIGATÓRIO para exibir a imagem
+  dataPublicacao?: string;
+  categoria?: string;
+  tempo_leitura?: string;
+  data?: string;
+}
+
+export default function NoticiasScreen() {
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
 
-  const newsItems = [
-    {
-      id: 1,
-      title: "Dicas para uma vida mais saudável",
-      excerpt: "Descubra como pequenas mudanças podem transformar sua saúde...",
-      category: "Saúde",
-      readTime: "3 min",
-    },
-    {
-      id: 2,
-      title: "Benefícios do exercício regular",
-      excerpt:
-        "Saiba por que a atividade física é essencial para o bem-estar...",
-      category: "Fitness",
-      readTime: "5 min",
-    },
-    {
-      id: 3,
-      title: "Alimentação equilibrada",
-      excerpt: "Guia completo para uma alimentação saudável e nutritiva...",
-      category: "Nutrição",
-      readTime: "4 min",
-    },
-    {
-      id: 4,
-      title: "Meditação para iniciantes",
-      excerpt:
-        "Aprenda técnicas simples de meditação para reduzir o estresse...",
-      category: "Bem-estar",
-      readTime: "6 min",
-    },
-  ];
+  const [noticias, setNoticias] = useState<Noticia[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Cores dinâmicas
   const colors = {
     background: isDarkMode ? "#121212" : "#F8F9FA",
     headerGradient: isDarkMode
-      ? ["#4B0082", "#1E40AF"]
-      : ["#00C6FF", "#96bfffff"],
+      ? (["#4B0082", "#1E40AF"] as [string, string])
+      : (["#00C6FF", "#96bfffff"] as [string, string]),
     textPrimary: isDarkMode ? "#fff" : "#333",
     textSecondary: isDarkMode ? "#ccc" : "#666",
     cardBackground: isDarkMode ? "#1E1E1E" : "#fff",
@@ -61,88 +48,160 @@ export default function News() {
     readMoreColor: isDarkMode ? "#70DEF5" : "#1163E7",
   };
 
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch("https://apinoticias-l1s9.onrender.com/api/noticias");
+
+        if (!response.ok) throw new Error("Erro ao carregar notícias");
+        const data: Noticia[] = await response.json();
+        
+        // Garante que cada item tenha um 'id' para a key do map
+        const dataWithId = data.map((item, index) => ({
+            ...item,
+            id: item.dataPublicacao || index, 
+        }));
+
+        setNoticias(dataWithId);
+      } catch (err: any) {
+        setError("Não foi possível carregar as notícias. Tente novamente mais tarde.");
+        console.error("Erro na API:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, []);
+
+  const abrirLink = async (url: string) => {
+    const encodedUrl = encodeURI(url);
+
+    try {
+      const supported = await Linking.canOpenURL(encodedUrl);
+
+      if (supported) {
+        await Linking.openURL(encodedUrl);
+      } else {
+        Alert.alert('Erro', 'Não foi possível abrir o link. Verifique a URL.');
+        console.error(`Não foi possível abrir a URL: ${encodedUrl}`);
+      }
+    } catch (err) {
+      console.error("Erro ao tentar abrir o link:", err);
+      Alert.alert('Erro', 'Ocorreu um erro ao tentar abrir o link.');
+    }
+  };
+
+
   return (
-<View style={[styles.container, { backgroundColor: colors.background }]}>
-  <LinearGradient
-    colors={isDarkMode ? ['#4B0082', '#1E40AF'] : ['#00C6FF', '#96bfffff']}
-    start={{ x: 0, y: 0 }}
-    end={{ x: 1, y: 0 }}
-    style={styles.header}
-  >
-    <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-      Notícias
-    </Text>
-    <Text style={[styles.headerSubtitle, { color: colors.textPrimary }]}>
-      Fique por dentro das novidades
-    </Text>
-  </LinearGradient>
-
-  <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-    {newsItems.map((item) => (
-      <TouchableOpacity
-        key={item.id}
-        style={[
-          styles.newsCard,
-          { backgroundColor: colors.cardBackground },
-        ]}
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* HEADER: ESTILO ANTIGO PRESERVADO */}
+      <LinearGradient
+        colors={colors.headerGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.header}
       >
-        <View style={styles.newsHeader}>
-          <View
-            style={[
-              styles.categoryBadge,
-              { backgroundColor: colors.categoryBackground },
-            ]}
-          >
-            <Text
-              style={[styles.categoryText, { color: colors.categoryText }]}
-            >
-              {item.category}
+        <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
+          Notícias
+        </Text>
+        <Text style={[styles.headerSubtitle, { color: colors.textPrimary }]}>
+          Fique por dentro das novidades sobre autismo
+        </Text>
+      </LinearGradient>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.readMoreColor} />
+            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+              Carregando notícias...
             </Text>
           </View>
-          <View style={styles.readTimeContainer}>
-            <Ionicons
-              name="time-outline"
-              size={14}
-              color={colors.textSecondary}
-            />
-            <Text
-              style={[styles.readTimeText, { color: colors.textSecondary }]}
-            >
-              {item.readTime}
+        )}
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle-outline" size={40} color="#EF4444" />
+            <Text style={[styles.errorText, { color: colors.textSecondary }]}>
+              {error}
             </Text>
           </View>
-        </View>
+        )}
 
-        <Text style={[styles.newsTitle, { color: colors.textPrimary }]}>
-          {item.title}
-        </Text>
-        <Text style={[styles.newsExcerpt, { color: colors.textSecondary }]}>
-          {item.excerpt}
-        </Text>
-
-        <View style={styles.newsFooter}>
-          <TouchableOpacity style={styles.readMoreButton}>
-            <Text
-              style={[styles.readMoreText, { color: colors.readMoreColor }]}
-            >
-              Ler mais
+        {!loading && !error && noticias.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="newspaper-outline" size={48} color={colors.textSecondary} />
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              Nenhuma notícia encontrada.
             </Text>
-            <Ionicons
-              name="arrow-forward"
-              size={16}
-              color={colors.readMoreColor}
-            />
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    ))}
-  </ScrollView>
-</View>
+          </View>
+        )}
+
+        {!loading &&
+          !error &&
+          noticias.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[styles.newsCard, { backgroundColor: colors.cardBackground }]}
+              onPress={() => abrirLink(item.link)} // Abrir link ao tocar no card inteiro
+            >
+              {/* 🛑 IMAGEM RE-ADICIONADA AQUI */}
+              {item.imagem && <Image source={{ uri: item.imagem }} style={styles.newsImage} />}
+              
+              <View style={styles.newsHeader}>
+                <View
+                  style={[
+                    styles.categoryBadge,
+                    { backgroundColor: colors.categoryBackground },
+                  ]}
+                >
+                  <Text style={[styles.categoryText, { color: colors.categoryText }]}>
+                    {item.categoria || "Autismo"}
+                  </Text>
+                </View>
+
+                {item.tempo_leitura && (
+                  <View style={styles.readTimeContainer}>
+                    <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
+                    <Text style={[styles.readTimeText, { color: colors.textSecondary }]}>
+                      {item.tempo_leitura}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <Text style={[styles.newsTitle, { color: colors.textPrimary }]}>
+                {item.titulo}
+              </Text>
+              <Text style={[styles.newsExcerpt, { color: colors.textSecondary }]}>
+                {item.descricao}
+              </Text>
+
+              <View style={styles.newsFooter}>
+                <TouchableOpacity style={styles.readMoreButton} onPress={() => abrirLink(item.link)}>
+                  <Text style={[styles.readMoreText, { color: colors.readMoreColor }]}>
+                    Ler mais
+                  </Text>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={16}
+                    color={colors.readMoreColor}
+                  />
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          ))}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  // ESTILOS DO HEADER
   header: {
     paddingTop: 60,
     paddingBottom: 30,
@@ -157,6 +216,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   headerSubtitle: { fontSize: 16, textAlign: "center", opacity: 0.9 },
+  // ESTILO PARA A IMAGEM DA NOTÍCIA
+  newsImage: {
+    width: "100%",
+    height: 200, // Altura padrão
+    borderRadius: 10,
+    marginBottom: 16,
+    // Garante que a imagem se ajuste bem dentro do contêiner
+    resizeMode: 'cover', 
+  },
   content: { flex: 1, paddingHorizontal: 20, paddingTop: 30 },
   newsCard: {
     borderRadius: 16,
@@ -192,4 +260,10 @@ const styles = StyleSheet.create({
   newsFooter: { alignItems: "flex-end" },
   readMoreButton: { flexDirection: "row", alignItems: "center" },
   readMoreText: { fontSize: 14, fontWeight: "bold", marginRight: 4 },
+  loadingContainer: { alignItems: "center", marginTop: 60 },
+  loadingText: { marginTop: 10, fontSize: 16 },
+  errorContainer: { alignItems: "center", marginTop: 60, paddingHorizontal: 20 },
+  errorText: { marginTop: 10, fontSize: 16, textAlign: "center" },
+  emptyContainer: { alignItems: "center", marginTop: 60 },
+  emptyText: { marginTop: 10, fontSize: 16, textAlign: "center" },
 });

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
     Alert,
     ScrollView,
@@ -10,6 +10,7 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    useColorScheme,
 } from "react-native";
 import { useCronograma } from "../contexts/CronogramaContext";
 
@@ -29,6 +30,9 @@ export default function EditarAnotacao() {
   const [selectedMood, setSelectedMood] = useState<string>("");
   const [note, setNote] = useState<string>("");
 
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
+
   useEffect(() => {
     const entry = getDiaryEntryForDate(date as string);
     if (entry) {
@@ -36,6 +40,136 @@ export default function EditarAnotacao() {
       setNote(entry.note);
     }
   }, [date, getDiaryEntryForDate]);
+
+  const styles = useMemo(() => {
+    return StyleSheet.create({
+      container: {
+        flex: 1,
+        backgroundColor: isDark ? "#071426" : "#F8F9FA",
+      },
+      header: {
+        paddingTop: 60,
+        paddingBottom: 20,
+        paddingHorizontal: 20,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+      },
+      headerContent: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+      },
+      headerTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+        color: "#fff",
+        flex: 1,
+        textAlign: "center",
+      },
+      content: {
+        flex: 1,
+        paddingHorizontal: 20,
+      },
+      section: {
+        marginTop: 30,
+      },
+      sectionTitle: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: isDark ? "#E5E7EB" : "#333",
+        marginBottom: 16,
+        textAlign: "center",
+      },
+      moodContainer: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        flexWrap: "wrap",
+        paddingHorizontal: 6,
+      },
+      moodButton: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: isDark ? "#0B1220" : "#fff",
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+        borderWidth: 2,
+        borderColor: "transparent",
+        margin: 6,
+      },
+      selectedMoodButton: {
+        borderColor: "#3B82F6",
+        backgroundColor: isDark ? "#3B82F6" : "#EBF4FF",
+      },
+      moodEmoji: {
+        fontSize: 28,
+      },
+      /* Neon / note container */
+      noteContainer: {
+        // fundo preto com borda azul neon e glow no modo escuro
+        backgroundColor: isDark ? "#000000" : "#fff",
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: isDark ? 2 : 1,
+        borderColor: isDark ? "rgba(59,130,246,0.95)" : "rgba(59,130,246,0.18)",
+        // glow (iOS)
+        shadowColor: isDark ? "#3B82F6" : "#000",
+        shadowOffset: { width: 0, height: isDark ? 8 : 2 },
+        shadowOpacity: isDark ? 0.9 : 0.08,
+        shadowRadius: isDark ? 18 : 6,
+        // elevation (Android)
+        elevation: isDark ? 14 : 4,
+        minHeight: 200,
+        overflow: "hidden",
+      },
+      noteInput: {
+        fontSize: 16,
+        color: isDark ? "#E5E7EB" : "#333",
+        minHeight: 150,
+        textAlignVertical: "top",
+      },
+      noteFooter: {
+        alignItems: "flex-end",
+        marginTop: 12,
+      },
+      addNoteButton: {
+        backgroundColor: isDark ? "#111827" : "#333",
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
+      },
+      addNoteButtonText: {
+        color: "#fff",
+        fontSize: 12,
+        fontWeight: "600",
+      },
+      saveButtonContainer: {
+        padding: 20,
+        paddingBottom: 40,
+      },
+      saveButton: {
+        backgroundColor: "#3B82F6",
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+      },
+      saveButtonText: {
+        color: "#fff",
+        fontSize: 18,
+        fontWeight: "bold",
+      },
+    });
+  }, [isDark]);
 
   const handleSave = () => {
     if (!selectedMood) {
@@ -101,7 +235,7 @@ export default function EditarAnotacao() {
     <View style={styles.container}>
       {/* Header */}
       <LinearGradient
-        colors={["#8B5CF6", "#3B82F6"]}
+        colors={isDark ? ["#8B5CF6", "#3B82F6"] : ["#8B5CF6", "#3B82F6"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -148,7 +282,7 @@ export default function EditarAnotacao() {
             <TextInput
               style={styles.noteInput}
               placeholder="Faça sua anotação aqui..."
-              placeholderTextColor="#999"
+              placeholderTextColor={isDark ? "#9CA3AF" : "#999"}
               value={note}
               onChangeText={setNote}
               multiline
@@ -156,9 +290,7 @@ export default function EditarAnotacao() {
               maxLength={500}
             />
             <View style={styles.noteFooter}>
-              <TouchableOpacity style={styles.addNoteButton}>
-                <Text style={styles.addNoteButtonText}>Adicionar nota</Text>
-              </TouchableOpacity>
+            
             </View>
           </View>
         </View>
@@ -173,123 +305,3 @@ export default function EditarAnotacao() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F8F9FA",
-  },
-  header: {
-    paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-    flex: 1,
-    textAlign: "center",
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  section: {
-    marginTop: 30,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  moodContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  moodButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderWidth: 2,
-    borderColor: "transparent",
-  },
-  selectedMoodButton: {
-    borderColor: "#3B82F6",
-    backgroundColor: "#EBF4FF",
-  },
-  moodEmoji: {
-    fontSize: 28,
-  },
-  noteContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    minHeight: 200,
-  },
-  noteInput: {
-    fontSize: 16,
-    color: "#333",
-    minHeight: 150,
-    textAlignVertical: "top",
-  },
-  noteFooter: {
-    alignItems: "flex-end",
-    marginTop: 12,
-  },
-  addNoteButton: {
-    backgroundColor: "#333",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  addNoteButtonText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  saveButtonContainer: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  saveButton: {
-    backgroundColor: "#3B82F6",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  saveButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-});
