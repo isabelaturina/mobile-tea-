@@ -64,9 +64,26 @@ export default function EditProfile() {
   const [selectedIcon, setSelectedIcon] = useState(0);
   const [showArrows, setShowArrows] = useState(false);
   const [name, setName] = useState("");
+  const [lastValidName, setLastValidName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [autismLevel, setAutismLevel] = useState("");
+
+  // Regex que aceita letras (incluindo acentuadas), espaços, hífen e apóstrofo
+  const nameValidRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]*$/;
+
+  const handleNameChange = (text: string) => {
+    if (nameValidRegex.test(text)) {
+      setName(text);
+      setLastValidName(text);
+    } else {
+      // Não atualiza o input e mostra modal com mesmo estilo já existente
+      setWarningMessage("Nome inválido: não aceita números ou caracteres");
+      setShowWarning(true);
+      // opcional: manter o valor anterior (lastValidName) sem alterações
+      // setName(lastValidName);
+    }
+  };
 
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
@@ -84,7 +101,21 @@ export default function EditProfile() {
   };
 
   const handleSave = () => {
-    if (!name.trim() || !email.trim()) {
+    // Verifica se nome está vazio ou inválido (tem números/caracteres proibidos)
+    if (!name.trim()) {
+      setWarningMessage("Por favor, preencha seu nome e e-mail.");
+      setShowWarning(true);
+      return;
+    }
+
+    const nameFullValidRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;
+    if (!nameFullValidRegex.test(name.trim())) {
+      setWarningMessage("Nome inválido: não aceita números ou caracteres");
+      setShowWarning(true);
+      return;
+    }
+
+    if (!email.trim()) {
       setWarningMessage("Por favor, preencha seu nome e e-mail.");
       setShowWarning(true);
       return;
@@ -170,7 +201,7 @@ export default function EditProfile() {
             placeholder="Digite seu nome"
             placeholderTextColor={colors.placeholder}
             value={name}
-            onChangeText={setName}
+            onChangeText={handleNameChange}
           />
 
           <Text style={[styles.label, { color: colors.textPrimary }]}>E-mail:</Text>

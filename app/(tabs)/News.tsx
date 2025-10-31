@@ -159,7 +159,7 @@ export default function NoticiasScreen() {
                   ]}
                 >
                   <Text style={[styles.categoryText, { color: colors.categoryText }]}>
-                    {item.categoria || "Autismo"}
+                    {item.categoria || "TEA+"}
                   </Text>
                 </View>
 

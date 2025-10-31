@@ -85,7 +85,7 @@ export default function Chat() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, top: 0 },
+  container: { flex: 1, top: 15 },
   content: { flex: 1, paddingHorizontal: 12, paddingTop: 32 },
   title: {
     fontSize: 25,

@@ -17,13 +17,16 @@ export default function CustomTabBar({
   descriptors,
   navigation,
 }: BottomTabBarProps) {
+  // Altura do tabBar ajustada por plataforma para evitar "flutuar" no Android
+  const TAB_BAR_HEIGHT = Platform.OS === "android" ? 64 : 84;
+
   return (
     <LinearGradient
       colors={["#70DEFE", "#70DEFE"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
-      style={styles.tabBar}
-    >
+      // aplica altura dinâmica e garante que o tab bar fique fixo na parte inferior em Android
+      style={[styles.tabBar, { height: TAB_BAR_HEIGHT }]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =
@@ -74,31 +77,37 @@ export default function CustomTabBar({
 
 const styles = StyleSheet.create({
   tabBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
     flexDirection: "row",
-    paddingBottom: Platform.OS === 'android' ? 0 : 10,
-    elevation: Platform.OS === 'android' ? 8 : 0,
+    paddingHorizontal: 12,
+    paddingTop: Platform.OS === "android" ? 8 : 12,
+    paddingBottom: Platform.OS === "android" ? 8 : 12,
+    elevation: 12,
+    zIndex: 20,
     shadowColor: "#000",
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.12,
     shadowRadius: 8,
-    shadowOffset: { 
-      width: 0, 
-      height: Platform.OS === 'android' ? 2 : -2 
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
     alignItems: "center",
     justifyContent: "space-around",
-    paddingHorizontal: '2%',
-    paddingTop: Platform.OS === 'android' ? 10 : 5,
+    backgroundColor: "transparent",
   },
   tab: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: Platform.OS === 'android' ? 8 : 10,
+    paddingVertical: Platform.OS === 'android' ? 8: 10,
   },
   label: {
     fontSize: Dimensions.get('window').width * 0.03,
     color: "#222",
-    marginTop: 4,
+    marginTop: 2,
     fontWeight: "600",
   },
 });
