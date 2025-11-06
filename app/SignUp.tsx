@@ -1,4 +1,4 @@
-import { LinearGradient } from "expo-linear-gradient";
+import { LinearGradient } from "expo-linear-gradient"; 
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -30,12 +30,14 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  // novo estado para checkbox
+  const [hasAutismAspect, setHasAutismAspect] = useState(false);
+
   const router = useRouter();
   const { signUp } = useUser();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
 
-  // 🎨 Define cores com base no tema
   const colors = isDarkMode
     ? {
         background: "#000000",
@@ -62,7 +64,6 @@ export default function SignUp() {
         modal: "#fff",
       };
 
-  // Fecha o modal automaticamente após 2,5 segundos
   useEffect(() => {
     if (showSuccessModal) {
       const timer = setTimeout(() => {
@@ -148,7 +149,8 @@ export default function SignUp() {
         <Text style={[styles.title, { color: colors.textPrimary }]}>Crie sua conta</Text>
         <TouchableOpacity onPress={() => router.push("/Login")}>
           <Text style={[styles.linkText, { color: colors.textSecondary }]}>
-            Já possui uma conta? <Text style={[styles.link, { color: colors.accent }]}>Faça seu Login</Text>
+            Já possui uma conta?{" "}
+            <Text style={[styles.link, { color: colors.accent }]}>Faça seu Login</Text>
           </Text>
         </TouchableOpacity>
 
@@ -156,7 +158,14 @@ export default function SignUp() {
           <TextInput
             placeholder="Nome:"
             placeholderTextColor={colors.placeholder}
-            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                color: colors.textPrimary,
+              },
+            ]}
             value={name}
             onChangeText={setName}
           />
@@ -164,7 +173,14 @@ export default function SignUp() {
           <TextInput
             placeholder="Email:"
             placeholderTextColor={colors.placeholder}
-            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                color: colors.textPrimary,
+              },
+            ]}
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
@@ -175,7 +191,14 @@ export default function SignUp() {
             <TextInput
               placeholder="Senha:"
               placeholderTextColor={colors.placeholder}
-              style={[styles.inputPassword, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
+              style={[
+                styles.inputPassword,
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  color: colors.textPrimary,
+                },
+              ]}
               secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
@@ -206,7 +229,10 @@ export default function SignUp() {
 
           <Pressable
             onPress={() => setIsLevelModalOpen(true)}
-            style={[styles.dropdownTrigger, { backgroundColor: colors.card, borderColor: colors.border }]}
+            style={[
+              styles.dropdownTrigger,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
             accessibilityRole="button"
             accessibilityLabel="Selecionar nível de suporte"
           >
@@ -221,15 +247,30 @@ export default function SignUp() {
             <Text style={[styles.dropdownCaret, { color: colors.textPrimary }]}>▾</Text>
           </Pressable>
 
+          {/* 🆕 Checkbox abaixo do seletor */}
+          <View style={styles.checkboxContainer}>
+            <Pressable
+              onPress={() => setHasAutismAspect(!hasAutismAspect)}
+              style={[
+                styles.checkbox,
+                {
+                  borderColor: colors.border,
+                  backgroundColor: hasAutismAspect ? colors.accent : "transparent",
+                },
+              ]}
+            />
+            <Text style={[styles.checkboxLabel, { color: colors.textPrimary }]}>
+              Não possuo nenhum aspecto ?
+            </Text>
+          </View>
+
           <Modal
             visible={isLevelModalOpen}
             transparent
             animationType="fade"
             onRequestClose={() => setIsLevelModalOpen(false)}
           >
-            <TouchableWithoutFeedback
-              onPress={() => setIsLevelModalOpen(false)}
-            >
+            <TouchableWithoutFeedback onPress={() => setIsLevelModalOpen(false)}>
               <View style={styles.modalBackdrop} />
             </TouchableWithoutFeedback>
 
@@ -243,10 +284,16 @@ export default function SignUp() {
                   }}
                   style={[
                     styles.optionItem,
-                    supportLevel === item.value && { backgroundColor: colors.accent + "20" },
+                    supportLevel === item.value && {
+                      backgroundColor: colors.accent + "20",
+                    },
                   ]}
                 >
-                  <Text style={[styles.optionText, { color: colors.textPrimary }]}>{item.label}</Text>
+                  <Text
+                    style={[styles.optionText, { color: colors.textPrimary }]}
+                  >
+                    {item.label}
+                  </Text>
                 </Pressable>
               ))}
             </View>
@@ -364,7 +411,7 @@ const styles = StyleSheet.create({
     borderRadius: 56,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginBottom: 30,
+    marginBottom: 20,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -376,6 +423,19 @@ const styles = StyleSheet.create({
   },
   dropdownText: { fontSize: 14, fontWeight: "600" },
   dropdownCaret: { fontSize: 16 },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 30,
+    gap: 8,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderWidth: 2,
+    borderRadius: 6,
+  },
+  checkboxLabel: { fontSize: 14, fontWeight: "600" },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)" },
   modalSheet: {
     position: "absolute",
@@ -419,7 +479,6 @@ const styles = StyleSheet.create({
   buttonText: { color: "#fff", fontWeight: "bold", fontSize: 18 },
   buttonDisabled: { opacity: 0.7 },
 
-  // Estilos do modal de sucesso
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
