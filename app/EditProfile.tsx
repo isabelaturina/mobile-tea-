@@ -40,7 +40,7 @@ export default function EditProfile() {
         background: "#000000",
         textPrimary: "#F8FAFC",
         textSecondary: "#94A3B8",
-        card: "#1E293B",
+        card: "##1a1a1a",
         accent: "#3B82F6",
         lightAccent: "#60A5FA",
         border: "#334155",

@@ -23,7 +23,7 @@ export default function NovaSenha() {
         background: "#000000",
         textPrimary: "#F8FAFC",
         textSecondary: "#94A3B8",
-        card: "#1E293B",
+        card: "#1a1a1a",
         accent: "#1163E7", // botão azul fixo
         border: "#334155",
         placeholder: "#64748B",

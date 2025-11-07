@@ -22,12 +22,12 @@ export default function Login() {
         background: "#000000",
         textPrimary: "#F8FAFC",
         textSecondary: "#94A3B8",
-        card: "#1E293B",
+        card: "#1a1a1a",
         accent: "#3B82F6",
         lightAccent: "#60A5FA",
         border: "#334155",
         placeholder: "#64748B",
-        circle: "#1E293B",
+        circle: "#182d4eff",
       }
     : {
         background: "#fff",

@@ -1,6 +1,8 @@
 import { LinearGradient } from "expo-linear-gradient"; 
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+
 import {
   Alert,
   Image,
@@ -43,12 +45,12 @@ export default function SignUp() {
         background: "#000000",
         textPrimary: "#F8FAFC",
         textSecondary: "#94A3B8",
-        card: "#1E293B",
+        card: "#1a1a1a",
         accent: "#3B82F6",
         lightAccent: "#60A5FA",
         border: "#334155",
         placeholder: "#64748B",
-        circle: "#1E293B",
+        circle: "#182d4eff",
         modal: "#1E293B",
       }
     : {
@@ -155,20 +157,27 @@ export default function SignUp() {
         </TouchableOpacity>
 
         <View style={styles.formContainer}>
-          <TextInput
-            placeholder="Nome:"
-            placeholderTextColor={colors.placeholder}
-            style={[
-              styles.input,
-              {
-                backgroundColor: colors.card,
-                borderColor: colors.border,
-                color: colors.textPrimary,
-              },
-            ]}
-            value={name}
-            onChangeText={setName}
-          />
+       <TextInput
+  placeholder="Nome:"
+  placeholderTextColor={colors.placeholder}
+  style={[
+    styles.input,
+    {
+      backgroundColor: colors.card,
+      borderColor: colors.border,
+      color: colors.textPrimary,
+    },
+  ]}
+  value={name}
+onChangeText={(text) => {
+  const formatted = text
+    .toLowerCase()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+  setName(formatted);
+}}
+
+/>
+
 
           <TextInput
             placeholder="Email:"
@@ -247,22 +256,29 @@ export default function SignUp() {
             <Text style={[styles.dropdownCaret, { color: colors.textPrimary }]}>▾</Text>
           </Pressable>
 
-          {/* 🆕 Checkbox abaixo do seletor */}
           <View style={styles.checkboxContainer}>
-            <Pressable
-              onPress={() => setHasAutismAspect(!hasAutismAspect)}
-              style={[
-                styles.checkbox,
-                {
-                  borderColor: colors.border,
-                  backgroundColor: hasAutismAspect ? colors.accent : "transparent",
-                },
-              ]}
-            />
-            <Text style={[styles.checkboxLabel, { color: colors.textPrimary }]}>
-              Não possuo nenhum aspecto ?
-            </Text>
-          </View>
+  <Pressable
+    onPress={() => setHasAutismAspect(!hasAutismAspect)}
+    style={[
+      styles.checkbox,
+      {
+        borderColor: colors.border,
+        backgroundColor: hasAutismAspect ? colors.accent + "20" : "transparent",
+        justifyContent: "center",
+        alignItems: "center",
+      },
+    ]}
+  >
+    {hasAutismAspect && (
+      <Ionicons name="checkmark" size={18} color={colors.accent} />
+    )}
+  </Pressable>
+
+  <Text style={[styles.checkboxLabel, { color: colors.textPrimary }]}>
+    Não possuo nenhum aspecto ?
+  </Text>
+</View>
+
 
           <Modal
             visible={isLevelModalOpen}
@@ -429,12 +445,15 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     gap: 8,
   },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderWidth: 2,
-    borderRadius: 6,
-  },
+ checkbox: {
+  width: 24,
+  height: 24,
+  borderWidth: 2,
+  borderRadius: 6,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
   checkboxLabel: { fontSize: 14, fontWeight: "600" },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)" },
   modalSheet: {
