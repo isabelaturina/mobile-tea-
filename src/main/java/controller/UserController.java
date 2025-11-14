@@ -44,33 +44,28 @@ public class UserController {
         return userService.deleteUser(id);
     }
 
-    // ✅ MÉTODO DE TESTE
     @GetMapping("/teste")
     public String teste() {
         return "✅ API TEA+ FUNCIONANDO! " + new java.util.Date();
     }
 
-    // ✅ MÉTODO DE SAUDAÇÃO
     @GetMapping("/hello")
     public String hello() {
         return "👋 Olá! API TEA+ está no ar!";
     }
 
-    // 🔍 MÉTODO DE DIAGNÓSTICO
     @GetMapping("/diagnose")
     public String diagnose() throws ExecutionException, InterruptedException {
         userService.diagnoseUsers();
         return "Diagnóstico completo! Verifique os logs do console.";
     }
 
-    // 🔄 MÉTODO DE MIGRAÇÃO
     @GetMapping("/migrate")
     public String migrate() throws ExecutionException, InterruptedException {
         userService.migrateExistingUsers();
         return "Migração de dados completa! Verifique os logs.";
     }
 
-    // 🔍 BUSCAR POR EMAIL
     @GetMapping("/email/{email}")
     public User getUserByEmail(@PathVariable String email) throws ExecutionException, InterruptedException {
         return userService.getUserByEmail(email);

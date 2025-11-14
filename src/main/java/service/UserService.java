@@ -217,4 +217,35 @@ public class UserService {
         }
         System.out.println("✅ Migração completa: " + migrated + " documentos migrados");
     }
+
+    // ✅ MÉTODO NOVO PARA ATUALIZAR APENAS A SENHA (ADICIONE ESTE!)
+    public boolean updateUserPassword(String email, String newPassword) throws ExecutionException, InterruptedException {
+        Firestore db = FirestoreClient.getFirestore();
+
+        // Busca usuário por email
+        User user = getUserByEmail(email);
+        if (user == null) {
+            System.out.println("❌ Usuário não encontrado: " + email);
+            return false;
+        }
+
+        // ✅ ATUALIZA APENAS A SENHA (não cria novo usuário)
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("senha", newPassword);
+
+        try {
+            ApiFuture<WriteResult> result = db.collection(COLLECTION_NAME)
+                    .document(String.valueOf(user.getId()))
+                    .update(updates); // ✅ USA UPDATE (não SET)
+
+            result.get(); // Espera a operação completar
+
+            user.setSenha(newPassword);
+            System.out.println("✅ Senha atualizada para usuário: " + email);
+            return true;
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao atualizar senha: " + e.getMessage());
+            return false;
+        }
+    }
 }

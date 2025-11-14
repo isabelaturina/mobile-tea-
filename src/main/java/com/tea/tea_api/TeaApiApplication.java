@@ -15,5 +15,9 @@ public class TeaApiApplication {
         System.out.println("   POST http://localhost:8080/api/user");
         System.out.println("   GET  http://localhost:8080/api/user/teste");
         System.out.println("   GET  http://localhost:8080/api/user/diagnose");
+        System.out.println("   🔐 ENDPOINTS DE REDEFINIÇÃO:");
+        System.out.println("   POST http://localhost:8080/api/auth/forgot-password");
+        System.out.println("   POST http://localhost:8080/api/auth/reset-password");
+        System.out.println("   GET  http://localhost:8080/api/auth/validate-token");
     }
 }
