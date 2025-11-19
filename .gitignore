@@ -1,0 +1,15 @@
+# Ignorar pasta compilada (Maven/Gradle)
+target/
+
+# Ignorar chave do Firebase
+firebase-key.json
+**/firebase-key.json
+*firebase*.json
+
+# Ignorar arquivos de IDE
+.idea/
+*.iml
+
+# Ignorar sistema operacional
+.DS_Store
+Thumbs.db
