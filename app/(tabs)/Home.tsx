@@ -6,15 +6,16 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ScrollView,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { useUser } from "../../contexts/UserContext";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useUser } from "../../contexts/UserContext";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -73,13 +74,18 @@ export default function Home() {
         iconBg: "#E0F2FF",
       };
 
+  // Calcular altura da tab bar dinamicamente (sincronizado com CustomTabBar)
+  const BASE_TAB_HEIGHT = 60;
+  const safeAreaBottom = Platform.OS === 'android' ? Math.max(insets.bottom, 0) : insets.bottom;
+  const TAB_BAR_HEIGHT = BASE_TAB_HEIGHT + safeAreaBottom;
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={[]}>
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 160, // espaço para tabBar
+          paddingBottom: TAB_BAR_HEIGHT + (Platform.OS === 'android' ? 10 : 20),
         }}
       >
         {/* HEADER CORRIGIDO */}
@@ -90,7 +96,8 @@ export default function Home() {
           style={[
             styles.header,
             {
-              paddingTop: insets.top + 20, // 👈 agora funciona no Android
+              paddingTop: insets.top + (Platform.OS === 'android' ? 16 : 20),
+              marginTop: 0,
             },
           ]}
         >
@@ -114,9 +121,13 @@ export default function Home() {
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.carouselContent}
+            snapToInterval={screenWidth - 40}
+            snapToAlignment="start"
+            decelerationRate="fast"
             onMomentumScrollEnd={(event) => {
-              const index =
-                Math.round(event.nativeEvent.contentOffset.x / screenWidth);
+              const cardWidth = screenWidth - 40;
+              const index = Math.max(0, Math.min(featureCards.length - 1, Math.round(event.nativeEvent.contentOffset.x / cardWidth)));
               setCurrentCardIndex(index);
             }}
             renderItem={({ item }) => (
@@ -126,17 +137,23 @@ export default function Home() {
                     <Image source={item.image} style={styles.cardImage} resizeMode="contain" />
                   </View>
 
-                  <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
-                    {item.title}
-                  </Text>
+                  <View style={styles.cardTextContainer}>
+                    <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
+                      {item.title}
+                    </Text>
 
-                  <Text style={[styles.cardDescription, { color: colors.textSecondary }]}>
-                    {item.description}
-                  </Text>
+                    <Text 
+                      style={[styles.cardDescription, { color: colors.textSecondary }]}
+                      numberOfLines={3}
+                    >
+                      {item.description}
+                    </Text>
+                  </View>
 
                   <TouchableOpacity
                     style={[styles.cardButton, { backgroundColor: colors.accent }]}
                     onPress={item.onPress}
+                    activeOpacity={0.8}
                   >
                     <Text style={styles.cardButtonText}>{item.buttonText}</Text>
                   </TouchableOpacity>
@@ -164,89 +181,99 @@ export default function Home() {
         </View>
 
         {/* RESTANTE DA TELA — sem mudanças estruturais */}
-        <Text style={[styles.informacoesTitle, { color: colors.textPrimary }]}>
-          Informações
-        </Text>
+        <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
+          <Text style={[styles.informacoesTitle, { color: colors.textPrimary }]}>
+            Informações
+          </Text>
+        </View>
 
-        <TouchableOpacity
-          style={[styles.infoCard, { backgroundColor: colors.card }]}
-          onPress={() => router.push("/ClinicasProximas")}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.infoIconContainer, { backgroundColor: colors.iconBg }]}>
-            <Ionicons name="location" size={22} color={colors.accent} />
-          </View>
+        <View style={{ paddingHorizontal: 20 }}>
+          <TouchableOpacity
+            style={[styles.infoCard, { backgroundColor: colors.card }]}
+            onPress={() => router.push("/ClinicasProximas")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.infoIconContainer, { backgroundColor: colors.iconBg }]}>
+              <Ionicons name="location" size={22} color={colors.accent} />
+            </View>
 
-          <View style={styles.infoTextContainer}>
-            <Text style={[styles.infoCardTitle, { color: colors.textPrimary }]}>
-              Clínicas Próximas
-            </Text>
-            <Text style={[styles.infoCardDescription, { color: colors.textSecondary }]}>
-              Encontre clínicas especializadas em autismo perto de você.
-            </Text>
-          </View>
-        </TouchableOpacity>
+            <View style={styles.infoTextContainer}>
+              <Text style={[styles.infoCardTitle, { color: colors.textPrimary }]}>
+                Clínicas Próximas
+              </Text>
+              <Text style={[styles.infoCardDescription, { color: colors.textSecondary }]}>
+                Encontre clínicas especializadas em autismo perto de você.
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
         {/* Notícias */}
-        <TouchableOpacity
-          style={[styles.infoCard, { backgroundColor: colors.card }]}
-          onPress={() => router.push("/(tabs)/News")}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.infoIconContainer, { backgroundColor: colors.iconBg }]}>
-            <Ionicons name="newspaper" size={22} color={colors.accent} />
-          </View>
-          <View style={styles.infoTextContainer}>
-            <Text style={[styles.infoCardTitle, { color: colors.textPrimary }]}>
-              Notícias
-            </Text>
-            <Text style={[styles.infoCardDescription, { color: colors.textSecondary }]}>
-              Notícias atualizadas sobre TEA e inclusão.
-            </Text>
-          </View>
-        </TouchableOpacity>
+        <View style={{ paddingHorizontal: 20 }}>
+          <TouchableOpacity
+            style={[styles.infoCard, { backgroundColor: colors.card }]}
+            onPress={() => router.push("/(tabs)/News")}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.infoIconContainer, { backgroundColor: colors.iconBg }]}>
+              <Ionicons name="newspaper" size={22} color={colors.accent} />
+            </View>
+            <View style={styles.infoTextContainer}>
+              <Text style={[styles.infoCardTitle, { color: colors.textPrimary }]}>
+                Notícias
+              </Text>
+              <Text style={[styles.infoCardDescription, { color: colors.textSecondary }]}>
+                Notícias atualizadas sobre TEA e inclusão.
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
         {/* Bea */}
-        <View style={[styles.beaCard, { backgroundColor: colors.card }]}>
-          <Image
-            source={require("../../assets/images/bea.png")}
-            style={styles.beaImage}
-          />
-          <View style={styles.beaTextContainer}>
-            <Text style={[styles.beaTitle, { color: colors.textPrimary }]}>
-              Conheça a <Text style={{ color: colors.accent }}>Bea</Text>
-            </Text>
-            <Text style={[styles.beaDescription, { color: colors.textSecondary }]}>
-              Sua assistente virtual pronta para ajudar.
-            </Text>
+        <View style={{ paddingHorizontal: 20 }}>
+          <View style={[styles.beaCard, { backgroundColor: colors.card }]}>
+            <Image
+              source={require("../../assets/images/bea.png")}
+              style={styles.beaImage}
+            />
+            <View style={styles.beaTextContainer}>
+              <Text style={[styles.beaTitle, { color: colors.textPrimary }]}>
+                Conheça a <Text style={{ color: colors.accent }}>Bea</Text>
+              </Text>
+              <Text style={[styles.beaDescription, { color: colors.textSecondary }]}>
+                Sua assistente virtual pronta para ajudar.
+              </Text>
 
-            <TouchableOpacity
-              style={[styles.beaButton, { backgroundColor: colors.accent }]}
-              onPress={() => router.push("/ChatBea")}
-            >
-              <Text style={styles.beaButtonText}>Converse com a Bea</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.beaButton, { backgroundColor: colors.accent }]}
+                onPress={() => router.push("/ChatBea")}
+              >
+                <Text style={styles.beaButtonText}>Converse com a Bea</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
         {/* Autismo */}
-        <View style={[styles.autismCard, { backgroundColor: colors.card }]}>
-          <View style={[styles.autismIconContainer, { backgroundColor: colors.iconBg }]}>
-            <Text style={styles.brainIcon}>🧠</Text>
-          </View>
+        <View style={{ paddingHorizontal: 20 }}>
+          <View style={[styles.autismCard, { backgroundColor: colors.card }]}>
+            <View style={[styles.autismIconContainer, { backgroundColor: colors.iconBg }]}>
+              <Text style={styles.brainIcon}>🧠</Text>
+            </View>
 
-          <View style={styles.autismTextContainer}>
-            <Text style={[styles.autismTitle, { color: colors.textPrimary }]}>
-              Quer saber mais sobre o autismo?
-            </Text>
+            <View style={styles.autismTextContainer}>
+              <Text style={[styles.autismTitle, { color: colors.textPrimary }]}>
+                Quer saber mais sobre o autismo?
+              </Text>
 
-            <Text style={[styles.autismDescription, { color: colors.textSecondary }]}>
-              Clique para acessar nosso site com conteúdos educativos.
-            </Text>
+              <Text style={[styles.autismDescription, { color: colors.textSecondary }]}>
+                Clique para acessar nosso site com conteúdos educativos.
+              </Text>
 
-            <TouchableOpacity style={[styles.autismButton, { backgroundColor: colors.accent }]}>
-              <Text style={styles.autismButtonText}>Clique Aqui</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={[styles.autismButton, { backgroundColor: colors.accent }]}>
+                <Text style={styles.autismButtonText}>Clique Aqui</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -260,32 +287,87 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
+    marginTop: 0,
   },
   headerContent: { alignItems: "center" },
   welcomeTitle: { fontSize: 26, fontWeight: "bold", textAlign: "center" },
   headerSubtitle: { fontSize: 15, textAlign: "center", lineHeight: 20 },
 
-  carouselContainer: { marginTop: 20, marginBottom: 24 },
+  carouselContainer: { 
+    marginTop: 20, 
+    marginBottom: 24,
+  },
+  carouselContent: {
+    paddingLeft: 20,
+    paddingRight: 0,
+  },
   carouselCard: {
-    width: screenWidth - 60,
-    marginHorizontal: 10,
+    width: screenWidth - 40,
+    marginRight: 20,
+    alignItems: "stretch",
   },
   cardContent: {
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
     alignItems: "center",
-    minHeight: 280,
+    height: 260,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
+    shadowOpacity: Platform.OS === 'ios' ? 0.05 : 0.1,
     shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: Platform.OS === 'android' ? 4 : 2,
+    width: "100%",
   },
-  cardImageContainer: { height: 120, justifyContent: "center" },
-  cardImage: { width: 100, height: 100 },
-  cardTitle: { fontSize: 17, fontWeight: "bold", textAlign: "center" },
-  cardDescription: { fontSize: 14, textAlign: "center", marginBottom: 12 },
-  cardButton: { borderRadius: 12, paddingVertical: 12, width: "100%" },
-  cardButtonText: { color: "#fff", fontWeight: "bold", textAlign: "center" },
+  cardImageContainer: { 
+    height: 80, 
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    marginBottom: 8,
+  },
+  cardImage: { 
+    width: 70, 
+    height: 70,
+  },
+  cardTextContainer: {
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    marginBottom: 12,
+    flex: 1,
+  },
+  cardTitle: { 
+    fontSize: 16, 
+    fontWeight: "bold", 
+    textAlign: "center",
+    marginBottom: 6,
+    paddingHorizontal: 10,
+    minHeight: 40,
+    maxHeight: 40,
+  },
+  cardDescription: { 
+    fontSize: 13, 
+    textAlign: "center", 
+    paddingHorizontal: 10,
+    lineHeight: 18,
+    minHeight: 54,
+    maxHeight: 54,
+  },
+  cardButton: { 
+    borderRadius: 12, 
+    paddingVertical: 10, 
+    paddingHorizontal: 20,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    height: 40,
+  },
+  cardButtonText: { 
+    color: "#fff", 
+    fontWeight: "bold", 
+    textAlign: "center",
+    fontSize: 14,
+  },
   paginationContainer: { flexDirection: "row", justifyContent: "center", marginTop: 12 },
   paginationDot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 4 },
 
@@ -296,6 +378,13 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 14,
     flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    shadowColor: "#000",
+    shadowOpacity: Platform.OS === 'ios' ? 0.05 : 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: Platform.OS === 'android' ? 3 : 2,
   },
   infoIconContainer: {
     width: 40,
@@ -304,10 +393,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
+    flexShrink: 0,
   },
-  infoTextContainer: { flex: 1 },
-  infoCardTitle: { fontSize: 15, fontWeight: "bold" },
-  infoCardDescription: { fontSize: 13 },
+  infoTextContainer: { 
+    flex: 1,
+    justifyContent: "center",
+  },
+  infoCardTitle: { 
+    fontSize: 15, 
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  infoCardDescription: { 
+    fontSize: 13,
+    lineHeight: 18,
+  },
 
   beaCard: {
     borderRadius: 16,
@@ -315,19 +415,59 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     flexDirection: "row",
     alignItems: "center",
+    width: "100%",
+    shadowColor: "#000",
+    shadowOpacity: Platform.OS === 'ios' ? 0.05 : 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: Platform.OS === 'android' ? 3 : 2,
   },
-  beaImage: { width: 60, height: 120, marginRight: 12 },
-  beaTextContainer: { flex: 1 },
-  beaTitle: { fontSize: 15, fontWeight: "bold" },
-  beaDescription: { fontSize: 13, marginVertical: 8 },
-  beaButton: { borderRadius: 12, paddingVertical: 8, paddingHorizontal: 14 },
-  beaButtonText: { color: "#fff", fontWeight: "bold", fontSize: 13 },
+  beaImage: { 
+    width: 60, 
+    height: 120, 
+    marginRight: 12,
+    flexShrink: 0,
+  },
+  beaTextContainer: { 
+    flex: 1,
+    justifyContent: "center",
+  },
+  beaTitle: { 
+    fontSize: 15, 
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  beaDescription: { 
+    fontSize: 13, 
+    marginBottom: 12,
+    lineHeight: 18,
+  },
+  beaButton: { 
+    borderRadius: 12, 
+    paddingVertical: 10, 
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "flex-start",
+  },
+  beaButtonText: { 
+    color: "#fff", 
+    fontWeight: "bold", 
+    fontSize: 13,
+  },
 
   autismCard: {
     borderRadius: 16,
     padding: 14,
     marginBottom: 30,
     flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    shadowColor: "#000",
+    shadowOpacity: Platform.OS === 'ios' ? 0.05 : 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: Platform.OS === 'android' ? 3 : 2,
   },
   autismIconContainer: {
     width: 40,
@@ -336,11 +476,34 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
+    flexShrink: 0,
   },
   brainIcon: { fontSize: 24 },
-  autismTextContainer: { flex: 1 },
-  autismTitle: { fontSize: 15, fontWeight: "bold" },
-  autismDescription: { fontSize: 13, marginBottom: 10 },
-  autismButton: { borderRadius: 12, paddingVertical: 8, paddingHorizontal: 14 },
-  autismButtonText: { color: "#fff", fontWeight: "bold", fontSize: 13 },
+  autismTextContainer: { 
+    flex: 1,
+    justifyContent: "center",
+  },
+  autismTitle: { 
+    fontSize: 15, 
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  autismDescription: { 
+    fontSize: 13, 
+    marginBottom: 12,
+    lineHeight: 18,
+  },
+  autismButton: { 
+    borderRadius: 12, 
+    paddingVertical: 10, 
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "flex-start",
+  },
+  autismButtonText: { 
+    color: "#fff", 
+    fontWeight: "bold", 
+    fontSize: 13,
+  },
 });
