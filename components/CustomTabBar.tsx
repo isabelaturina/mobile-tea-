@@ -15,13 +15,21 @@ const icons = [
 export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
-  // ↓ Desce a TabBar no Android, e usa safe area no iPhone
-  const safeAreaBottom = Platform.OS === "android" ? 0 : insets.bottom;
-
-  const TAB_BAR_HEIGHT = 60 + safeAreaBottom;
+  // Altura base da tab bar
+  const BASE_TAB_HEIGHT = 60;
+  // Em Android, garantir pelo menos 8px de padding bottom mesmo se safeAreaBottom for 0
+  const safeAreaBottom = Platform.OS === 'android' ? Math.max(insets.bottom, 8) : insets.bottom;
+  const TAB_BAR_HEIGHT = BASE_TAB_HEIGHT + safeAreaBottom;
 
   return (
-    <View style={[styles.tabBarContainer, { height: TAB_BAR_HEIGHT }]}>
+    <View 
+      style={[
+        styles.tabBarContainer, 
+        { 
+          height: TAB_BAR_HEIGHT,
+        }
+      ]}
+    >
       <LinearGradient
         colors={["#70DEFE", "#70DEFE"]}
         style={[
@@ -79,19 +87,27 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 0,                  // ↓ garante que fica colado no fundo
+    bottom: 0,
     width: "100%",
-    backgroundColor: "#70DEFE",
+    backgroundColor: "transparent",
     zIndex: 1000,
+    ...Platform.select({
+      android: {
+        elevation: 8,
+        bottom: 0,
+      },
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 7,
+        shadowOffset: { width: 0, height: -2 },
+        bottom: 0,
+      },
+    }),
   },
   tabBar: {
     width: "100%",
     flexDirection: "row",
-    elevation: Platform.OS === "android" ? 8 : 0,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 7,
-    shadowOffset: { width: 0, height: -2 },
     alignItems: "center",
     justifyContent: "space-around",
     borderTopWidth: 0,

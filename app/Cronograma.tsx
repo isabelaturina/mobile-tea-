@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -379,9 +379,14 @@ export default function Cronograma() {
       {/* Speed Dial FAB */}
       <View style={styles.fabContainer}>
         {fabOpen && (
-          <TouchableOpacity style={[styles.fab, styles.fabSecondary]} onPress={handleAddNote}>
-            <Ionicons name="create-outline" size={20} color="#fff" />
-          </TouchableOpacity>
+          <>
+            <TouchableOpacity style={[styles.fab, styles.fabSecondary]} onPress={handleAddNote}>
+              <Ionicons name="create-outline" size={20} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.fab, styles.fabEvent]} onPress={handleAddEvent}>
+              <Ionicons name="calendar-outline" size={20} color="#fff" />
+            </TouchableOpacity>
+          </>
         )}
         <Animated.View style={{ transform: [{ rotate: rotation }] }}>
           <TouchableOpacity style={styles.fab} onPress={fabOpen ? toggleFab : toggleFab}>
@@ -469,6 +474,19 @@ const styles = StyleSheet.create({
   fab: { width: 56, height: 56, borderRadius: 28, backgroundColor: "#3B82F6", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 },
   fabSecondary: {
     backgroundColor: "#8B5CF6",
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  fabEvent: {
+    backgroundColor: "#60A5FA",
     width: 48,
     height: 48,
     borderRadius: 24,

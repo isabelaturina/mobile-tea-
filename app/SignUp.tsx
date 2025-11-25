@@ -1,7 +1,6 @@
-import { LinearGradient } from "expo-linear-gradient"; 
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
 
 import {
   Alert,
@@ -21,19 +20,18 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useUser } from "../contexts/UserContext";
 
 type SupportLevel = "leve" | "moderado" | "severo";
+type ProfileType = "autista" | "responsavel" | null;
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [profileType, setProfileType] = useState<ProfileType>(null);
   const [supportLevel, setSupportLevel] = useState<SupportLevel | null>(null);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  // novo estado para checkbox
-  const [hasAutismAspect, setHasAutismAspect] = useState(false);
 
   const router = useRouter();
   const { signUp } = useUser();
@@ -87,14 +85,35 @@ export default function SignUp() {
 
   const levelLabel = useMemo(() => {
     const found = levels.find((l) => l.value === supportLevel);
-    return found?.label ?? "Nível de suporte (opcional)";
-  }, [levels, supportLevel]);
+    if (profileType === "autista") {
+      return found?.label ?? "Nível de suporte";
+    } else if (profileType === "responsavel") {
+      return found?.label ?? "Nível de suporte do meu filho(a)";
+    }
+    return "Nível de suporte";
+  }, [levels, supportLevel, profileType]);
 
   const handleSignUp = async () => {
     if (!name || !email || !password) {
       Alert.alert(
         "Ops!",
         "Parece que você esqueceu de preencher algum campo. Tente novamente!"
+      );
+      return;
+    }
+
+    if (!profileType) {
+      Alert.alert(
+        "Ops!",
+        "Por favor, selecione o tipo de perfil."
+      );
+      return;
+    }
+
+    if (!supportLevel) {
+      Alert.alert(
+        "Ops!",
+        "Por favor, selecione o nível de suporte."
       );
       return;
     }
@@ -236,48 +255,97 @@ onChangeText={(text) => {
             </TouchableOpacity>
           </View>
 
-          <Pressable
-            onPress={() => setIsLevelModalOpen(true)}
-            style={[
-              styles.dropdownTrigger,
-              { backgroundColor: colors.card, borderColor: colors.border },
-            ]}
-            accessibilityRole="button"
-            accessibilityLabel="Selecionar nível de suporte"
-          >
-            <Text
-              style={[
-                styles.dropdownText,
-                { color: supportLevel ? colors.textPrimary : colors.placeholder },
-              ]}
-            >
-              {levelLabel}
+          {/* Tipo de Perfil */}
+          <View style={styles.profileTypeContainer}>
+            <Text style={[styles.profileTypeLabel, { color: colors.textPrimary }]}>
+              Tipo de Perfil:
             </Text>
-            <Text style={[styles.dropdownCaret, { color: colors.textPrimary }]}>▾</Text>
-          </Pressable>
+            <View style={styles.radioGroup}>
+              <Pressable
+                onPress={() => {
+                  setProfileType("autista");
+                  setSupportLevel(null);
+                }}
+                style={styles.radioOption}
+              >
+                <View
+                  style={[
+                    styles.radioCircle,
+                    {
+                      borderColor: profileType === "autista" ? colors.accent : colors.border,
+                    },
+                  ]}
+                >
+                  {profileType === "autista" && (
+                    <View
+                      style={[
+                        styles.radioInner,
+                        { backgroundColor: colors.accent },
+                      ]}
+                    />
+                  )}
+                </View>
+                <Text style={[styles.radioLabel, { color: colors.textPrimary }]}>
+                  Sou autista
+                </Text>
+              </Pressable>
 
-          <View style={styles.checkboxContainer}>
-  <Pressable
-    onPress={() => setHasAutismAspect(!hasAutismAspect)}
-    style={[
-      styles.checkbox,
-      {
-        borderColor: colors.border,
-        backgroundColor: hasAutismAspect ? colors.accent + "20" : "transparent",
-        justifyContent: "center",
-        alignItems: "center",
-      },
-    ]}
-  >
-    {hasAutismAspect && (
-      <Ionicons name="checkmark" size={18} color={colors.accent} />
-    )}
-  </Pressable>
+              <Pressable
+                onPress={() => {
+                  setProfileType("responsavel");
+                  setSupportLevel(null);
+                }}
+                style={styles.radioOption}
+              >
+                <View
+                  style={[
+                    styles.radioCircle,
+                    {
+                      borderColor: profileType === "responsavel" ? colors.accent : colors.border,
+                    },
+                  ]}
+                >
+                  {profileType === "responsavel" && (
+                    <View
+                      style={[
+                        styles.radioInner,
+                        { backgroundColor: colors.accent },
+                      ]}
+                    />
+                  )}
+                </View>
+                <Text style={[styles.radioLabel, { color: colors.textPrimary }]}>
+                  Sou pai/mãe/responsável
+                </Text>
+              </Pressable>
+            </View>
+            <Text style={[styles.helpText, { color: colors.textSecondary }]}>
+              Isso nos ajuda a personalizar sua experiência no app.
+            </Text>
+          </View>
 
-  <Text style={[styles.checkboxLabel, { color: colors.textPrimary }]}>
-    Não possuo nenhum aspecto ?
-  </Text>
-</View>
+          {/* Nível de Suporte - Condicional */}
+          {profileType && (
+            <Pressable
+              onPress={() => setIsLevelModalOpen(true)}
+              style={[
+                styles.dropdownTrigger,
+                { backgroundColor: colors.card, borderColor: colors.border },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Selecionar nível de suporte"
+            >
+              <Text
+                style={[
+                  styles.dropdownText,
+                  { color: supportLevel ? colors.textPrimary : colors.placeholder },
+                ]}
+              >
+                {levelLabel}
+              </Text>
+              <Text style={[styles.dropdownCaret, { color: colors.textPrimary }]}>▾</Text>
+            </Pressable>
+          )}
 
 
           <Modal
@@ -439,22 +507,45 @@ const styles = StyleSheet.create({
   },
   dropdownText: { fontSize: 14, fontWeight: "600" },
   dropdownCaret: { fontSize: 16 },
-  checkboxContainer: {
+  profileTypeContainer: {
+    marginBottom: 20,
+  },
+  profileTypeLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 12,
+  },
+  radioGroup: {
+    gap: 12,
+    marginBottom: 8,
+  },
+  radioOption: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 30,
-    gap: 8,
+    gap: 10,
   },
- checkbox: {
-  width: 24,
-  height: 24,
-  borderWidth: 2,
-  borderRadius: 6,
-  alignItems: "center",
-  justifyContent: "center",
-},
-
-  checkboxLabel: { fontSize: 14, fontWeight: "600" },
+  radioCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  radioLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  helpText: {
+    fontSize: 12,
+    marginTop: 4,
+    fontStyle: "italic",
+  },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)" },
   modalSheet: {
     position: "absolute",

@@ -3,15 +3,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  Image,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    Image,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -76,7 +76,7 @@ export default function Home() {
 
   // Calcular altura da tab bar dinamicamente (sincronizado com CustomTabBar)
   const BASE_TAB_HEIGHT = 60;
-  const safeAreaBottom = Platform.OS === 'android' ? Math.max(insets.bottom, 0) : insets.bottom;
+  const safeAreaBottom = Platform.OS === 'android' ? Math.max(insets.bottom, 8) : insets.bottom;
   const TAB_BAR_HEIGHT = BASE_TAB_HEIGHT + safeAreaBottom;
 
   return (
@@ -85,7 +85,7 @@ export default function Home() {
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: TAB_BAR_HEIGHT + (Platform.OS === 'android' ? 10 : 20),
+          paddingBottom: TAB_BAR_HEIGHT + 20,
         }}
       >
         {/* HEADER CORRIGIDO */}
@@ -125,6 +125,14 @@ export default function Home() {
             snapToInterval={screenWidth - 40}
             snapToAlignment="start"
             decelerationRate="fast"
+            getItemLayout={(data, index) => {
+              const cardWidth = screenWidth - 40;
+              return {
+                length: cardWidth,
+                offset: cardWidth * index,
+                index,
+              };
+            }}
             onMomentumScrollEnd={(event) => {
               const cardWidth = screenWidth - 40;
               const index = Math.max(0, Math.min(featureCards.length - 1, Math.round(event.nativeEvent.contentOffset.x / cardWidth)));
@@ -132,18 +140,23 @@ export default function Home() {
             }}
             renderItem={({ item }) => (
               <View style={styles.carouselCard}>
-                <View style={[styles.cardContent, { backgroundColor: colors.card }]}>
+                <LinearGradient
+                  colors={[colors.accent, colors.lightAccent]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={styles.cardContent}
+                >
                   <View style={styles.cardImageContainer}>
                     <Image source={item.image} style={styles.cardImage} resizeMode="contain" />
                   </View>
 
                   <View style={styles.cardTextContainer}>
-                    <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>
+                    <Text style={[styles.cardTitle, { color: "#FFFFFF" }]}>
                       {item.title}
                     </Text>
 
                     <Text 
-                      style={[styles.cardDescription, { color: colors.textSecondary }]}
+                      style={[styles.cardDescription, { color: "#E0E7FF" }]}
                       numberOfLines={3}
                     >
                       {item.description}
@@ -151,13 +164,13 @@ export default function Home() {
                   </View>
 
                   <TouchableOpacity
-                    style={[styles.cardButton, { backgroundColor: colors.accent }]}
+                    style={[styles.cardButton, { backgroundColor: "#FFFFFF" }]}
                     onPress={item.onPress}
                     activeOpacity={0.8}
                   >
-                    <Text style={styles.cardButtonText}>{item.buttonText}</Text>
+                    <Text style={[styles.cardButtonText, { color: colors.accent }]}>{item.buttonText}</Text>
                   </TouchableOpacity>
-                </View>
+                </LinearGradient>
               </View>
             )}
             keyExtractor={(item) => item.id.toString()}
@@ -299,35 +312,35 @@ const styles = StyleSheet.create({
   },
   carouselContent: {
     paddingLeft: 20,
-    paddingRight: 0,
+    paddingRight: 20,
   },
   carouselCard: {
     width: screenWidth - 40,
-    marginRight: 20,
     alignItems: "stretch",
   },
   cardContent: {
-    borderRadius: 20,
+    borderRadius: 12,
     padding: 16,
     alignItems: "center",
-    height: 260,
+    height: 280,
     shadowColor: "#000",
-    shadowOpacity: Platform.OS === 'ios' ? 0.05 : 0.1,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: Platform.OS === 'android' ? 4 : 2,
+    shadowOpacity: Platform.OS === 'ios' ? 0.1 : 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: Platform.OS === 'android' ? 6 : 4,
     width: "100%",
+    justifyContent: "space-between",
   },
   cardImageContainer: { 
-    height: 80, 
+    height: 120, 
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
-    marginBottom: 8,
+    marginBottom: 10,
   },
   cardImage: { 
-    width: 70, 
-    height: 70,
+    width: 120, 
+    height: 120,
   },
   cardTextContainer: {
     width: "100%",
@@ -337,33 +350,28 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: { 
-    fontSize: 16, 
+    fontSize: 17, 
     fontWeight: "bold", 
     textAlign: "center",
     marginBottom: 6,
-    paddingHorizontal: 10,
-    minHeight: 40,
-    maxHeight: 40,
+    paddingHorizontal: 8,
   },
   cardDescription: { 
     fontSize: 13, 
     textAlign: "center", 
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     lineHeight: 18,
-    minHeight: 54,
-    maxHeight: 54,
   },
   cardButton: { 
     borderRadius: 12, 
-    paddingVertical: 10, 
+    paddingVertical: 12, 
     paddingHorizontal: 20,
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    height: 40,
+    minHeight: 44,
   },
   cardButtonText: { 
-    color: "#fff", 
     fontWeight: "bold", 
     textAlign: "center",
     fontSize: 14,
