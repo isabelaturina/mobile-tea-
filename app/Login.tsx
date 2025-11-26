@@ -20,7 +20,7 @@ export default function Login() {
   const colors = isDarkMode
     ? {
         background: "#000000",
-        textPrimary: "#F8FAFC",
+        textPrimary: "#3B82F6",
         textSecondary: "#94A3B8",
         card: "#1a1a1a",
         accent: "#3B82F6",
@@ -41,34 +41,50 @@ export default function Login() {
         circle: "#E0F2FF",
       };
 
-  const handleLogin = async () => {
-    setEmailError('');
-
-    if (!email || !password) {
-      Alert.alert('Ops!', 'Parece que você esqueceu de preencher algum campo. Tente novamente!');
-      return;
-    }
-
-    const regexGmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    if (!regexGmail.test(email)) {
-      setEmailError('Utilize um email do Gmail (ex: exemplo@gmail.com)');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const success = await login(email, password);
-      if (success) {
-        router.replace('/(tabs)/Home' as any);
-      } else {
-        setEmailError('Este email não está cadastrado ou a senha está incorreta.');
-      }
-    } catch (error) {
-      Alert.alert('Erro', 'Ocorreu um erro ao fazer login');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      const handleLogin = async () => {
+        setEmailError('');
+      
+        // ❌ Campos vazios
+        if (!email || !password) {
+          Alert.alert('Ops!', 'Parece que você esqueceu de preencher algum campo.');
+          return;
+        }
+      
+        // 📧 Validação Gmail correta (impede ponto inicial e "..")
+        const regexGmail = /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        if (!regexGmail.test(email)) {
+          Alert.alert(
+            "Erro",
+            "O email deve ser do Gmail, não começar com ponto e não conter dois pontos seguidos."
+          );
+          return;
+        }
+      
+        // 🔐 Senha mínimo 6 caracteres
+        if (password.length < 6) {
+          Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres.");
+          return;
+        }
+      
+        setIsLoading(true);
+      
+        try {
+          const success = await login(email, password);
+      
+          if (success) {
+            router.replace('/(tabs)/Home' as any);
+          } else {
+            setEmailError('Este email não está cadastrado ou a senha está incorreta.');
+          }
+      
+        } catch (error) {
+          Alert.alert('Erro', 'Ocorreu um erro ao fazer login');
+      
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

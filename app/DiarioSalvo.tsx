@@ -1,16 +1,16 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  useColorScheme,
 } from "react-native";
 import { useCronograma } from "../contexts/CronogramaContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 const MOOD_OPTIONS = [
   { emoji: "😁", value: "muito_feliz", label: "Muito feliz" },
@@ -25,9 +25,235 @@ const MOOD_OPTIONS = [
 export default function DiarioSalvo() {
   const { date } = useLocalSearchParams();
   const { getDiaryEntryForDate } = useCronograma();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const styles = getStyles(isDark);
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+
+  const colors = useMemo(
+    () =>
+      isDarkMode
+        ? {
+            background: "#050F1E",
+            content: "#050F1E",
+            notFoundText: "#E5E7EB",
+            sectionText: "#E5E7EB",
+            moodButton: "#0F172A",
+            moodButtonBorder: "transparent",
+            selectedMoodBg: "#3B82F6",
+            selectedMoodBorder: "#3B82F6",
+            moodEmoji: "#FFFFFF",
+            noteCard: "#071426",
+            noteBorder: "rgba(59,130,246,0.95)",
+            noteText: "#E5E7EB",
+            confirmationCard: "#0A255C",
+            confirmationShadow: "#000000",
+            confirmationText: "#FFFFFF",
+            finishButton: "#3B82F6",
+            beaButton: "#8B5CF6",
+            buttonText: "#FFFFFF",
+            gradient: ["#8B5CF6", "#3B82F6"] as const,
+          }
+        : {
+            background: "#F8F9FA",
+            content: "#F8F9FA",
+            notFoundText: "#333333",
+            sectionText: "#333333",
+            moodButton: "#FFFFFF",
+            moodButtonBorder: "transparent",
+            selectedMoodBg: "#EBF4FF",
+            selectedMoodBorder: "#3B82F6",
+            moodEmoji: "#111827",
+            noteCard: "#FFFFFF",
+            noteBorder: "rgba(59, 130, 246, 0.55)",
+            noteText: "#333333",
+            confirmationCard: "#031532",
+            confirmationShadow: "#000000",
+            confirmationText: "#FFFFFF",
+            finishButton: "#3B82F6",
+            beaButton: "#8B5CF6",
+            buttonText: "#FFFFFF",
+            gradient: ["#8B5CF6", "#3B82F6"] as const,
+          },
+    [isDarkMode]
+  );
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.background,
+        },
+        notFoundText: {
+          color: colors.notFoundText,
+          textAlign: "center",
+          marginTop: 40,
+        },
+        header: {
+          paddingTop: 60,
+          paddingBottom: 20,
+          paddingHorizontal: 20,
+          borderBottomLeftRadius: 30,
+          borderBottomRightRadius: 30,
+        },
+        headerContent: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 10,
+        },
+        headerTitle: {
+          fontSize: 20,
+          fontWeight: "bold",
+          color: "#fff",
+          flex: 1,
+          textAlign: "center",
+          marginHorizontal: 10,
+        },
+        heartIcon: {
+          width: 24,
+          alignItems: "center",
+          justifyContent: "center",
+          height: 24,
+        },
+        content: {
+          flex: 1,
+          paddingHorizontal: 20,
+          backgroundColor: colors.content,
+        },
+        section: {
+          marginTop: 30,
+        },
+        sectionTitle: {
+          fontSize: 16,
+          fontWeight: "600",
+          color: colors.sectionText,
+          marginBottom: 16,
+          textAlign: "center",
+        },
+        moodContainer: {
+          flexDirection: "row",
+          justifyContent: "space-around",
+          flexWrap: "wrap",
+          paddingHorizontal: 6,
+        },
+        moodButton: {
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: colors.moodButton,
+          alignItems: "center",
+          justifyContent: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+          borderWidth: 2,
+          borderColor: colors.moodButtonBorder,
+          margin: 6,
+        },
+        selectedMoodButton: {
+          borderColor: colors.selectedMoodBorder,
+          backgroundColor: colors.selectedMoodBg,
+        },
+        moodEmoji: {
+          fontSize: 28,
+          color: colors.moodEmoji,
+        },
+        noteContainer: {
+          backgroundColor: colors.noteCard,
+          borderRadius: 16,
+          padding: 16,
+          borderWidth: 2,
+          borderColor: colors.noteBorder,
+          shadowColor: "#3B82F6",
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: isDarkMode ? 0.9 : 0.25,
+          shadowRadius: isDarkMode ? 14 : 8,
+          elevation: isDarkMode ? 12 : 6,
+          minHeight: 150,
+          overflow: "hidden",
+        },
+        noteText: {
+          fontSize: 16,
+          color: colors.noteText,
+          lineHeight: 24,
+        },
+        confirmationContainer: {
+          marginTop: 30,
+          marginBottom: 20,
+        },
+        confirmationCard: {
+          backgroundColor: colors.confirmationCard,
+          borderRadius: 16,
+          padding: 24,
+          alignItems: "center",
+          shadowColor: colors.confirmationShadow,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          elevation: 5,
+        },
+        confirmationTitle: {
+          fontSize: 24,
+          fontWeight: "bold",
+          color: colors.confirmationText,
+          marginBottom: 16,
+        },
+        beaIllustration: {
+          marginBottom: 16,
+        },
+        confirmationMessage: {
+          fontSize: 14,
+          color: colors.confirmationText,
+          textAlign: "center",
+          lineHeight: 20,
+          opacity: 0.9,
+        },
+        buttonsContainer: {
+          flexDirection: "row",
+          padding: 20,
+          paddingBottom: 40,
+        },
+        finishButton: {
+          flex: 1,
+          backgroundColor: colors.finishButton,
+          paddingVertical: 16,
+          borderRadius: 12,
+          alignItems: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+          marginRight: 6,
+        },
+        finishButtonText: {
+          color: colors.buttonText,
+          fontSize: 16,
+          fontWeight: "bold",
+        },
+        beaButton: {
+          flex: 1,
+          backgroundColor: colors.beaButton,
+          paddingVertical: 16,
+          borderRadius: 12,
+          alignItems: "center",
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
+          marginLeft: 6,
+        },
+        beaButtonText: {
+          color: colors.buttonText,
+          fontSize: 16,
+          fontWeight: "bold",
+        },
+      }),
+    [colors, isDarkMode]
+  );
 
   const diaryEntry = date ? getDiaryEntryForDate(date as string) : null;
 
@@ -51,7 +277,7 @@ export default function DiarioSalvo() {
     <View style={styles.container}>
       {/* Header */}
       <LinearGradient
-        colors={isDark ? ["#8B5CF6", "#3B82F6"] : ["#8B5CF6", "#3B82F6"]}
+        colors={colors.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -101,18 +327,13 @@ export default function DiarioSalvo() {
 
         {/* Confirmação */}
         <View style={styles.confirmationContainer}>
-          <View
-            style={[
-              styles.confirmationCard,
-              isDark && styles.confirmationCardDark,
-            ]}
-          >
+          <View style={styles.confirmationCard}>
             <Text style={styles.confirmationTitle}>Pronto!</Text>
             <View style={styles.beaIllustration}>
               <Ionicons
                 name="person-circle"
                 size={80}
-                color={isDark ? "#8B5CF6" : "#8B5CF6"}
+                color="#8B5CF6"
               />
             </View>
 
@@ -137,184 +358,3 @@ export default function DiarioSalvo() {
   );
 }
 
-const getStyles = (isDark: boolean) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: isDark ? "#071426" : "#F8F9FA",
-    },
-    notFoundText: {
-      color: isDark ? "#E5E7EB" : "#ffffffff",
-      textAlign: "center",
-      marginTop: 40,
-    },
-    header: {
-      paddingTop: 60,
-      paddingBottom: 20,
-      paddingHorizontal: 20,
-      borderBottomLeftRadius: 30,
-      borderBottomRightRadius: 30,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: 10,
-    },
-    headerTitle: {
-      fontSize: 20,
-      fontWeight: "bold",
-      color: "#fff",
-      flex: 1,
-      textAlign: "center",
-      marginHorizontal: 10,
-    },
-    heartIcon: {
-      width: 24,
-      alignItems: "center",
-      justifyContent: "center",
-      height: 24,
-    },
-    content: {
-      flex: 1,
-      paddingHorizontal: 20,
-    },
-    section: {
-      marginTop: 30,
-    },
-    sectionTitle: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: isDark ? "#E5E7EB" : "#333",
-      marginBottom: 16,
-      textAlign: "center",
-    },
-    moodContainer: {
-      flexDirection: "row",
-      justifyContent: "space-around",
-      flexWrap: "wrap",
-      paddingHorizontal: 6,
-    },
-    moodButton: {
-      width: 60,
-      height: 60,
-      borderRadius: 30,
-      backgroundColor: isDark ? "#0f1116ff" : "#fff",
-      alignItems: "center",
-      justifyContent: "center",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-      borderWidth: 2,
-      borderColor: "transparent",
-      margin: 6,
-    },
-    selectedMoodButton: {
-      borderColor: "#3B82F6",
-      backgroundColor: isDark ? "#3B82F6" : "#EBF4FF",
-    },
-    moodEmoji: {
-      fontSize: 28,
-    },
-    noteContainer: {
-      // fundo escuro com borda azul "neon" e glow
-      backgroundColor: isDark ? "#071426" : "#fff",
-      borderRadius: 16,
-      padding: 16,
-      borderWidth: 2,
-      borderColor: isDark ? "rgba(59,130,246,0.95)" : "rgba(59,130,246,0.9)",
-      // efeito glow (iOS)
-      shadowColor: "#3B82F6",
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: isDark ? 0.9 : 0.25,
-      shadowRadius: 14,
-      // elevação (Android)
-      elevation: isDark ? 12 : 6,
-      minHeight: 150,
-      // opcional: leve gradiente visual simulada com borda interna (fallback)
-      overflow: "hidden",
-    },
-    noteText: {
-      fontSize: 16,
-      color: isDark ? "#E5E7EB" : "#333",
-      lineHeight: 24,
-    },
-    confirmationContainer: {
-      marginTop: 30,
-      marginBottom: 20,
-    },
-    confirmationCard: {
-      backgroundColor: "#333",
-      borderRadius: 16,
-      padding: 24,
-      alignItems: "center",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-      elevation: 5,
-    },
-    confirmationCardDark: {
-      backgroundColor: "#0a255cff",
-      shadowColor: "#000",
-    },
-    confirmationTitle: {
-      fontSize: 24,
-      fontWeight: "bold",
-      color: "#fff",
-      marginBottom: 16,
-    },
-    beaIllustration: {
-      marginBottom: 16,
-    },
-    confirmationMessage: {
-      fontSize: 14,
-      color: "#fff",
-      textAlign: "center",
-      lineHeight: 20,
-      opacity: 0.9,
-    },
-    buttonsContainer: {
-      flexDirection: "row",
-      padding: 20,
-      paddingBottom: 40,
-    },
-    finishButton: {
-      flex: 1,
-      backgroundColor: "#3B82F6",
-      paddingVertical: 16,
-      borderRadius: 12,
-      alignItems: "center",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-      marginRight: 6,
-    },
-    finishButtonText: {
-      color: "#fff",
-      fontSize: 16,
-      fontWeight: "bold",
-    },
-    beaButton: {
-      flex: 1,
-      backgroundColor: "#8B5CF6",
-      paddingVertical: 16,
-      borderRadius: 12,
-      alignItems: "center",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
-      marginLeft: 6,
-    },
-    beaButtonText: {
-      color: "#fff",
-      fontSize: 16,
-      fontWeight: "bold",
-    },
-  });

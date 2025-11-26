@@ -11,9 +11,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  useColorScheme,
 } from "react-native";
 import { useCronograma } from "../contexts/CronogramaContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 const MOOD_OPTIONS = [
   { emoji: "😁", value: "muito_feliz", label: "Muito feliz" },
@@ -31,15 +31,55 @@ export default function AnotarDia() {
   const [selectedMood, setSelectedMood] = useState<string>("");
   const [note, setNote] = useState<string>("");
 
-  const colorScheme = useColorScheme();
-  const isDarkMode = colorScheme === "dark";
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
+
+  const colors = useMemo(
+    () =>
+      isDarkMode
+        ? {
+            background: "#050F1E",
+            content: "#050F1E",
+            sectionText: "#E2E8F0",
+            moodButton: "#1F2937",
+            moodButtonBorder: "transparent",
+            moodButtonText: "#E2E8F0",
+            selectedMoodBg: "#5B7FFF",
+            selectedMoodBorder: "#3B82F6",
+            noteCard: "#071426",
+            noteBorder: "rgba(59,130,246,0.95)",
+            noteText: "#E2E8F0",
+            placeholder: "#94A3B8",
+            saveButton: "#3B82F6",
+            saveText: "#FFFFFF",
+            gradient: ["#8B5CF6", "#3B82F6"] as const,
+          }
+        : {
+            background: "#F8F9FA",
+            content: "#F8F9FA",
+            sectionText: "#333333",
+            moodButton: "#FFFFFF",
+            moodButtonBorder: "transparent",
+            moodButtonText: "#1F2937",
+            selectedMoodBg: "#EBF4FF",
+            selectedMoodBorder: "#3B82F6",
+            noteCard: "#FFFFFF",
+            noteBorder: "rgba(59,130,246,0.55)",
+            noteText: "#333333",
+            placeholder: "#999999",
+            saveButton: "#3B82F6",
+            saveText: "#FFFFFF",
+            gradient: ["#8B5CF6", "#3B82F6"] as const,
+          },
+    [isDarkMode]
+  );
 
   const styles = useMemo(
     () =>
       StyleSheet.create({
         container: {
           flex: 1,
-          backgroundColor: isDarkMode ? "#121212ff" : "#F8F9FA",
+          backgroundColor: colors.background,
         },
         header: {
           paddingTop: 60,
@@ -67,7 +107,7 @@ export default function AnotarDia() {
         content: {
           flex: 1,
           paddingHorizontal: 20,
-          backgroundColor: isDarkMode ? "#121212" : undefined,
+          backgroundColor: colors.content,
         },
         section: {
           marginTop: 30,
@@ -75,7 +115,7 @@ export default function AnotarDia() {
         sectionTitle: {
           fontSize: 16,
           fontWeight: "600",
-          color: isDarkMode ? "#E1E1E1" : "#333",
+          color: colors.sectionText,
           marginBottom: 16,
           textAlign: "center",
         },
@@ -89,7 +129,7 @@ export default function AnotarDia() {
           width: 60,
           height: 60,
           borderRadius: 30,
-          backgroundColor: isDarkMode ? "#333" : "#fff",
+          backgroundColor: colors.moodButton,
           alignItems: "center",
           justifyContent: "center",
           shadowColor: "#000",
@@ -98,23 +138,23 @@ export default function AnotarDia() {
           shadowRadius: 4,
           elevation: 3,
           borderWidth: 2,
-          borderColor: "transparent",
+          borderColor: colors.moodButtonBorder,
           margin: 6, // simulate gap
         },
         selectedMoodButton: {
-          borderColor: "#3B82F6",
-          backgroundColor: isDarkMode ? "#5B7FFF" : "#EBF4FF",
+          borderColor: colors.selectedMoodBorder,
+          backgroundColor: colors.selectedMoodBg,
         },
         moodEmoji: {
           fontSize: 28,
         },
         noteContainer: {
           // Neon-blue bordered card for dark mode, subtle for light
-          backgroundColor: isDarkMode ? "#071426" : "#fff",
+          backgroundColor: colors.noteCard,
           borderRadius: 16,
           padding: 16,
           borderWidth: 2,
-          borderColor: isDarkMode ? "rgba(59,130,246,0.95)" : "rgba(59,130,246,0.55)",
+          borderColor: colors.noteBorder,
           // glow (iOS)
           shadowColor: "#3B82F6",
           shadowOffset: { width: 0, height: 8 },
@@ -127,7 +167,7 @@ export default function AnotarDia() {
         },
         noteInput: {
           fontSize: 16,
-          color: isDarkMode ? "#E1E1E1" : "#333",
+          color: colors.noteText,
           minHeight: 150,
           textAlignVertical: "top",
         },
@@ -136,13 +176,13 @@ export default function AnotarDia() {
           marginTop: 12,
         },
         addNoteButton: {
-          backgroundColor: isDarkMode ? "#000000ff" : "#333",
+          backgroundColor: colors.saveButton,
           paddingHorizontal: 12,
           paddingVertical: 6,
           borderRadius: 8,
         },
         addNoteButtonText: {
-          color: "#fff",
+          color: colors.saveText,
           fontSize: 12,
           fontWeight: "600",
         },
@@ -151,7 +191,7 @@ export default function AnotarDia() {
           paddingBottom: 40,
         },
         saveButton: {
-          backgroundColor: "#3B82F6",
+          backgroundColor: colors.saveButton,
           paddingVertical: 16,
           borderRadius: 12,
           alignItems: "center",
@@ -162,12 +202,12 @@ export default function AnotarDia() {
           elevation: 3,
         },
         saveButtonText: {
-          color: "#fff",
+          color: colors.saveText,
           fontSize: 18,
           fontWeight: "bold",
         },
       }),
-    [isDarkMode]
+    [colors, isDarkMode]
   );
 
   const handleSave = () => {
@@ -225,7 +265,7 @@ export default function AnotarDia() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={isDarkMode ? ["#8B5CF6", "#3B82F6"] : ["#8B5CF6", "#3B82F6"]}
+        colors={colors.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -268,7 +308,7 @@ export default function AnotarDia() {
             <TextInput
               style={styles.noteInput}
               placeholder="Faça sua anotação aqui..."
-              placeholderTextColor={isDarkMode ? "#bbb" : "#999"}
+              placeholderTextColor={colors.placeholder}
               value={note}
               onChangeText={setNote}
               multiline

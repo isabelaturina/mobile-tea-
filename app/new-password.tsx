@@ -54,7 +54,7 @@ export default function NovaSenha() {
     }
 
     if (newPassword.length < 8) {
-      return showError("A nova senha deve ter pelo menos 8 caracteres");
+      return showError("A nova senha deve ter pelo menos 6 caracteres");
     }
 
     if (newPassword !== confirmPassword) {

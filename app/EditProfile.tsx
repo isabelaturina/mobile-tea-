@@ -26,7 +26,6 @@ const profileIcons = [
   require("../assets/images/blackboy-icon.png"),
 ];
 
-// Pegamos largura e altura da tela
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function EditProfile() {
@@ -34,13 +33,12 @@ export default function EditProfile() {
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
 
-  // 🎨 Define cores com base no tema
   const colors = isDarkMode
     ? {
-        background: "#000000",
+        background: "#000",
         textPrimary: "#F8FAFC",
         textSecondary: "#94A3B8",
-        card: "##1a1a1a",
+        card: "#1a1a1a",
         accent: "#3B82F6",
         lightAccent: "#60A5FA",
         border: "#334155",
@@ -66,10 +64,8 @@ export default function EditProfile() {
   const [name, setName] = useState("");
   const [lastValidName, setLastValidName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [autismLevel, setAutismLevel] = useState("");
 
-  // Regex que aceita letras (incluindo acentuadas), espaços, hífen e apóstrofo
   const nameValidRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]*$/;
 
   const handleNameChange = (text: string) => {
@@ -77,32 +73,28 @@ export default function EditProfile() {
       setName(text);
       setLastValidName(text);
     } else {
-      // Não atualiza o input e mostra modal com mesmo estilo já existente
-      setWarningMessage("Nome inválido: não aceita números ou caracteres");
+      setWarningMessage("Nome inválido: não aceita números ou caracteres.");
       setShowWarning(true);
-      // opcional: manter o valor anterior (lastValidName) sem alterações
-      // setName(lastValidName);
     }
   };
 
   const [showWarning, setShowWarning] = useState(false);
   const [warningMessage, setWarningMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // ---- REGEX DE E-MAIL EXCLUSIVA PARA GMAIL ----
+  const gmailStrictRegex = /^[A-Za-z][A-Za-z._]*@gmail\.com$/;
 
   const goPrevIcon = () => {
-    setSelectedIcon((prev) =>
-      prev === 0 ? profileIcons.length - 1 : prev - 1
-    );
+    setSelectedIcon((prev) => (prev === 0 ? profileIcons.length - 1 : prev - 1));
   };
 
   const goNextIcon = () => {
-    setSelectedIcon((prev) =>
-      prev === profileIcons.length - 1 ? 0 : prev + 1
-    );
+    setSelectedIcon((prev) => (prev === profileIcons.length - 1 ? 0 : prev + 1));
   };
 
   const handleSave = () => {
-    // Verifica se nome está vazio ou inválido (tem números/caracteres proibidos)
-    if (!name.trim()) {
+    if (!name.trim() || !email.trim()) {
       setWarningMessage("Por favor, preencha seu nome e e-mail.");
       setShowWarning(true);
       return;
@@ -110,25 +102,20 @@ export default function EditProfile() {
 
     const nameFullValidRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]+$/;
     if (!nameFullValidRegex.test(name.trim())) {
-      setWarningMessage("Nome inválido: não aceita números ou caracteres");
+      setWarningMessage("Nome inválido: não aceita números ou caracteres.");
       setShowWarning(true);
       return;
     }
 
-    if (!email.trim()) {
-      setWarningMessage("Por favor, preencha seu nome e e-mail.");
+    if (!gmailStrictRegex.test(email.trim())) {
+      setWarningMessage(
+        "Use apenas Gmail. O e-mail não pode começar com ponto e não pode ter números no nome."
+      );
       setShowWarning(true);
       return;
     }
 
-    const emailRegex = /\S+@\S+\.\S+/;
-    if (!emailRegex.test(email)) {
-      setWarningMessage("Digite um e-mail válido.");
-      setShowWarning(true);
-      return;
-    }
-
-    router.back();
+    setShowSuccess(true); // Mostra card final
   };
 
   return (
@@ -142,10 +129,7 @@ export default function EditProfile() {
           end={{ x: 1, y: 1 }}
           style={styles.headerGradient}
         >
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Image
               source={require("../assets/images/seta.png")}
               style={styles.backImage}
@@ -159,10 +143,7 @@ export default function EditProfile() {
           <View style={styles.selectedIconContainer}>
             <View style={styles.avatarWrapper}>
               {showArrows && (
-                <TouchableOpacity
-                  style={styles.arrowLeft}
-                  onPress={goPrevIcon}
-                >
+                <TouchableOpacity style={styles.arrowLeft} onPress={goPrevIcon}>
                   <Ionicons name="chevron-back" size={34} color="#fff" />
                 </TouchableOpacity>
               )}
@@ -175,10 +156,7 @@ export default function EditProfile() {
               </View>
 
               {showArrows && (
-                <TouchableOpacity
-                  style={styles.arrowRight}
-                  onPress={goNextIcon}
-                >
+                <TouchableOpacity style={styles.arrowRight} onPress={goNextIcon}>
                   <Ionicons name="chevron-forward" size={34} color="#fff" />
                 </TouchableOpacity>
               )}
@@ -188,8 +166,10 @@ export default function EditProfile() {
               style={styles.editPhotoButton}
               onPress={() => setShowArrows(!showArrows)}
             >
-              <Ionicons name="camera-outline" size={22} color="#8B5CF6" />
-              <Text style={styles.editPhotoText}>Editar foto</Text>
+              <Ionicons name="camera-outline" size={22} color={colors.accent} />
+              <Text style={[styles.editPhotoText, { color: colors.accent }]}>
+                Editar foto
+              </Text>
             </TouchableOpacity>
           </View>
         </LinearGradient>
@@ -197,7 +177,10 @@ export default function EditProfile() {
         <View style={styles.formContainer}>
           <Text style={[styles.label, { color: colors.textPrimary }]}>Nome:</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
+            style={[
+              styles.input,
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary },
+            ]}
             placeholder="Digite seu nome"
             placeholderTextColor={colors.placeholder}
             value={name}
@@ -206,16 +189,25 @@ export default function EditProfile() {
 
           <Text style={[styles.label, { color: colors.textPrimary }]}>E-mail:</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
-            placeholder="Digite seu E-mail"
+            style={[
+              styles.input,
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary },
+            ]}
+            placeholder="Digite seu Gmail"
             placeholderTextColor={colors.placeholder}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
           />
-          <Text style={[styles.label, { color: colors.textPrimary }]}>Grau autismo:</Text>
+
+          <Text style={[styles.label, { color: colors.textPrimary }]}>
+            Grau autismo:
+          </Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
+            style={[
+              styles.input,
+              { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary },
+            ]}
             placeholder="Opcional"
             placeholderTextColor={colors.placeholder}
             value={autismLevel}
@@ -236,7 +228,7 @@ export default function EditProfile() {
         </View>
       </ScrollView>
 
-      {/* Modal personalizado */}
+      {/* ---------------- MODAL DE ERRO ---------------- */}
       <Modal
         transparent
         visible={showWarning}
@@ -246,11 +238,41 @@ export default function EditProfile() {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalBox, { backgroundColor: colors.modal }]}>
             <Ionicons name="warning-outline" size={40} color={colors.accent} />
-            <Text style={[styles.modalText, { color: colors.modalText }]}>{warningMessage}</Text>
+            <Text style={[styles.modalText, { color: colors.modalText }]}>
+              {warningMessage}
+            </Text>
 
             <TouchableOpacity
               style={[styles.modalButton, { backgroundColor: colors.accent }]}
               onPress={() => setShowWarning(false)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ---------------- MODAL DE SUCESSO ---------------- */}
+      <Modal
+        transparent
+        visible={showSuccess}
+        animationType="fade"
+        onRequestClose={() => setShowSuccess(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, { backgroundColor: colors.modal }]}>
+            <Ionicons name="checkmark-circle-outline" size={42} color={colors.accent} />
+
+            <Text style={[styles.modalText, { color: colors.modalText }]}>
+              Perfil atualizado com sucesso! 🎉
+            </Text>
+
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: colors.accent }]}
+              onPress={() => {
+                setShowSuccess(false);
+                router.back();
+              }}
             >
               <Text style={styles.modalButtonText}>OK</Text>
             </TouchableOpacity>
@@ -279,12 +301,14 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     marginTop: 8,
   },
+
   selectedIconContainer: {
     marginTop: 8,
     marginBottom: 8,
     alignItems: "center",
     justifyContent: "center",
   },
+
   avatarWrapper: {
     width: 120,
     height: 120,
@@ -292,6 +316,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "relative",
   },
+
   avatarCircle: {
     width: 90,
     height: 90,
@@ -303,23 +328,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+
   selectedIconImage: {
     width: "120%",
     height: "125%",
     resizeMode: "contain",
   },
+
   arrowLeft: {
     position: "absolute",
     left: -25,
     top: "50%",
     transform: [{ translateY: -17 }],
   },
+
   arrowRight: {
     position: "absolute",
     right: -25,
     top: "50%",
     transform: [{ translateY: -17 }],
   },
+
   editPhotoButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -333,23 +362,26 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
+
   editPhotoText: {
-    color: "#8B5CF6",
     fontWeight: "600",
     marginLeft: 6,
     fontSize: 15,
   },
+
   formContainer: {
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 32,
   },
+
   label: {
     fontSize: 15,
     marginBottom: 6,
     marginTop: 10,
     fontWeight: "600",
   },
+
   input: {
     borderRadius: 10,
     borderWidth: 1.5,
@@ -358,6 +390,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 10,
   },
+
   saveButton: {
     borderRadius: 18,
     paddingVertical: 13,
@@ -367,11 +400,13 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
+
   saveButtonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },
+
   backButton: {
     position: "absolute",
     left: 18,
@@ -385,21 +420,20 @@ const styles = StyleSheet.create({
     height: 24,
   },
 
-  /* Estilos do Modal */
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,  // Espaço nas laterais para telas pequenas
+    paddingHorizontal: 20,
   },
 
   modalBox: {
     width: "100%",
-    maxWidth: 400,            // Máximo pra telas maiores, sem ser fixo absoluto
+    maxWidth: 400,
     borderRadius: 20,
     paddingVertical: 24,
-    paddingHorizontal: 20,    // Padding em %, sem valor fixo grande
+    paddingHorizontal: 20,
     alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.2,

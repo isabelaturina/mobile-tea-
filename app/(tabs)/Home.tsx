@@ -3,15 +3,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-    Dimensions,
-    FlatList,
-    Image,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -34,6 +34,10 @@ export default function Home() {
       image: require("../../assets/images/family-home.png"),
       buttonText: "toque aqui para entrar",
       onPress: () => router.push("/ChatGrupo"),
+      // Gradiente azul suave - variação do azul principal
+      gradientColors: isDarkMode 
+        ? ["#2563EB", "#3B82F6"] 
+        : ["#3B82F6", "#60A5FA"],
     },
     {
       id: 2,
@@ -42,6 +46,10 @@ export default function Home() {
       image: require("../../assets/images/calendario.png"),
       buttonText: "Abrir meu cronograma",
       onPress: () => router.push("/Cronograma"),
+      // Gradiente azul ciano - combina com lightAccent
+      gradientColors: isDarkMode 
+        ? ["#0EA5E9", "#38BDF8"] 
+        : ["#0EA5E9", "#70DEFE"],
     },
     {
       id: 3,
@@ -51,6 +59,10 @@ export default function Home() {
       image: require("../../assets/images/localiza.png"),
       buttonText: "Abrir Clínicas Próximas",
       onPress: () => router.push("../ClinicasProximas"),
+      // Gradiente azul índigo - variação elegante
+      gradientColors: isDarkMode 
+        ? ["#4F46E5", "#6366F1"] 
+        : ["#6366F1", "#818CF8"],
     },
   ];
 
@@ -102,15 +114,20 @@ export default function Home() {
           ]}
         >
           <View style={styles.headerContent}>
-            <Text style={[styles.welcomeTitle, { color: "#fff" }]}>
-              Bem-vindo{" "}
-              <Text style={{ color: "#E0F2FF" }}>
+            <View style={styles.welcomeContainer}>
+              <Text style={[styles.welcomeGreeting, { color: "#E0F2FF" }]}>
+                Olá,
+              </Text>
+              <Text style={[styles.welcomeTitle, { color: "#fff" }]}>
                 {userData?.name || "Usuário"}!
               </Text>
-            </Text>
-            <Text style={[styles.headerSubtitle, { color: "#E0E7FF" }]}>
-              Conecte-se com outras famílias e encontre apoio no dia a dia.
-            </Text>
+            </View>
+            <View style={styles.subtitleContainer}>
+              <Ionicons name="people" size={18} color="#E0F2FF" style={styles.subtitleIcon} />
+              <Text style={[styles.headerSubtitle, { color: "#E0E7FF" }]}>
+                Conecte-se com outras famílias e encontre apoio no dia a dia.
+              </Text>
+            </View>
           </View>
         </LinearGradient>
 
@@ -122,26 +139,28 @@ export default function Home() {
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.carouselContent}
-            snapToInterval={screenWidth - 40}
+            snapToInterval={screenWidth - 28}
             snapToAlignment="start"
             decelerationRate="fast"
             getItemLayout={(data, index) => {
               const cardWidth = screenWidth - 40;
+              const cardSpacing = 12;
               return {
-                length: cardWidth,
-                offset: cardWidth * index,
+                length: cardWidth + cardSpacing,
+                offset: (cardWidth + cardSpacing) * index,
                 index,
               };
             }}
             onMomentumScrollEnd={(event) => {
               const cardWidth = screenWidth - 40;
-              const index = Math.max(0, Math.min(featureCards.length - 1, Math.round(event.nativeEvent.contentOffset.x / cardWidth)));
+              const cardSpacing = 12;
+              const index = Math.max(0, Math.min(featureCards.length - 1, Math.round(event.nativeEvent.contentOffset.x / (cardWidth + cardSpacing))));
               setCurrentCardIndex(index);
             }}
             renderItem={({ item }) => (
               <View style={styles.carouselCard}>
                 <LinearGradient
-                  colors={[colors.accent, colors.lightAccent]}
+                  colors={item.gradientColors as [string, string]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 0, y: 1 }}
                   style={styles.cardContent}
@@ -168,7 +187,7 @@ export default function Home() {
                     onPress={item.onPress}
                     activeOpacity={0.8}
                   >
-                    <Text style={[styles.cardButtonText, { color: colors.accent }]}>{item.buttonText}</Text>
+                    <Text style={[styles.cardButtonText, { color: item.gradientColors[0] }]}>{item.buttonText}</Text>
                   </TouchableOpacity>
                 </LinearGradient>
               </View>
@@ -302,9 +321,47 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 30,
     marginTop: 0,
   },
-  headerContent: { alignItems: "center" },
-  welcomeTitle: { fontSize: 26, fontWeight: "bold", textAlign: "center" },
-  headerSubtitle: { fontSize: 15, textAlign: "center", lineHeight: 20 },
+  headerContent: { 
+    alignItems: "center",
+    width: "100%",
+  },
+  welcomeContainer: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  welcomeGreeting: {
+    fontSize: 18,
+    fontWeight: "400",
+    marginBottom: 4,
+    opacity: 0.9,
+  },
+  welcomeTitle: { 
+    fontSize: 32, 
+    fontWeight: "700", 
+    textAlign: "center",
+    letterSpacing: 0.5,
+    textShadowColor: "rgba(0, 0, 0, 0.2)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  subtitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    maxWidth: "90%",
+    paddingHorizontal: 8,
+  },
+  subtitleIcon: {
+    marginRight: 8,
+    marginTop: 2,
+  },
+  headerSubtitle: { 
+    fontSize: 15, 
+    textAlign: "center", 
+    lineHeight: 22,
+    flex: 1,
+    opacity: 0.95,
+  },
 
   carouselContainer: { 
     marginTop: 20, 
@@ -312,17 +369,18 @@ const styles = StyleSheet.create({
   },
   carouselContent: {
     paddingLeft: 20,
-    paddingRight: 20,
+    paddingRight: 32,
   },
   carouselCard: {
     width: screenWidth - 40,
     alignItems: "stretch",
+    marginRight: 12,
   },
   cardContent: {
     borderRadius: 12,
-    padding: 16,
+    padding: 14,
     alignItems: "center",
-    height: 280,
+    height: 240,
     shadowColor: "#000",
     shadowOpacity: Platform.OS === 'ios' ? 0.1 : 0.15,
     shadowRadius: 8,
@@ -332,15 +390,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   cardImageContainer: { 
-    height: 120, 
+    height: 100, 
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
-    marginBottom: 10,
+    marginBottom: 8,
   },
   cardImage: { 
-    width: 120, 
-    height: 120,
+    width: 100, 
+    height: 100,
   },
   cardTextContainer: {
     width: "100%",

@@ -2,15 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { 
-  Image, 
-  StyleSheet, 
-  Text, 
-  TouchableOpacity, 
-  View, 
-  ScrollView, 
-  Dimensions,
-  StatusBar 
+import {
+    Dimensions,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useUser } from '../../contexts/UserContext';
@@ -23,13 +23,49 @@ export default function Profile() {
   const { theme, toggleTheme } = useTheme(); 
   const isDarkMode = theme === "dark";
 
+  const colors = isDarkMode
+    ? {
+        background: "#050F1E",
+        card: "#111827",
+        cardShadow: "rgba(0, 0, 0, 0.7)",
+        iconBackground: "#1F2937",
+        accent: "#70DEFE",
+        menuText: "#E2E8F0",
+        textPrimary: "#E2E8F0",
+        modalBackground: "#0F172A",
+        modalText: "#E2E8F0",
+        overlay: "rgba(0, 0, 0, 0.7)",
+        secondaryButtonBg: "#1F2937",
+        secondaryButtonText: "#E2E8F0",
+        primaryButtonBg: "#2563EB",
+        primaryButtonText: "#FFFFFF",
+        profileRing: "#0F172A",
+      }
+    : {
+        background: "#F8F9FA",
+        card: "#FFFFFF",
+        cardShadow: "rgba(17, 99, 231, 0.25)",
+        iconBackground: "#F2F6FF",
+        accent: "#1163E7",
+        menuText: "#1163E7",
+        textPrimary: "#222222",
+        modalBackground: "#FFFFFF",
+        modalText: "#222222",
+        overlay: "rgba(0, 0, 0, 0.18)",
+        secondaryButtonBg: "#E3F6FF",
+        secondaryButtonText: "#158EE5",
+        primaryButtonBg: "#16C9FF",
+        primaryButtonText: "#FFFFFF",
+        profileRing: "#FFFFFF",
+      };
+
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   if (!userData) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.loadingText}>Carregando...</Text>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.loadingText, { color: colors.textPrimary }]}>Carregando...</Text>
       </View>
     );
   }
@@ -62,7 +98,7 @@ export default function Profile() {
   };
 
   return (
-    <View style={[styles.container, isDarkMode && styles.darkContainer]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar 
         barStyle={isDarkMode ? "light-content" : "dark-content"} 
         backgroundColor="transparent" 
@@ -77,7 +113,7 @@ export default function Profile() {
         style={styles.headerGradient}
       >
         <View style={styles.profileSection}>
-          <View style={styles.profileImageContainer}>
+          <View style={[styles.profileImageContainer, { backgroundColor: colors.profileRing }]}>
             <Image source={userData.profileImage} style={styles.profileImage} />
           </View>
           <Text style={styles.userName}>{userData.name}</Text>
@@ -93,47 +129,62 @@ export default function Profile() {
       >
         <View style={styles.menuContainer}>
           {/* Editar perfil */}
-          <TouchableOpacity style={styles.menuItem} onPress={handleEditProfile}>
-            <View style={styles.menuIconBox}>
-              <Ionicons name="person-outline" size={22} color="#1163E7" />
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: colors.card, shadowColor: colors.cardShadow }]}
+            onPress={handleEditProfile}
+          >
+            <View style={[styles.menuIconBox, { backgroundColor: colors.iconBackground }]}>
+              <Ionicons name="person-outline" size={22} color={colors.accent} />
             </View>
-            <Text style={styles.menuText}>Editar perfil</Text>
+            <Text style={[styles.menuText, { color: colors.menuText }]}>Editar perfil</Text>
           </TouchableOpacity>
 
           {/* Esqueceu senha  */}
-          <TouchableOpacity style={styles.menuItem} onPress={handleChangePassword}>
-            <View style={styles.menuIconBox}>
-              <Ionicons name="lock-closed-outline" size={22} color="#1163E7" />
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: colors.card, shadowColor: colors.cardShadow }]}
+            onPress={handleChangePassword}
+          >
+            <View style={[styles.menuIconBox, { backgroundColor: colors.iconBackground }]}>
+              <Ionicons name="lock-closed-outline" size={22} color={colors.accent} />
             </View>
-            <Text style={styles.menuText}>Esqueceu Senha?</Text>
+            <Text style={[styles.menuText, { color: colors.menuText }]}>Esqueceu Senha?</Text>
           </TouchableOpacity>
 
           {/* Notificações */}
-          <TouchableOpacity style={styles.menuItem} onPress={handleNotifications}>
-            <View style={styles.menuIconBox}>
-              <Ionicons name="notifications-outline" size={22} color="#1163E7" />
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: colors.card, shadowColor: colors.cardShadow }]}
+            onPress={handleNotifications}
+          >
+            <View style={[styles.menuIconBox, { backgroundColor: colors.iconBackground }]}>
+              <Ionicons name="notifications-outline" size={22} color={colors.accent} />
             </View>
-            <Text style={styles.menuText}>Notificações</Text>
+            <Text style={[styles.menuText, { color: colors.menuText }]}>Notificações</Text>
           </TouchableOpacity>
 
           {/* Sair da conta */}
-          <TouchableOpacity style={styles.menuItem} onPress={() => setShowLogoutModal(true)}>
-            <View style={styles.menuIconBox}>
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: colors.card, shadowColor: colors.cardShadow }]}
+            onPress={() => setShowLogoutModal(true)}
+          >
+            <View style={[styles.menuIconBox, { backgroundColor: colors.iconBackground }]}>
               <Ionicons name="log-out-outline" size={22} color="#FF6B6B" />
             </View>
             <Text style={[styles.menuText, styles.logoutText]}>Sair da conta</Text>
           </TouchableOpacity>
 
           {/* Alternar modo escuro */}
-          <TouchableOpacity style={styles.menuItem} onPress={toggleTheme}>
-            <View style={styles.menuIconBox}>
+          <TouchableOpacity
+            style={[styles.menuItem, { backgroundColor: colors.card, shadowColor: colors.cardShadow }]}
+            onPress={toggleTheme}
+          >
+            <View style={[styles.menuIconBox, { backgroundColor: colors.iconBackground }]}>
               <Ionicons
                 name={isDarkMode ? 'sunny-outline' : 'moon-outline'}
                 size={22}
-                color="#1163E7"
+                color={colors.accent}
               />
             </View>
-            <Text style={styles.menuText}>
+            <Text style={[styles.menuText, { color: colors.menuText }]}>
               {isDarkMode ? 'Adicionar modo claro' : 'Adicionar modo escuro'}
             </Text>
           </TouchableOpacity>
@@ -145,19 +196,29 @@ export default function Profile() {
 
       {/* Modais */}
       {showNotificationModal && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Deseja receber notificações do app?</Text>
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.modalContainer, { backgroundColor: colors.modalBackground }]}>
+            <Text style={[styles.modalTitle, { color: colors.modalText }]}>Deseja receber notificações do app?</Text>
             <Image
               source={require('../../assets/images/notification-bell.png')}
               style={styles.modalImage}
             />
             <View style={styles.modalButtonsRow}>
-              <TouchableOpacity style={styles.modalButton} onPress={handleLater}>
-                <Text style={styles.modalButtonText}>Talvez mais tarde</Text>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: colors.secondaryButtonBg }]}
+                onPress={handleLater}
+              >
+                <Text style={[styles.modalButtonText, { color: colors.secondaryButtonText }]}>
+                  Talvez mais tarde
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.modalButton, styles.modalButtonPrimary]} onPress={handleAllowNotifications}>
-                <Text style={[styles.modalButtonText, styles.modalButtonPrimaryText]}>Sim desejo</Text>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: colors.primaryButtonBg }]}
+                onPress={handleAllowNotifications}
+              >
+                <Text style={[styles.modalButtonText, { color: colors.primaryButtonText }]}>
+                  Sim desejo
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -165,19 +226,29 @@ export default function Profile() {
       )}
 
       {showLogoutModal && (
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Tem certeza que deseja sair da conta?</Text>
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View style={[styles.modalContainer, { backgroundColor: colors.modalBackground }]}>
+            <Text style={[styles.modalTitle, { color: colors.modalText }]}>Tem certeza que deseja sair da conta?</Text>
             <Image
               source={require('../../assets/images/logout.png')}
               style={styles.modalImage}
             />
             <View style={styles.modalButtonsRow}>
-              <TouchableOpacity style={styles.modalButton} onPress={() => setShowLogoutModal(false)}>
-                <Text style={styles.modalButtonText}>Não</Text>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: colors.secondaryButtonBg }]}
+                onPress={() => setShowLogoutModal(false)}
+              >
+                <Text style={[styles.modalButtonText, { color: colors.secondaryButtonText }]}>
+                  Não
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.modalButton, styles.modalButtonPrimary]} onPress={confirmLogout}>
-                <Text style={[styles.modalButtonText, styles.modalButtonPrimaryText]}>Sim, tenho certeza</Text>
+              <TouchableOpacity
+                style={[styles.modalButton, { backgroundColor: colors.primaryButtonBg }]}
+                onPress={confirmLogout}
+              >
+                <Text style={[styles.modalButtonText, { color: colors.primaryButtonText }]}>
+                  Sim, tenho certeza
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -190,10 +261,6 @@ export default function Profile() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
-  },
-  darkContainer: {
-    backgroundColor: '#000',
   },
   scrollView: {
     flex: 1,
@@ -203,7 +270,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 18,
-    color: '#666',
     textAlign: 'center',
     marginTop: 50,
   },
@@ -233,7 +299,6 @@ paddingTop: (StatusBar.currentHeight ?? 0) + 20, // usa 0 se for undefined
     minWidth: 80,
     minHeight: 80,
     borderRadius: screenHeight * 0.06,
-    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
@@ -273,12 +338,10 @@ userEmail: {
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     paddingVertical: 16,
     paddingHorizontal: 18,
     borderRadius: 16,
     marginBottom: 15,
-    shadowColor: '#1163E7',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -289,14 +352,12 @@ userEmail: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
   },
   menuText: {
     fontSize: 16,
-    color: '#1163E7',
     fontWeight: '600',
   },
   logoutText: {
@@ -308,7 +369,6 @@ userEmail: {
   modalOverlay: {
     position: 'absolute',
     top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.18)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 99,
@@ -316,7 +376,6 @@ userEmail: {
   modalContainer: {
     width: '85%',
     maxWidth: 400,
-    backgroundColor: '#fff',
     borderRadius: 18,
     padding: 24,
     alignItems: 'center',
@@ -329,7 +388,6 @@ userEmail: {
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#222',
     textAlign: 'center',
     marginBottom: 18,
   },
@@ -347,7 +405,6 @@ userEmail: {
   },
   modalButton: {
     flex: 1,
-    backgroundColor: '#E3F6FF',
     borderRadius: 10,
     paddingVertical: 12,
     marginHorizontal: 6,
@@ -355,14 +412,7 @@ userEmail: {
     minHeight: 44, // altura mínima para acessibilidade
   },
   modalButtonText: {
-    color: '#158EE5',
     fontWeight: 'bold',
     fontSize: 15,
-  },
-  modalButtonPrimary: {
-    backgroundColor: '#16c9ffff',
-  },
-  modalButtonPrimaryText: {
-    color: '#fff',
   },
 });
