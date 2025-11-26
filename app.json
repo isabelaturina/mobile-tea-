@@ -1,10 +1,10 @@
  {
   "expo": {
-    "name": "mobile-tea",
-    "slug": "mobile-tea",
+    "name": "TEA+",
+    "slug": "TEA+",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/bea.png",
+    "icon": "./assets/logo tea.png",
     "scheme": "mobile-tea",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/bea.png",
+        "foregroundImage": "./assets/logo tea.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
@@ -21,14 +21,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/bea.png"
+      "favicon": "./assets/logo tea.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/bea.png",
+          "image": "./assets/logo tea.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -39,9 +39,10 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/bea.png",
+          "icon": "./assets/logo tea.png",
           "color": "#3B82F6",
           "defaultChannel": "default"
+          
         }
       ]
     ],
