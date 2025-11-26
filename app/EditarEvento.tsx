@@ -3,17 +3,18 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useCronograma } from "../contexts/CronogramaContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { NotificationService } from "../services/notificationService";
 import "../utils/calendarLocale";
 
@@ -21,6 +22,8 @@ export default function EditarEvento() {
   const params = useLocalSearchParams();
   const eventId = params.eventId as string;
   const { events, updateEvent } = useCronograma();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
 
   const [selectedDate, setSelectedDate] = useState("");
   const [title, setTitle] = useState("");
@@ -41,6 +44,38 @@ export default function EditarEvento() {
     }
   }, [eventId, events]);
 
+  const today = new Date().toISOString().split("T")[0];
+
+  const colors = isDarkMode
+    ? {
+        background: "#000000",
+        textPrimary: "#F8FAFC",
+        textSecondary: "#94A3B8",
+        card: "#1E293B",
+        accent: "#3B82F6",
+        lightAccent: "#60A5FA",
+        border: "#334155",
+        placeholder: "#64748B",
+      }
+    : {
+        background: "#F8F9FA",
+        textPrimary: "#111",
+        textSecondary: "#666",
+        card: "#FFFFFF",
+        accent: "#3B82F6",
+        lightAccent: "#70DEFE",
+        border: "#E5E7EB",
+        placeholder: "#999",
+      };
+
+  const markedDates = {
+    [selectedDate]: {
+      selected: true,
+      selectedColor: "#8B5CF6",
+      selectedTextColor: "#fff",
+    },
+  };
+
   const handleSave = async () => {
     if (!selectedDate || !title.trim()) {
       Alert.alert("Atenção", "Por favor, selecione uma data e preencha o título");
@@ -48,7 +83,6 @@ export default function EditarEvento() {
     }
 
     // Verificar se a data selecionada não é no passado
-    const today = new Date().toISOString().split("T")[0];
     if (selectedDate < today) {
       Alert.alert(
         "Data Inválida",
@@ -143,18 +177,8 @@ export default function EditarEvento() {
     return `${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
-  const markedDates = {
-    [selectedDate]: {
-      selected: true,
-      selectedColor: "#8B5CF6",
-      selectedTextColor: "#fff",
-    },
-  };
-
-  const today = new Date().toISOString().split("T")[0];
-
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <LinearGradient
         colors={["#8B5CF6", "#3B82F6"]}
@@ -173,23 +197,23 @@ export default function EditarEvento() {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Calendário compacto */}
-        <View style={styles.calendarContainer}>
-          <Text style={styles.calendarTitle}>Calendário</Text>
+        <View style={[styles.calendarContainer, { backgroundColor: colors.card }]}>
+          <Text style={[styles.calendarTitle, { color: colors.textPrimary }]}>Calendário</Text>
           <Calendar
             onDayPress={(day) => setSelectedDate(day.dateString)}
             markedDates={markedDates}
             minDate={today}
             theme={{
-              backgroundColor: "#fff",
-              calendarBackground: "#fff",
-              textSectionTitleColor: "#3B82F6",
+              backgroundColor: colors.card,
+              calendarBackground: colors.card,
+              textSectionTitleColor: colors.accent,
               selectedDayBackgroundColor: "#8B5CF6",
               selectedDayTextColor: "#fff",
-              todayTextColor: "#3B82F6",
-              dayTextColor: "#111",
-              textDisabledColor: "#999",
-              arrowColor: "#3B82F6",
-              monthTextColor: "#111",
+              todayTextColor: colors.accent,
+              dayTextColor: colors.textPrimary,
+              textDisabledColor: colors.textSecondary,
+              arrowColor: colors.accent,
+              monthTextColor: colors.textPrimary,
               textDayFontWeight: "500",
               textMonthFontWeight: "bold",
               textDayHeaderFontWeight: "600",
@@ -211,37 +235,55 @@ export default function EditarEvento() {
         <View style={styles.formContainer}>
           {/* Título */}
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Título</Text>
+            <Text style={[styles.inputLabel, { color: colors.textPrimary }]}>Título</Text>
             <TextInput
-              style={styles.textInput}
+              style={[
+                styles.textInput,
+                {
+                  backgroundColor: colors.card,
+                  color: colors.textPrimary,
+                  borderColor: colors.border,
+                },
+              ]}
               value={title}
               onChangeText={setTitle}
               placeholder="Fonoaudiologo"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.placeholder}
             />
           </View>
 
           {/* Horário */}
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Horário</Text>
+            <Text style={[styles.inputLabel, { color: colors.textPrimary }]}>Horário</Text>
             <TextInput
-              style={styles.textInput}
+              style={[
+                styles.textInput,
+                {
+                  backgroundColor: colors.card,
+                  color: colors.textPrimary,
+                  borderColor: colors.border,
+                },
+              ]}
               value={time}
               onChangeText={setTime}
               placeholder="08:00"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.placeholder}
             />
           </View>
 
           {/* Nota */}
           <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Nota</Text>
+            <Text style={[styles.inputLabel, { color: colors.textPrimary }]}>Nota</Text>
             <TextInput
-              style={[styles.textInput, styles.textArea]}
+              style={[
+                styles.textInput,
+                styles.textArea,
+                { backgroundColor: colors.card, color: colors.textPrimary, borderColor: colors.border },
+              ]}
               value={note}
               onChangeText={setNote}
               placeholder="adicionar a nota do evento exemplo|fonoaudiologo com a profissional"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.placeholder}
               multiline
               numberOfLines={3}
               textAlignVertical="top"
@@ -249,13 +291,13 @@ export default function EditarEvento() {
           </View>
 
           {/* Notificação */}
-          <View style={styles.notificationContainer}>
+          <View style={[styles.notificationContainer, { backgroundColor: colors.card }]}>
             <View style={styles.notificationHeader}>
               <View style={styles.notificationInfo}>
-                <Ionicons name="notifications" size={20} color="#3B82F6" />
+                <Ionicons name="notifications" size={20} color={colors.accent} />
                 <View style={styles.notificationTextContainer}>
-                  <Text style={styles.notificationTitle}>Lembrete de Evento</Text>
-                  <Text style={styles.notificationSubtitle}>
+                  <Text style={[styles.notificationTitle, { color: colors.textPrimary }]}>Lembrete de Evento</Text>
+                  <Text style={[styles.notificationSubtitle, { color: colors.textSecondary }]}>
                     Receber notificação no horário do evento
                   </Text>
                 </View>
@@ -263,43 +305,18 @@ export default function EditarEvento() {
               <Switch
                 value={showNotification}
                 onValueChange={setShowNotification}
-                trackColor={{ false: "#E5E7EB", true: "#3B82F6" }}
+                trackColor={{ false: colors.border, true: colors.accent }}
                 thumbColor={showNotification ? "#fff" : "#f4f3f4"}
-                ios_backgroundColor="#E5E7EB"
+                ios_backgroundColor={colors.border}
               />
             </View>
             {showNotification && (
               <View style={styles.notificationDetails}>
-                <Text style={styles.notificationDetailsText}>
+                <Text style={[styles.notificationDetailsText, { color: colors.lightAccent }]}>
                   📅 Você receberá uma notificação em {formatDate(selectedDate)} às {time}
                 </Text>
               </View>
             )}
-          </View>
-
-          {/* Alarme */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Alarme</Text>
-            <TouchableOpacity
-              style={styles.sectionButton}
-              onPress={() => {
-                if (!selectedDate || !title.trim()) {
-                  alert("Por favor, selecione uma data e preencha o título primeiro");
-                  return;
-                }
-                router.push({
-                  pathname: "/AdicionarTimer",
-                  params: {
-                    title,
-                    note,
-                    date: selectedDate,
-                  },
-                });
-              }}
-            >
-              <Text style={styles.sectionButtonText}>adicione um alarme para te lembrar</Text>
-              <Ionicons name="time-outline" size={20} color="#3B82F6" />
-            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -324,7 +341,7 @@ export default function EditarEvento() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    // backgroundColor overridden dynamically
   },
   header: {
     paddingTop: 60,
@@ -348,7 +365,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   calendarContainer: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     marginTop: 20,
     padding: 12,
@@ -363,7 +379,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 12,
     textAlign: "center",
-    color: "#333",
   },
   calendar: {
     borderRadius: 12,
@@ -379,16 +394,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 8,
-    color: "#333",
   },
   textInput: {
-    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    color: "#333",
   },
   textArea: {
     height: 80,
@@ -400,7 +411,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 8,
-    color: "#333",
   },
   sectionButton: {
     backgroundColor: "#fff",
@@ -441,7 +451,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   notificationContainer: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
@@ -468,12 +477,10 @@ const styles = StyleSheet.create({
   notificationTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
     marginBottom: 2,
   },
   notificationSubtitle: {
     fontSize: 14,
-    color: "#666",
   },
   notificationDetails: {
     marginTop: 12,
@@ -483,7 +490,6 @@ const styles = StyleSheet.create({
   },
   notificationDetailsText: {
     fontSize: 14,
-    color: "#059669",
     fontWeight: "500",
   },
 });

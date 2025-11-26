@@ -4,13 +4,13 @@ import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useCronograma } from "../contexts/CronogramaContext";
@@ -253,36 +253,6 @@ export default function AdicionarEvento() {
             </TouchableOpacity>
           </View>
 
-          {/* Alarme */}
-          <View style={styles.sectionContainer}>
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Alarme</Text>
-            <TouchableOpacity
-              style={[styles.sectionButton, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => {
-                if (!selectedDate || !title.trim()) {
-                  alert("Por favor, selecione uma data e preencha o título primeiro");
-                  return;
-                }
-                router.push({
-                  pathname: "/AdicionarTimer",
-                  params: {
-                    title,
-                    note,
-                    date: selectedDate,
-                  },
-                });
-              }}
-            >
-              <Text style={[styles.sectionButtonText, { color: colors.textSecondary }]}>
-                adicione um alarme para te lembrar
-              </Text>
-              <Ionicons
-                name="time-outline"
-                size={20}
-                color={colors.accent}
-              />
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
 

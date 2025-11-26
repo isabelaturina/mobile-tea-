@@ -82,8 +82,8 @@ export default function EditProfile() {
   const [warningMessage, setWarningMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // ---- REGEX DE E-MAIL EXCLUSIVA PARA GMAIL ----
-  const gmailStrictRegex = /^[A-Za-z][A-Za-z._]*@gmail\.com$/;
+  // ---- REGEX QUE ACEITA NÚMEROS NO GMAIL ----
+  const gmailStrictRegex = /^[A-Za-z0-9][A-Za-z0-9._]*@gmail\.com$/;
 
   const goPrevIcon = () => {
     setSelectedIcon((prev) => (prev === 0 ? profileIcons.length - 1 : prev - 1));
@@ -109,7 +109,7 @@ export default function EditProfile() {
 
     if (!gmailStrictRegex.test(email.trim())) {
       setWarningMessage(
-        "Use apenas Gmail. O e-mail não pode começar com ponto e não pode ter números no nome."
+        "Use apenas Gmail. Agora números são permitidos no nome do e-mail."
       );
       setShowWarning(true);
       return;
@@ -228,13 +228,7 @@ export default function EditProfile() {
         </View>
       </ScrollView>
 
-      {/* ---------------- MODAL DE ERRO ---------------- */}
-      <Modal
-        transparent
-        visible={showWarning}
-        animationType="fade"
-        onRequestClose={() => setShowWarning(false)}
-      >
+      <Modal transparent visible={showWarning} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalBox, { backgroundColor: colors.modal }]}>
             <Ionicons name="warning-outline" size={40} color={colors.accent} />
@@ -252,13 +246,7 @@ export default function EditProfile() {
         </View>
       </Modal>
 
-      {/* ---------------- MODAL DE SUCESSO ---------------- */}
-      <Modal
-        transparent
-        visible={showSuccess}
-        animationType="fade"
-        onRequestClose={() => setShowSuccess(false)}
-      >
+      <Modal transparent visible={showSuccess} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalBox, { backgroundColor: colors.modal }]}>
             <Ionicons name="checkmark-circle-outline" size={42} color={colors.accent} />
