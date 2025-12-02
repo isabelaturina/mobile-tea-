@@ -16,11 +16,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../contexts/ThemeContext";
 
-// Importa sua imagem da seta
-import setaImg from "../assets/images/seta.png";
-
 export default function ClinicasProximas() {
-  const navigation = useNavigation();
+  // tipa navigation como any para simplificar chamadas de navegação neste componente
+  const navigation = useNavigation<any>();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
 
@@ -69,10 +67,11 @@ export default function ClinicasProximas() {
       const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
 
-      // Substitua pela sua URL real
-      const response = await fetch(
-        `https://suaapi.com/clinicas?lat=${latitude}&lng=${longitude}&busca=${busca}`
-      );
+      // Busca clínicas usando a API real
+      const RAIO_METROS = 5000; // ajuste conforme necessário
+      const coordenadas = { lat: latitude, lng: longitude };
+      const url = `https://api-clinicasproximas.onrender.com/api/clinicas/proximas?lat=${coordenadas.lat}&lng=${coordenadas.lng}&raioEmMetros=${RAIO_METROS}`;
+      const response = await fetch(url);
       const data = await response.json();
 
       setClinicas(data);
@@ -114,9 +113,9 @@ export default function ClinicasProximas() {
       {/* Botão Voltar */}
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => navigation.goBack()}
+        onPress={() => navigation.navigate("Home")}
       >
-        <Image source={setaImg} style={[styles.backImage, { tintColor: colors.textPrimary }]} />
+        <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
       </TouchableOpacity>
 
       <Text style={[styles.titulo, { color: colors.textPrimary }]}>Clínicas Próximas</Text>
@@ -150,7 +149,7 @@ export default function ClinicasProximas() {
 
       <FlatList
         data={clinicas}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item: any, index: number) => (item && item.id != null ? String(item.id) : String(index))}
         renderItem={renderItem}
         contentContainerStyle={styles.lista}
         horizontal={false}

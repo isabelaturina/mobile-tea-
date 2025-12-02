@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -14,20 +14,9 @@ import {
   View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { useCronograma } from "../contexts/CronogramaContext";
+import { useCronograma, Event } from "../contexts/CronogramaContext";
 import { useTheme } from "../contexts/ThemeContext";
 import "../utils/calendarLocale";
-
-interface Event {
-  id: string;
-  title: string;
-  note: string;
-  time: string;
-  date: string;
-  hasAlarm?: boolean;
-  alarmTime?: string;
-  repeatAlarm?: boolean;
-}
 
 export default function Cronograma() {
   const [selectedDate, setSelectedDate] = useState("");
@@ -40,16 +29,21 @@ export default function Cronograma() {
     getEventsForDate,
     getDiaryEntryForDate,
     isLoading,
+    refreshEvents,
     forceDeleteEvent,
     forceDeleteDiaryEntry,
-    refreshEvents,
+    createEvent,
+    updateEvent,
+    createDiaryEntry,
+    updateDiaryEntry,
   } = useCronograma();
 
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
+
   const colors = isDarkMode
     ? {
-        background: "#000000",
+        background: "#000",
         textPrimary: "#F8FAFC",
         textSecondary: "#94A3B8",
         card: "#1E293B",
@@ -62,7 +56,7 @@ export default function Cronograma() {
         background: "#F8F9FA",
         textPrimary: "#111",
         textSecondary: "#555",
-        card: "#FFFFFF",
+        card: "#fff",
         accent: "#3B82F6",
         lightAccent: "#70DEFE",
         border: "#E5E7EB",
@@ -78,10 +72,6 @@ export default function Cronograma() {
     }, [refreshEvents, selectedDate, today])
   );
 
-  useEffect(() => {
-    if (!selectedDate) setSelectedDate(today);
-  }, [selectedDate, today]);
-
   const markedDates = {
     [selectedDate]: { selected: true, selectedColor: "#8B5CF6", selectedTextColor: "#fff" },
     ...events.reduce((acc, event) => {
@@ -91,12 +81,8 @@ export default function Cronograma() {
   };
 
   const handleDateSelect = (day: any) => setSelectedDate(day.dateString);
-  const handleAddEvent = () => router.push("/AdicionarEvento");
-  const handleAddNote = () => router.push({ pathname: "/AnotarDia", params: { date: selectedDate } });
 
-  const getEventsForSelectedDate = () => getEventsForDate(selectedDate);
-  const getDiaryEntryForSelectedDate = () => getDiaryEntryForDate(selectedDate);
-
+  /** FAB Actions */
   const toggleFab = () => {
     setFabOpen((prev) => !prev);
     Animated.timing(rotateAnim, {
@@ -107,13 +93,21 @@ export default function Cronograma() {
     }).start();
   };
 
-  const rotation = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "45deg"],
-  });
+  /** Navegação para adicionar evento */
+  const handleAddEvent = () => {
+    router.push({ pathname: "/AdicionarEvento", params: { date: selectedDate } });
+  };
 
-  const handleEditEvent = (event: Event) => router.push({ pathname: "/EditarEvento", params: { eventId: event.id } });
+  const handleAddNote = () => {
+    router.push({ pathname: "/AnotarDia", params: { date: selectedDate } });
+  };
 
+  /** Editar evento */
+  const handleEditEvent = (event: Event) => {
+    router.push({ pathname: "/EditarEvento", params: { eventId: event.id } });
+  };
+
+  /** Deletar evento */
   const handleDeleteEvent = (eventId: string) => {
     Alert.alert("Confirmar Exclusão", "Tem certeza que deseja excluir este evento?", [
       { text: "Cancelar", style: "cancel" },
@@ -123,16 +117,16 @@ export default function Cronograma() {
         onPress: async () => {
           try {
             await forceDeleteEvent(eventId);
-            setTimeout(() => Alert.alert("Sucesso", "Evento excluído com sucesso!"), 200);
+            Alert.alert("Sucesso", "Evento excluído com sucesso!");
           } catch {
-            Alert.alert("Erro", "Não foi possível excluir o evento. Tente novamente.");
+            Alert.alert("Erro", "Não foi possível excluir o evento.");
           }
         },
       },
     ]);
   };
 
-  const handleEditDiaryEntry = (date: string) => router.push({ pathname: "/EditarAnotacao", params: { date } });
+  /** Deletar anotação */
   const handleDeleteDiaryEntry = (entryId: string) => {
     Alert.alert("Confirmar Exclusão", "Tem certeza que deseja excluir esta anotação?", [
       { text: "Cancelar", style: "cancel" },
@@ -142,9 +136,9 @@ export default function Cronograma() {
         onPress: async () => {
           try {
             await forceDeleteDiaryEntry(entryId);
-            setTimeout(() => Alert.alert("Sucesso", "Anotação excluída com sucesso!"), 200);
+            Alert.alert("Sucesso", "Anotação excluída com sucesso!");
           } catch {
-            Alert.alert("Erro", "Não foi possível excluir a anotação. Tente novamente.");
+            Alert.alert("Erro", "Não foi possível excluir a anotação.");
           }
         },
       },
@@ -156,18 +150,8 @@ export default function Cronograma() {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "Agenda";
     const months = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro",
+      "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+      "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
     ];
     return `${months[date.getMonth()]} ${date.getFullYear()}`;
   };
@@ -178,34 +162,24 @@ export default function Cronograma() {
     if (isNaN(date.getTime())) return "";
     const day = date.getDate();
     const months = [
-      "Janeiro",
-      "Fevereiro",
-      "Março",
-      "Abril",
-      "Maio",
-      "Junho",
-      "Julho",
-      "Agosto",
-      "Setembro",
-      "Outubro",
-      "Novembro",
-      "Dezembro",
+      "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+      "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
     ];
     return `${day} de ${months[date.getMonth()]}, ${date.getFullYear()}`;
   };
 
   const getMoodEmoji = (mood: string) => {
     const moodMap: { [key: string]: string } = {
-      muito_feliz: "😁",
-      feliz: "😊",
-      neutro: "😐",
-      triste: "😔",
-      muito_triste: "😢",
-      ansioso: "😰",
-      irritado: "😡",
+      muito_feliz: "😁", feliz: "😊", neutro: "😐",
+      triste: "😔", muito_triste: "😢", ansioso: "😰", irritado: "😡"
     };
     return moodMap[mood] || "😐";
   };
+
+  const rotation = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "45deg"],
+  });
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -261,7 +235,9 @@ export default function Cronograma() {
             style={[styles.tab, activeTab === "diario" && { backgroundColor: colors.accent }]}
             onPress={() => setActiveTab("diario")}
           >
-            <Text style={[styles.tabText, { color: activeTab === "diario" ? "#fff" : colors.tabInactive }]}>Diário</Text>
+            <Text style={[styles.tabText, { color: activeTab === "diario" ? "#fff" : colors.tabInactive }]}>
+              Diário
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.tab, activeTab === "eventos" && { backgroundColor: colors.accent }]}
@@ -286,36 +262,35 @@ export default function Cronograma() {
               <>
                 {activeTab === "diario" && (
                   <View style={styles.diaryContainer}>
-                    {getDiaryEntryForSelectedDate() ? (
-                      <View
-                        // adiciona borda neon azul com fundo preto no modo escuro
-                        style={[
-                          styles.diaryCard,
-                          isDarkMode ? styles.diaryCardDark : styles.diaryCardLight,
-                        ]}
-                      >
+                    {getDiaryEntryForDate(selectedDate) ? (
+                      <View style={[styles.diaryCard, isDarkMode ? styles.diaryCardDark : styles.diaryCardLight]}>
                         <View style={styles.diaryHeader}>
                           <Text style={[styles.diaryDate, { color: colors.textPrimary }]}>
                             {formatSelectedDate(selectedDate)}
                           </Text>
                           <Text style={[styles.diaryMood, { color: colors.textPrimary }]}>
-                            {getMoodEmoji(getDiaryEntryForSelectedDate()?.mood || "")}
+                            {getMoodEmoji(getDiaryEntryForDate(selectedDate)?.mood || "")}
                           </Text>
                         </View>
                         <Text style={[styles.diaryNote, { color: colors.textSecondary }]}>
-                          {getDiaryEntryForSelectedDate()?.note}
+                          {getDiaryEntryForDate(selectedDate)?.note}
                         </Text>
                         <View style={styles.diaryActions}>
                           <TouchableOpacity
                             style={[styles.actionButton, styles.editButton]}
-                            onPress={() => handleEditDiaryEntry(selectedDate)}
+                            onPress={() =>
+                              router.push({
+                                pathname: "/EditarAnotacao",
+                                params: { entryId: getDiaryEntryForDate(selectedDate)?.id },
+                              })
+                            }
                           >
                             <Ionicons name="create-outline" size={16} color="#fff" />
                           </TouchableOpacity>
                           <TouchableOpacity
                             style={[styles.actionButton, styles.deleteButton]}
                             onPress={() =>
-                              handleDeleteDiaryEntry(getDiaryEntryForSelectedDate()?.id || "")
+                              handleDeleteDiaryEntry(getDiaryEntryForDate(selectedDate)?.id || "")
                             }
                           >
                             <Ionicons name="trash-outline" size={16} color="#fff" />
@@ -333,8 +308,8 @@ export default function Cronograma() {
 
                 {activeTab === "eventos" && (
                   <View style={styles.eventsContainer}>
-                    {getEventsForSelectedDate().length > 0 ? (
-                      getEventsForSelectedDate().map((event) => (
+                    {getEventsForDate(selectedDate).length > 0 ? (
+                      getEventsForDate(selectedDate).map((event) => (
                         <View key={event.id} style={[styles.eventCard, { backgroundColor: colors.card }]}>
                           <View style={styles.eventInfo}>
                             <Text style={[styles.eventTitle, { color: colors.textPrimary }]}>{event.title}</Text>
@@ -376,7 +351,7 @@ export default function Cronograma() {
         </View>
       </ScrollView>
 
-      {/* Speed Dial FAB */}
+      {/* FAB */}
       <View style={styles.fabContainer}>
         {fabOpen && (
           <>
@@ -389,7 +364,7 @@ export default function Cronograma() {
           </>
         )}
         <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-          <TouchableOpacity style={styles.fab} onPress={fabOpen ? toggleFab : toggleFab}>
+          <TouchableOpacity style={styles.fab} onPress={toggleFab}>
             <Ionicons name="add" size={24} color="#fff" />
           </TouchableOpacity>
         </Animated.View>
@@ -398,6 +373,7 @@ export default function Cronograma() {
   );
 }
 
+/** styles... (use exatamente os mesmos do seu código anterior) */
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { paddingTop: 60, paddingBottom: 20, paddingHorizontal: 20, borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
@@ -425,77 +401,17 @@ const styles = StyleSheet.create({
   loadingText: { fontSize: 16, marginTop: 12 },
   emptyState: { alignItems: "center", justifyContent: "center", paddingVertical: 40 },
   emptyStateText: { fontSize: 16, marginTop: 12, textAlign: "center" },
-
-  /* diário */
   diaryContainer: { gap: 12 },
-  // base card (shared)
-  diaryCard: {
-    borderRadius: 12,
-    padding: 16,
-    // base shadow for light mode fallback
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  // dark-mode neon card
-  diaryCardDark: {
-    backgroundColor: "#000", // fundo preto
-    borderWidth: 2,
-    borderColor: "rgba(59,130,246,0.95)", // borda azul neon
-    // glow (iOS)
-    shadowColor: "#3B82F6",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.9,
-    shadowRadius: 18,
-    // stronger elevation (Android)
-    elevation: 14,
-  },
-  // light-mode subtle variant
-  diaryCardLight: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "rgba(59,130,246,0.18)",
-    shadowColor: "#3B82F6",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-
+  diaryCard: { borderRadius: 12, padding: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 6, elevation: 3 },
+  diaryCardDark: { backgroundColor: "#000", borderWidth: 2, borderColor: "rgba(59,130,246,0.95)", shadowColor: "#3B82F6", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.9, shadowRadius: 18, elevation: 14 },
+  diaryCardLight: { backgroundColor: "#fff", borderWidth: 1, borderColor: "rgba(59,130,246,0.18)", shadowColor: "#3B82F6", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 8, elevation: 4 },
   diaryHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-  diaryDate: { fontSize: 16, fontWeight: "bold" /* color set dynamically */ },
+  diaryDate: { fontSize: 16, fontWeight: "bold" },
   diaryMood: { fontSize: 24 },
-  diaryNote: { fontSize: 14, lineHeight: 20, marginBottom: 12 /* color set dynamically */ },
+  diaryNote: { fontSize: 14, lineHeight: 20, marginBottom: 12 },
   diaryActions: { flexDirection: "row", justifyContent: "flex-end", gap: 8 },
-
   fabContainer: { position: "absolute", bottom: 30, right: 20, alignItems: "center", gap: 12 },
   fab: { width: 56, height: 56, borderRadius: 28, backgroundColor: "#3B82F6", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 8 },
-  fabSecondary: {
-    backgroundColor: "#8B5CF6",
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  fabEvent: {
-    backgroundColor: "#60A5FA",
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 6,
-  },
+  fabSecondary: { backgroundColor: "#8B5CF6", width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 6 },
+  fabEvent: { backgroundColor: "#60A5FA", width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.25, shadowRadius: 6, elevation: 6 },
 });

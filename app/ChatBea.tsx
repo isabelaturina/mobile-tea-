@@ -1,26 +1,27 @@
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Dimensions,
   Image,
   ImageBackground,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  SafeAreaView,
-  Dimensions,
 } from "react-native";
 import { useTheme } from '../contexts/ThemeContext';
 
 // Pegar as dimensões da tela
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
-import BeaAssistencia from "../assets/images/BeaAssistencia.png";
-import ChatBeaBackground from "../assets/images/ChatBea.png";
+const BeaAssistencia = require("../assets/images/BeaAssistencia.png");
+const ChatBeaBackground = require("../assets/images/ChatBea.png");
+
+const API_CHAT = "https://chatbea.onrender.com/api/chat";
 
 export default function ChatBea() {
   const router = useRouter();
@@ -32,10 +33,27 @@ export default function ChatBea() {
   ]);
   const [inputMessage, setInputMessage] = useState("");
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (inputMessage.trim()) {
       setMessages([...messages, { sender: "Você", text: inputMessage }]);
+      const userText = inputMessage;
       setInputMessage("");
+      try {
+        const response = await fetch(API_CHAT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mensagem: userText })
+        });
+        if (!response.ok) throw new Error("Erro na resposta da API");
+        const data = await response.text();
+        const resposta = data && data.trim() !== ''
+          ? data
+          : 'Desculpe, não consegui entender sua pergunta. Pode tentar reformular?';
+        setMessages(msgs => [...msgs, { sender: "Bea", text: resposta }]);
+      } catch (error) {
+        console.error('Erro ao se comunicar com a API:', error);
+        setMessages(msgs => [...msgs, { sender: "Bea", text: "Desculpe, estou com dificuldades técnicas. Tente novamente mais tarde." }]);
+      }
     }
   };
 

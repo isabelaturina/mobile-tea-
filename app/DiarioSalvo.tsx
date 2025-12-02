@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useCronograma } from "../contexts/CronogramaContext";
 import { useTheme } from "../contexts/ThemeContext";
 
 const MOOD_OPTIONS = [
@@ -22,11 +21,39 @@ const MOOD_OPTIONS = [
   { emoji: "😡", value: "irritado", label: "Irritado" },
 ];
 
+const API_DIARIO = "https://diario-uvit.onrender.com/api/diario";
+
 export default function DiarioSalvo() {
   const { date } = useLocalSearchParams();
-  const { getDiaryEntryForDate } = useCronograma();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
+
+  const [diaryEntry, setDiaryEntry] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!date) return;
+    setLoading(true);
+    setError("");
+    fetch(`${API_DIARIO}?date=${date}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Erro ao buscar diário");
+        return res.json();
+      })
+      .then(data => {
+        // Se a API retorna um array, pega o primeiro item
+        if (Array.isArray(data)) {
+          setDiaryEntry(data.length > 0 ? data[0] : null);
+        } else {
+          setDiaryEntry(data);
+        }
+      })
+      .catch(() => {
+        setError("Não foi possível carregar o diário.");
+      })
+      .finally(() => setLoading(false));
+  }, [date]);
 
   const colors = useMemo(
     () =>
@@ -255,8 +282,6 @@ export default function DiarioSalvo() {
     [colors, isDarkMode]
   );
 
-  const diaryEntry = date ? getDiaryEntryForDate(date as string) : null;
-
   const handleFinish = () => {
     router.push("/Cronograma");
   };
@@ -264,6 +289,22 @@ export default function DiarioSalvo() {
   const handleTalkToBea = () => {
     router.push("/ChatBea");
   };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.notFoundText}>Carregando...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.notFoundText}>{error}</Text>
+      </View>
+    );
+  }
 
   if (!diaryEntry) {
     return (
@@ -308,7 +349,7 @@ export default function DiarioSalvo() {
                 key={mood.value}
                 style={[
                   styles.moodButton,
-                  diaryEntry.mood === mood.value && styles.selectedMoodButton,
+                  diaryEntry?.mood === mood.value && styles.selectedMoodButton,
                 ]}
               >
                 <Text style={styles.moodEmoji}>{mood.emoji}</Text>
@@ -321,7 +362,7 @@ export default function DiarioSalvo() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Anote como você se sentiu hoje</Text>
           <View style={styles.noteContainer}>
-            <Text style={styles.noteText}>{diaryEntry.note}</Text>
+            <Text style={styles.noteText}>{diaryEntry?.note || ""}</Text>
           </View>
         </View>
 

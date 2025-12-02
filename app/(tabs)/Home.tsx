@@ -34,7 +34,6 @@ export default function Home() {
       image: require("../../assets/images/family-home.png"),
       buttonText: "toque aqui para entrar",
       onPress: () => router.push("/ChatGrupo"),
-      // Gradiente azul suave - variação do azul principal
       gradientColors: isDarkMode 
         ? ["#2563EB", "#3B82F6"] 
         : ["#3B82F6", "#60A5FA"],
@@ -46,7 +45,6 @@ export default function Home() {
       image: require("../../assets/images/calendario.png"),
       buttonText: "Abrir meu cronograma",
       onPress: () => router.push("/Cronograma"),
-      // Gradiente azul ciano - combina com lightAccent
       gradientColors: isDarkMode 
         ? ["#0EA5E9", "#38BDF8"] 
         : ["#0EA5E9", "#70DEFE"],
@@ -59,7 +57,6 @@ export default function Home() {
       image: require("../../assets/images/localiza.png"),
       buttonText: "Abrir Clínicas Próximas",
       onPress: () => router.push("../ClinicasProximas"),
-      // Gradiente azul índigo - variação elegante
       gradientColors: isDarkMode 
         ? ["#4F46E5", "#6366F1"] 
         : ["#6366F1", "#818CF8"],
@@ -86,7 +83,6 @@ export default function Home() {
         iconBg: "#E0F2FF",
       };
 
-  // Calcular altura da tab bar dinamicamente (sincronizado com CustomTabBar)
   const BASE_TAB_HEIGHT = 60;
   const safeAreaBottom = Platform.OS === 'android' ? Math.max(insets.bottom, 8) : insets.bottom;
   const TAB_BAR_HEIGHT = BASE_TAB_HEIGHT + safeAreaBottom;
@@ -100,7 +96,6 @@ export default function Home() {
           paddingBottom: TAB_BAR_HEIGHT + 20,
         }}
       >
-        {/* HEADER CORRIGIDO */}
         <LinearGradient
           colors={[colors.accent, colors.lightAccent]}
           start={{ x: 0, y: 0 }}
@@ -131,7 +126,6 @@ export default function Home() {
           </View>
         </LinearGradient>
 
-        {/* CARROSSEL */}
         <View style={styles.carouselContainer}>
           <FlatList
             data={featureCards}
@@ -158,32 +152,29 @@ export default function Home() {
               setCurrentCardIndex(index);
             }}
             renderItem={({ item }) => (
-              <View style={styles.carouselCard}>
+              <View style={[styles.carouselCard, { marginBottom: 24 }]}>
                 <LinearGradient
                   colors={item.gradientColors as [string, string]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 0, y: 1 }}
                   style={styles.cardContent}
                 >
-                  <View style={styles.cardImageContainer}>
+                  <View style={[styles.cardImageContainer, { marginBottom: 12 }]}>
                     <Image source={item.image} style={styles.cardImage} resizeMode="contain" />
                   </View>
-
-                  <View style={styles.cardTextContainer}>
-                    <Text style={[styles.cardTitle, { color: "#FFFFFF" }]}>
+                  <View style={[styles.cardTextContainer, { flexGrow: 1, justifyContent: 'flex-start', marginBottom: 12 }]}>
+                    <Text style={[styles.cardTitle, { color: "#FFFFFF", marginBottom: 8 }]}>
                       {item.title}
                     </Text>
-
                     <Text 
-                      style={[styles.cardDescription, { color: "#E0E7FF" }]}
+                      style={[styles.cardDescription, { color: "#E0E7FF", marginBottom: 8 }]}
                       numberOfLines={3}
                     >
                       {item.description}
                     </Text>
                   </View>
-
                   <TouchableOpacity
-                    style={[styles.cardButton, { backgroundColor: "#FFFFFF" }]}
+                    style={[styles.cardButton, { backgroundColor: "#FFFFFF", marginTop: 0 }]}
                     onPress={item.onPress}
                     activeOpacity={0.8}
                   >
@@ -195,7 +186,6 @@ export default function Home() {
             keyExtractor={(item) => item.id.toString()}
           />
 
-          {/* PAGINAÇÃO */}
           <View style={styles.paginationContainer}>
             {featureCards.map((_, index) => (
               <View
@@ -212,7 +202,6 @@ export default function Home() {
           </View>
         </View>
 
-        {/* RESTANTE DA TELA — sem mudanças estruturais */}
         <View style={{ paddingHorizontal: 20, marginTop: 10 }}>
           <Text style={[styles.informacoesTitle, { color: colors.textPrimary }]}>
             Informações
@@ -240,7 +229,6 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
-        {/* Notícias */}
         <View style={{ paddingHorizontal: 20 }}>
           <TouchableOpacity
             style={[styles.infoCard, { backgroundColor: colors.card }]}
@@ -261,7 +249,6 @@ export default function Home() {
           </TouchableOpacity>
         </View>
 
-        {/* Bea */}
         <View style={{ paddingHorizontal: 20 }}>
           <View style={[styles.beaCard, { backgroundColor: colors.card }]}>
             <Image
@@ -286,7 +273,6 @@ export default function Home() {
           </View>
         </View>
 
-        {/* Autismo */}
         <View style={{ paddingHorizontal: 20 }}>
           <View style={[styles.autismCard, { backgroundColor: colors.card }]}>
             <View style={[styles.autismIconContainer, { backgroundColor: colors.iconBg }]}>
@@ -308,6 +294,8 @@ export default function Home() {
             </View>
           </View>
         </View>
+
+        <View style={{ height: TAB_BAR_HEIGHT + 20 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -404,7 +392,6 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "flex-start",
-    marginBottom: 12,
     flex: 1,
   },
   cardTitle: { 
