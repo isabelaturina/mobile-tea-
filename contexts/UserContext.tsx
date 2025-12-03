@@ -1,10 +1,12 @@
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { StyleSheet } from 'react-native';
+import { authApi } from '../services/api/authApi';
 
 interface UserData {
   name: string;
   email: string;
-  profileImage: any;
+  profileImage?: any;
+  token?: string;
 }
 
 interface UserContextType {
@@ -20,141 +22,69 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const useUser = () => {
   const context = useContext(UserContext);
-  if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
-  }
+  if (!context) throw new Error('useUser must be used within UserProvider');
   return context;
 };
 
-interface UserProviderProps {
-  children: ReactNode;
-}
+interface ProviderProps { children: ReactNode }
 
-export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  // Função para extrair o nome do email
-  const extractNameFromEmail = (email: string): string => {
-    // Remove a parte após o @
-    const namePart = email.split('@')[0];
-    
-    // Remove pontos, underscores e outros caracteres especiais
-    const cleanName = namePart.replace(/[._-]/g, ' ');
-    
-    // Capitaliza cada palavra
-    const words = cleanName.split(' ');
-    const capitalizedWords = words.map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    );
-    
-    // Retorna apenas a primeira palavra (nome)
-    return capitalizedWords[0];
-  };
-
+  // LOGIN REAL USANDO API
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulação de login - em um app real, aqui seria feita a chamada para a API
     try {
-      // Simular delay de rede
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Validação básica (em um app real, seria feita validação com a API)
-      if (!email || !password) {
-        return false;
-      }
-      
-      // Extrair o nome do email que a pessoa digitou
-      // Exemplos:
-      // - "maria.silva@gmail.com" → "Maria"
-      // - "joao_123@hotmail.com" → "Joao"
-      // - "ana.costa.santos@yahoo.com" → "Ana"
-      const userName = extractNameFromEmail(email);
-      
-      // Dados mockados do usuário (em um app real, viriam da API)
-      const mockUserData: UserData = {
-        name: userName, // Usa o nome extraído do email
-        email: email,
-        profileImage: require('../assets/images/familia 1.png')
-      };
-      
-      setUserData(mockUserData);
+      const data = await authApi.login(email, password);
+
+      setUserData({
+        name: data.user.name,
+        email: data.user.email,
+        token: data.token,
+        profileImage: require('../assets/images/familia 1.png'),
+      });
+
       return true;
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.log("Erro login API:", error);
       return false;
     }
   };
 
+  // SIGN UP REAL USANDO API
   const signUp = async (name: string, email: string, password: string): Promise<boolean> => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const mockUserData: UserData = {
-        name: name,
-        email: email,
-        profileImage: require('../assets/images/familia 1.png')
-      };
-      setUserData(mockUserData);
+      const data = await authApi.register(name, email, password);
+
+      setUserData({
+        name: data.user.name,
+        email: data.user.email,
+        token: data.token,
+        profileImage: require('../assets/images/familia 1.png'),
+      });
+
       return true;
     } catch (error) {
-      console.error('Erro no signUp:', error);
+      console.log("Erro signUp API:", error);
       return false;
     }
   };
 
-  const logout = () => {
-    setUserData(null);
-  };
-
-  const value: UserContextType = {
-    userData,
-    setUserData,
-    isLoggedIn: userData !== null,
-    login,
-    signUp,
-    logout,
-  };
+  const logout = () => setUserData(null);
 
   return (
-    <UserContext.Provider value={value}>
+    <UserContext.Provider value={{
+      userData,
+      setUserData,
+      isLoggedIn: userData !== null,
+      login,
+      signUp,
+      logout,
+    }}>
       {children}
     </UserContext.Provider>
   );
-};export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  image: {
-    width: 200,
-    height: 200,
-    marginBottom: 32,
-    resizeMode: 'contain',
-  },
-  loginText: {
-    color: '#fff',
-    marginTop: 16,
-    textAlign: 'center',
-    fontSize: 16
-  },
-  loginLink: {
-    color: '#00CFFF',
-    textDecorationLine: 'underline',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+};
+
+export const styles = StyleSheet.create({
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
 });
- 
