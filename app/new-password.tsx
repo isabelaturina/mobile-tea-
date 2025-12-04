@@ -1,4 +1,4 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   Image,
@@ -11,10 +11,12 @@ import {
   View,
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
+import { authApi } from "../services/api/authApi";
 
 export default function NovaSenha() {
   const router = useRouter();
   const { theme } = useTheme();
+  const params = useLocalSearchParams();
   const isDarkMode = theme === "dark";
 
   // 🎨 Define cores com base no tema
@@ -47,13 +49,14 @@ export default function NovaSenha() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [successMessage, setSuccessMessage] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSavePassword = () => {
+  const handleSavePassword = async () => {
     if (!newPassword) {
       return showError("Por favor, digite a nova senha");
     }
 
-    if (newPassword.length < 8) {
+    if (newPassword.length < 6) {
       return showError("A nova senha deve ter pelo menos 6 caracteres");
     }
 
@@ -61,11 +64,23 @@ export default function NovaSenha() {
       return showError("As senhas não coincidem");
     }
 
-    setSuccessMessage(true);
+    const token = params.token as string;
+    if (!token) {
+      return showError("Token de verificação não encontrado");
+    }
 
-    setTimeout(() => {
-      router.push("/(tabs)/Profile");
-    }, 2000);
+    setIsLoading(true);
+    try {
+      await authApi.resetPassword(token, newPassword);
+      setSuccessMessage(true);
+      setTimeout(() => {
+        router.push("/(tabs)/Profile");
+      }, 2000);
+    } catch (error: any) {
+      showError(error.message || "Erro ao redefinir senha");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const showError = (message: string) => {
@@ -144,11 +159,14 @@ export default function NovaSenha() {
 
         {/* Botão Confirmar */}
         <TouchableOpacity
-          style={[styles.button, { backgroundColor: "#1163E7" }]}
+          style={[styles.button, { backgroundColor: "#1163E7" }, isLoading && styles.buttonDisabled]}
           onPress={handleSavePassword}
           activeOpacity={0.8}
+          disabled={isLoading}
         >
-          <Text style={styles.buttonText}>Confirmar Código</Text>
+          <Text style={styles.buttonText}>
+            {isLoading ? "Redefinindo..." : "Confirmar Nova Senha"}
+          </Text>
         </TouchableOpacity>
 
         {/* Mensagem de sucesso */}
@@ -256,5 +274,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     fontWeight: "600",
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });

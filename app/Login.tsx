@@ -67,19 +67,21 @@ export default function Login() {
         }
       
         setIsLoading(true);
-      
+        
         try {
           const success = await login(email, password);
-      
+        
           if (success) {
             router.replace('/(tabs)/Home' as any);
           } else {
             setEmailError('Este email não está cadastrado ou a senha está incorreta.');
+            Alert.alert('Erro', 'Este email não está cadastrado ou a senha está incorreta.');
           }
-      
-        } catch (error) {
-          Alert.alert('Erro', 'Ocorreu um erro ao fazer login');
-      
+        
+        } catch (error: any) {
+          const errorMessage = error?.message || 'Ocorreu um erro ao fazer login. Tente novamente.';
+          setEmailError(errorMessage);
+          Alert.alert('Erro', errorMessage);
         } finally {
           setIsLoading(false);
         }

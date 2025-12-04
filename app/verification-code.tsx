@@ -1,22 +1,22 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter } from 'expo-router';
-import React, { useState, useRef } from 'react';
-import { 
-  Image, 
-  StyleSheet, 
-  Text, 
-  TouchableOpacity, 
-  View, 
-  ScrollView, 
-  Dimensions, 
-  StatusBar,
-  Platform,
-  KeyboardAvoidingView,
-  Pressable,
+import React, { useRef, useState } from 'react';
+import {
   Alert,
-  TextInput
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { authApi } from '../services/api/authApi';
 
 // Pegar as dimensões da tela
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
@@ -27,6 +27,8 @@ export default function VerificationCode() {
   const isDarkMode = theme === "dark";
   
   const [code, setCode] = useState(['', '', '', '']);
+  const [isLoading, setIsLoading] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
   const inputRefs = useRef<Array<TextInput | null>>([]);
 
   const handleCodeChange = (text: string, index: number) => {
@@ -95,7 +97,7 @@ export default function VerificationCode() {
     }
   };
 
-  const handleVerifyCode = () => {
+  const handleVerifyCode = async () => {
     const fullCode = code.join('');
     
     if (fullCode.length !== 4) {
@@ -103,9 +105,19 @@ export default function VerificationCode() {
       return;
     }
 
-    // Aqui você pode adicionar validação do código se necessário
-    // Por enquanto, vamos direcionar diretamente para a tela de nova senha
-    router.push('/new-password');
+    setIsLoading(true);
+    try {
+      // Valida o token (código de verificação)
+      const result = await authApi.validateToken(fullCode);
+      setToken(fullCode);
+      Alert.alert("Sucesso", "Código verificado com sucesso!");
+      // Passa o token para a próxima tela via query params ou state
+      router.push({ pathname: '/new-password', params: { token: fullCode } } as any);
+    } catch (error: any) {
+      Alert.alert("Erro", error.message || "Código inválido ou expirado");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -176,9 +188,10 @@ export default function VerificationCode() {
 
           {/* Botão de Confirmar Código */}
           <TouchableOpacity 
-            style={styles.buttonWrapper}
+            style={[styles.buttonWrapper, isLoading && styles.buttonDisabled]}
             onPress={handleVerifyCode}
             activeOpacity={0.8}
+            disabled={isLoading}
           >
             <LinearGradient
               colors={["#1163E7", "#1163E7"]}
@@ -186,7 +199,9 @@ export default function VerificationCode() {
               end={{ x: 1, y: 0 }}
               style={styles.button}
             >
-              <Text style={styles.buttonText}>Confirmar Código</Text>
+              <Text style={styles.buttonText}>
+                {isLoading ? "Verificando..." : "Confirmar Código"}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -297,5 +312,8 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: 50,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });

@@ -14,7 +14,12 @@ interface UserContextType {
   setUserData: (data: UserData | null) => void;
   isLoggedIn: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signUp: (name: string, email: string, password: string) => Promise<boolean>;
+  signUp: (
+    name: string,
+    email: string,
+    password: string,
+    nivelSuporte: "leve" | "moderado" | "severo"
+  ) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -31,41 +36,80 @@ interface ProviderProps { children: ReactNode }
 export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
 
-  // LOGIN REAL USANDO API
+  // ✅ LOGIN
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
+      console.log("🟡 UserContext - Iniciando login");
+
       const data = await authApi.login(email, password);
+      console.log("🟡 UserContext - Dados recebidos:", data);
+
+      if (!data) {
+        throw new Error("Resposta da API inválida");
+      }
+
+      const userName = data.user?.name || data.name || email.split('@')[0];
+      const userEmail = data.user?.email || data.email || email;
+      const userToken = data.token || data.accessToken || data.access_token || '';
 
       setUserData({
-        name: data.user.name,
-        email: data.user.email,
-        token: data.token,
+        name: userName,
+        email: userEmail,
+        token: userToken,
         profileImage: require('../assets/images/familia 1.png'),
       });
 
+      console.log("🟢 UserContext - Login concluído com sucesso");
       return true;
-    } catch (error) {
-      console.log("Erro login API:", error);
-      return false;
+
+    } catch (error: any) {
+      console.error("🔴 UserContext - Erro login API:", error);
+      throw error;
     }
   };
 
-  // SIGN UP REAL USANDO API
-  const signUp = async (name: string, email: string, password: string): Promise<boolean> => {
+  // ✅ SIGN UP 100% COMPATÍVEL COM SEU BACKEND
+  const signUp = async (
+    name: string,
+    email: string,
+    password: string,
+    nivelSuporte: "leve" | "moderado" | "severo"
+  ): Promise<boolean> => {
     try {
-      const data = await authApi.register(name, email, password);
+      console.log("🟡 UserContext - Iniciando cadastro");
+
+      // ✅ OBJETO EXATO QUE SUA API ESPERA
+      const payload = {
+        nome: name,               // ✅ nome correto
+        email: email,             // ✅
+        senha: password,          // ✅ senha correta
+        nivelSuporte: nivelSuporte // ✅ leve | moderado | severo
+      };
+
+      console.log("📤 Enviando para API:", payload);
+
+      const data = await authApi.register(payload);
+      console.log("🟡 UserContext - Dados recebidos:", data);
+
+      if (!data) {
+        throw new Error("Resposta da API inválida");
+      }
+
+      const userName = data.nome || name;
+      const userEmail = data.email || email;
 
       setUserData({
-        name: data.user.name,
-        email: data.user.email,
-        token: data.token,
+        name: userName,
+        email: userEmail,
         profileImage: require('../assets/images/familia 1.png'),
       });
 
+      console.log("🟢 UserContext - Cadastro concluído com sucesso");
       return true;
-    } catch (error) {
-      console.log("Erro signUp API:", error);
-      return false;
+
+    } catch (error: any) {
+      console.error("🔴 UserContext - Erro signUp API:", error.message || error);
+      throw error;
     }
   };
 

@@ -16,6 +16,7 @@ import {
   View
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
+import { authApi } from '../services/api/authApi';
 
 // Pegar as dimensões da tela
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
@@ -25,13 +26,14 @@ export default function ForgotPassword() {
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^(?!\.)(?!.*\.\.)(?!.*\.$)[a-zA-Z0-9._%+-]+@gmail\.com$/;
     return emailRegex.test(email);
   };
 
-  const handleSendCode = () => {
+  const handleSendCode = async () => {
     if (!email) {
       Alert.alert("Erro", "Digite seu endereço de email");
       return;
@@ -42,8 +44,16 @@ export default function ForgotPassword() {
       return;
     }
 
-    // Direciona diretamente para a tela verification-code
-    router.push('/verification-code');
+    setIsLoading(true);
+    try {
+      await authApi.forgotPassword(email);
+      Alert.alert("Sucesso", "Código de verificação enviado para seu email!");
+      router.push('/verification-code');
+    } catch (error: any) {
+      Alert.alert("Erro", error.message || "Erro ao enviar código de verificação");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -101,9 +111,10 @@ export default function ForgotPassword() {
 
           {/* Botão de Enviar Código */}
           <TouchableOpacity 
-            style={styles.buttonWrapper}
+            style={[styles.buttonWrapper, isLoading && styles.buttonDisabled]}
             onPress={handleSendCode}
             activeOpacity={0.8}
+            disabled={isLoading}
           >
             <LinearGradient
               colors={["#1163E7", "#1163E7"]}
@@ -111,7 +122,9 @@ export default function ForgotPassword() {
               end={{ x: 1, y: 0 }}
               style={styles.button}
             >
-              <Text style={styles.buttonText}>Confirmar Email</Text>
+              <Text style={styles.buttonText}>
+                {isLoading ? "Enviando..." : "Confirmar Email"}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
 
@@ -223,5 +236,8 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: 50,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
 });

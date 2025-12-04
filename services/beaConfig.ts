@@ -1,5 +1,5 @@
 export const ENV_CONFIG = {
-  BEA_API_URL: "https://chatbea.onrender.com/api/chat", // coloque o endereço real SE TIVER
+  BEA_API_URL: "https://chatbea.onrender.com", // APENAS a base URL
 };
 
 export const API_CONFIG = {
@@ -7,13 +7,15 @@ export const API_CONFIG = {
 
   DEFAULT_HEADERS: {
     "Content-Type": "application/json",
+    // Adicione headers de autenticação se necessário
+    // "Authorization": "Bearer seu-token-aqui"
   },
 
   BEA: {
     ENDPOINTS: {
-      CHAT: "/chat", // ajuste se sua API real usar outro endpoint
+      CHAT: "/api/chat", // endpoint completo relativo à base URL
     },
 
-    USE_SIMULATION: true, // deixa true até a API real existir
+    USE_SIMULATION: false, // MUDE para false para usar a API real
   },
 };

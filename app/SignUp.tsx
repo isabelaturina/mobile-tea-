@@ -94,65 +94,72 @@ export default function SignUp() {
   }, [levels, supportLevel, profileType]);
 
   const handleSignUp = async () => {
-    if (!name || !email || !password) {
-      Alert.alert(
-        "Ops!",
-        "Parece que você esqueceu de preencher algum campo. Tente novamente!"
-      );
-      return;
-    }
+  if (!name || !email || !password) {
+    Alert.alert(
+      "Ops!",
+      "Parece que você esqueceu de preencher algum campo. Tente novamente!"
+    );
+    return;
+  }
 
-    if (!profileType) {
-      Alert.alert(
-        "Ops!",
-        "Por favor, selecione o tipo de perfil."
-      );
-      return;
-    }
+  if (!profileType) {
+    Alert.alert(
+      "Ops!",
+      "Por favor, selecione o tipo de perfil."
+    );
+    return;
+  }
 
-    if (!supportLevel) {
-      Alert.alert(
-        "Ops!",
-        "Por favor, selecione o nível de suporte."
-      );
-      return;
-    }
+  if (!supportLevel) {
+    Alert.alert(
+      "Ops!",
+      "Por favor, selecione o nível de suporte."
+    );
+    return;
+  }
 
-    const regexNome = /^[A-Za-zÀ-ÖØ-öø-ÿ ]+$/;
-    if (!regexNome.test(name)) {
-      Alert.alert("Nome inválido", "O nome deve conter apenas letras.");
-      return;
-    }
-    if (password.length < 6) {
-      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
-      return;
-    }
+  const regexNome = /^[A-Za-zÀ-ÖØ-öø-ÿ ]+$/;
+  if (!regexNome.test(name)) {
+    Alert.alert("Nome inválido", "O nome deve conter apenas letras.");
+    return;
+  }
 
-    const regexGmail = /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    if (!regexGmail.test(email)) {
-      Alert.alert(
-        "Erro",
-        "O email deve ser do Gmail, não começar com ponto e não conter dois pontos seguidos."
-      );
-      return;
-    }
+  if (password.length < 6) {
+    Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
+    return;
+  }
 
-    setIsLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const signUpSuccess = await signUp(name, email, password);
+  const regexGmail = /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@gmail\.com$/;
+  if (!regexGmail.test(email)) {
+    Alert.alert(
+      "Erro",
+      "O email deve ser do Gmail, não começar com ponto e não conter dois pontos seguidos."
+    );
+    return;
+  }
 
-      if (signUpSuccess) {
-        setShowSuccessModal(true);
-      } else {
-        Alert.alert("Erro", "Erro ao criar a conta");
-      }
-    } catch (error) {
-      Alert.alert("Erro", "Ocorreu um erro ao criar a conta");
-    } finally {
-      setIsLoading(false);
+  setIsLoading(true);
+  try {
+    const signUpSuccess = await signUp(
+      name,
+      email,
+      password,
+      supportLevel
+    );
+
+    if (signUpSuccess) {
+      setShowSuccessModal(true);
+    } else {
+      Alert.alert("Erro", "Erro ao criar a conta. Verifique os dados e tente novamente.");
     }
-  };
+  } catch (error: any) {
+    const errorMessage = error?.message || "Ocorreu um erro ao criar a conta. Tente novamente.";
+    Alert.alert("Erro", errorMessage);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
