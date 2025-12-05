@@ -1,24 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  Easing,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Animated,
+    Easing,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { useCronograma, Event } from "../contexts/CronogramaContext";
+import { Event, useCronograma } from "../contexts/CronogramaContext";
 import { useTheme } from "../contexts/ThemeContext";
 import "../utils/calendarLocale";
 
 export default function Cronograma() {
+  const { selectedDate: paramDate } = useLocalSearchParams<{ selectedDate?: string }>();
   const [selectedDate, setSelectedDate] = useState("");
   const [activeTab, setActiveTab] = useState<"diario" | "eventos">("diario");
   const [fabOpen, setFabOpen] = useState(false);
@@ -68,8 +69,13 @@ export default function Cronograma() {
   useFocusEffect(
     useCallback(() => {
       refreshEvents();
-      if (!selectedDate) setSelectedDate(today);
-    }, [refreshEvents, selectedDate, today])
+      // Se recebeu uma data por parâmetro, usa ela; senão usa a data atual
+      if (paramDate) {
+        setSelectedDate(paramDate);
+      } else if (!selectedDate) {
+        setSelectedDate(today);
+      }
+    }, [refreshEvents, paramDate, selectedDate, today])
   );
 
   const markedDates = {
@@ -135,10 +141,16 @@ export default function Cronograma() {
         style: "destructive",
         onPress: async () => {
           try {
+            console.log("🔄 [CRONOGRAMA] Excluindo anotação:", entryId);
             await forceDeleteDiaryEntry(entryId);
-            Alert.alert("Sucesso", "Anotação excluída com sucesso!");
-          } catch {
-            Alert.alert("Erro", "Não foi possível excluir a anotação.");
+            console.log("✅ [CRONOGRAMA] Anotação excluída com sucesso!");
+            // Não precisa mostrar alerta, a exclusão já atualiza a tela automaticamente
+          } catch (error: any) {
+            console.error("❌ [CRONOGRAMA] Erro ao excluir:", error);
+            Alert.alert(
+              "Erro",
+              error?.message || "Não foi possível excluir a anotação. Tente novamente."
+            );
           }
         },
       },

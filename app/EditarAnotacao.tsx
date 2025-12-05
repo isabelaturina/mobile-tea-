@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     Alert,
     ScrollView,
@@ -171,7 +171,7 @@ export default function EditarAnotacao() {
     });
   }, [isDark]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedMood) {
       Alert.alert("Atenção", "Por favor, selecione como você se sentiu hoje.");
       return;
@@ -184,17 +184,30 @@ export default function EditarAnotacao() {
 
     const entry = getDiaryEntryForDate(date as string);
     if (entry) {
-      updateDiaryEntry(entry.id, {
-        mood: selectedMood,
-        note: note.trim(),
-      });
-      
-      Alert.alert("Sucesso", "Anotação atualizada com sucesso!", [
-        {
-          text: "OK",
-          onPress: () => router.push("/Cronograma"),
-        },
-      ]);
+      try {
+        console.log("🔄 [EDITAR ANOTACAO] Atualizando anotação...");
+        await updateDiaryEntry(entry.id, {
+          mood: selectedMood,
+          note: note.trim(),
+        });
+        
+        console.log("✅ [EDITAR ANOTACAO] Anotação atualizada com sucesso!");
+        
+        // Redireciona para o Cronograma com a data selecionada
+        router.replace({
+          pathname: "/Cronograma",
+          params: { selectedDate: entry.date },
+        });
+      } catch (error: any) {
+        console.error("❌ [EDITAR ANOTACAO] Erro ao atualizar:", error);
+        Alert.alert(
+          "Erro",
+          error?.message || "Não foi possível atualizar a anotação. Tente novamente.",
+          [{ text: "OK" }]
+        );
+      }
+    } else {
+      Alert.alert("Erro", "Anotação não encontrada.");
     }
   };
 

@@ -29,9 +29,10 @@ const MOOD_OPTIONS = [
 
 export default function AnotarDia() {
   const { date } = useLocalSearchParams();
-  const { addDiaryEntry, getDiaryEntryForDate } = useCronograma();
+  const { addDiaryEntry, getDiaryEntryForDate, updateDiaryEntry } = useCronograma();
   const [selectedMood, setSelectedMood] = useState<string>("");
   const [note, setNote] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
@@ -208,6 +209,9 @@ export default function AnotarDia() {
           fontSize: 18,
           fontWeight: "bold",
         },
+        buttonDisabled: {
+          opacity: 0.7,
+        },
       }),
     [colors, isDarkMode]
   );
@@ -224,38 +228,85 @@ export default function AnotarDia() {
     }
 
     const entryDate = (date as string) ?? new Date().toISOString().slice(0, 10);
-    const existingEntry = date ? getDiaryEntryForDate(entryDate) : null;
+    const existingEntry = getDiaryEntryForDate(entryDate);
 
     const saveToApi = async () => {
+      setIsSaving(true);
       try {
-        // ✅ Salvar anotação na API
-        await diarioApi.create({
-          data: entryDate,
-          humor: selectedMood,
-          anotacao: note.trim(),
-        });
+        console.log("🔄 [ANOTAR DIA] Iniciando salvamento...");
+        
+        // Verifica se já existe uma anotação na API para esta data
+        let existingApiEntry = null;
+        try {
+          existingApiEntry = await diarioApi.getByDate(entryDate);
+          console.log("🔍 [ANOTAR DIA] Verificando anotação existente na API:", existingApiEntry);
+        } catch (apiError) {
+          console.log("⚠️ Não foi possível verificar anotação existente na API, continuando...");
+        }
 
-        // Salvar localmente também (para manter compatibilidade)
-        addDiaryEntry({
-          date: entryDate,
-          mood: selectedMood,
-          note: note.trim(),
-        });
+        let result;
+        if (existingApiEntry && existingApiEntry.id) {
+          // Se já existe na API, atualiza
+          console.log("🔄 [ANOTAR DIA] Atualizando anotação existente na API:", existingApiEntry.id);
+          result = await diarioApi.update(existingApiEntry.id, {
+            data: entryDate,
+            humor: selectedMood,
+            anotacao: note.trim(),
+          });
+          console.log("✅ [ANOTAR DIA] Anotação atualizada na API");
 
-        router.push({
-          pathname: "/DiarioSalvo",
-          params: { date: entryDate },
+          // Atualiza ou adiciona localmente também
+          if (existingEntry) {
+            updateDiaryEntry(existingEntry.id, {
+              date: entryDate,
+              mood: selectedMood,
+              note: note.trim(),
+            });
+          } else {
+            addDiaryEntry({
+              date: entryDate,
+              mood: selectedMood,
+              note: note.trim(),
+            });
+          }
+        } else {
+          // Se não existe na API, cria nova
+          console.log("🔄 [ANOTAR DIA] Criando nova anotação na API");
+          result = await diarioApi.create({
+            data: entryDate,
+            humor: selectedMood,
+            anotacao: note.trim(),
+          });
+          console.log("✅ [ANOTAR DIA] Anotação criada na API:", result);
+
+          // Salvar localmente também (para aparecer no Cronograma)
+          addDiaryEntry({
+            date: entryDate,
+            mood: selectedMood,
+            note: note.trim(),
+          });
+        }
+
+        console.log("✅ [ANOTAR DIA] Anotação salva no contexto local");
+
+        // Redireciona para o Cronograma com a data selecionada
+        router.replace({
+          pathname: "/Cronograma",
+          params: { selectedDate: entryDate },
         });
       } catch (error: any) {
-        console.error("Erro ao salvar anotação na API:", error);
+        console.error("❌ [ANOTAR DIA] Erro ao salvar anotação:", error);
         Alert.alert(
           "Erro",
           error?.message || "Não foi possível salvar a anotação. Tente novamente.",
           [{ text: "OK" }]
         );
+      } finally {
+        setIsSaving(false);
       }
     };
 
+    // Se já existe localmente, pergunta se quer substituir
     if (existingEntry) {
       Alert.alert(
         "Entrada existente",
@@ -337,8 +388,14 @@ export default function AnotarDia() {
       </ScrollView>
 
       <View style={styles.saveButtonContainer}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Salvar</Text>
+        <TouchableOpacity 
+          style={[styles.saveButton, isSaving && styles.buttonDisabled]} 
+          onPress={handleSave}
+          disabled={isSaving}
+        >
+          <Text style={styles.saveButtonText}>
+            {isSaving ? "Salvando..." : "Salvar"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

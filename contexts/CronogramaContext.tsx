@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { diarioApi } from '../services/api/diarioApi';
 import { NotificationService } from '../services/notificationService';
 
 export interface Event {
@@ -33,7 +34,7 @@ interface CronogramaContextType {
   refreshEvents: () => Promise<void>;
   addDiaryEntry: (entry: Omit<DiaryEntry, 'id' | 'createdAt'>) => void;
   getDiaryEntryForDate: (date: string) => DiaryEntry | null;
-  updateDiaryEntry: (id: string, entry: Partial<DiaryEntry>) => void;
+  updateDiaryEntry: (id: string, entry: Partial<DiaryEntry>) => Promise<void>;
   deleteDiaryEntry: (id: string) => void;
   forceDeleteDiaryEntry: (id: string) => Promise<void>;
 }
@@ -228,21 +229,47 @@ export function CronogramaProvider({ children }: CronogramaProviderProps) {
     return diaryEntries.find(entry => entry.date === date) || null;
   };
 
-  const updateDiaryEntry = (id: string, entryData: Partial<DiaryEntry>) => {
-    console.log('Atualizando entrada do diário:', id, entryData);
-    setDiaryEntries(prev => {
-      const updated = prev.map(entry => 
-        entry.id === id ? { ...entry, ...entryData } : entry
-      );
-      console.log('Lista de entradas do diário após atualização:', updated);
-      
-      // Salva imediatamente no AsyncStorage
-      AsyncStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(updated))
-        .then(() => console.log('Entrada do diário atualizada salva no AsyncStorage'))
-        .catch(error => console.error('Erro ao salvar atualização da entrada:', error));
-      
-      return updated;
-    });
+  const updateDiaryEntry = async (id: string, entryData: Partial<DiaryEntry>) => {
+    console.log('🔄 [CRONOGRAMA CONTEXT] Atualizando entrada do diário:', id, entryData);
+    
+    try {
+      // Busca a entrada atual para obter a data
+      const currentEntry = diaryEntries.find(entry => entry.id === id);
+      if (!currentEntry) {
+        console.error('❌ [CRONOGRAMA CONTEXT] Entrada não encontrada:', id);
+        throw new Error('Entrada não encontrada');
+      }
+
+      // Prepara o payload para a API
+      const apiPayload = {
+        data: entryData.date || currentEntry.date,
+        humor: entryData.mood || currentEntry.mood,
+        anotacao: entryData.note || currentEntry.note,
+      };
+
+      // Atualiza na API primeiro
+      console.log('🔄 [CRONOGRAMA CONTEXT] Atualizando na API...');
+      await diarioApi.update(id, apiPayload);
+      console.log('✅ [CRONOGRAMA CONTEXT] Entrada atualizada na API com sucesso');
+
+      // Atualiza localmente
+      setDiaryEntries(prev => {
+        const updated = prev.map(entry => 
+          entry.id === id ? { ...entry, ...entryData } : entry
+        );
+        console.log('✅ [CRONOGRAMA CONTEXT] Lista de entradas do diário atualizada localmente:', updated);
+        
+        // Salva imediatamente no AsyncStorage
+        AsyncStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(updated))
+          .then(() => console.log('✅ [CRONOGRAMA CONTEXT] Entrada do diário atualizada salva no AsyncStorage'))
+          .catch(error => console.error('❌ [CRONOGRAMA CONTEXT] Erro ao salvar atualização da entrada:', error));
+        
+        return updated;
+      });
+    } catch (error: any) {
+      console.error('❌ [CRONOGRAMA CONTEXT] Erro ao atualizar entrada do diário:', error);
+      throw error;
+    }
   };
 
   const deleteDiaryEntry = (id: string) => {
@@ -261,26 +288,31 @@ export function CronogramaProvider({ children }: CronogramaProviderProps) {
   };
 
   const forceDeleteDiaryEntry = async (id: string) => {
-    console.log('Forçando exclusão da entrada do diário:', id);
+    console.log('🔄 [CRONOGRAMA CONTEXT] Forçando exclusão da entrada do diário:', id);
     try {
+      // Exclui na API primeiro
+      console.log('🔄 [CRONOGRAMA CONTEXT] Excluindo na API...');
+      await diarioApi.delete(id);
+      console.log('✅ [CRONOGRAMA CONTEXT] Entrada excluída na API com sucesso');
+
       // Remove do estado atual
       const updatedEntries = diaryEntries.filter(entry => entry.id !== id);
-      console.log('Lista após filtro:', updatedEntries);
+      console.log('✅ [CRONOGRAMA CONTEXT] Lista após filtro:', updatedEntries);
       
       // Atualiza o estado
       setDiaryEntries(updatedEntries);
       
       // Salva imediatamente no AsyncStorage
       await AsyncStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(updatedEntries));
-      console.log('Exclusão forçada da entrada concluída e salva no AsyncStorage');
+      console.log('✅ [CRONOGRAMA CONTEXT] Exclusão forçada da entrada concluída e salva no AsyncStorage');
       
       // Força um refresh para garantir consistência
       setTimeout(() => {
         loadDiaryEntries();
       }, 100);
       
-    } catch (error) {
-      console.error('Erro na exclusão forçada da entrada:', error);
+    } catch (error: any) {
+      console.error('❌ [CRONOGRAMA CONTEXT] Erro na exclusão forçada da entrada:', error);
       throw error;
     }
   };

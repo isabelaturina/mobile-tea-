@@ -1,4 +1,4 @@
-const BASE_URL = "https://diario-uvit.onrender.com";
+const BASE_URL = "https://diario-api-fzvz.onrender.com";
 
 /**
  * Tipos para Diário
@@ -10,7 +10,7 @@ export type DiarioPayload = {
 };
 
 export type Diario = {
-  id?: number;
+  id?: string; // O backend usa String para ID
   data: string;
   humor: string;
   anotacao: string;
@@ -100,125 +100,138 @@ async function fetchWithLogging(
 
 /**
  * ✅ Criar nova anotação do diário
- * Tenta diferentes endpoints possíveis
+ * Endpoint: POST /diario/salvar
  */
 export async function createDiario(payload: DiarioPayload) {
-  // Lista de endpoints possíveis para tentar
-  const possibleEndpoints = [
-    `${BASE_URL}/api/diario`,           // Endpoint padrão
-    `${BASE_URL}/diario`,                // Sem /api
-    `${BASE_URL}/api/diarios`,           // Plural
-  ];
-
-  let lastError: any = null;
-
-  for (const url of possibleEndpoints) {
-    try {
-      console.log(`🔄 Tentando criar anotação em: ${url}`, payload);
-      const result = await fetchWithLogging(url, "POST", payload, false);
-      console.log(`✅ Anotação criada com sucesso em: ${url}`);
-      return result;
-    } catch (error: any) {
-      lastError = error;
-      // Se for 404, tenta o próximo endpoint
-      if (error.message?.includes("404") || error.message?.includes("Not Found")) {
-        console.log(`⚠️ Endpoint ${url} não encontrado (404), tentando próximo...`);
-        continue;
-      }
-      // Para outros erros, lança imediatamente
-      throw error;
-    }
+  const url = `${BASE_URL}/diario/salvar`;
+  
+  try {
+    console.log(`🔄 [DIARIO] Criando anotação em: ${url}`);
+    console.log(`📤 [DIARIO] Payload:`, JSON.stringify(payload, null, 2));
+    
+    const result = await fetchWithLogging(url, "POST", payload, false);
+    
+    console.log(`✅ [DIARIO] Anotação criada com sucesso!`);
+    return result;
+  } catch (error: any) {
+    console.error(`❌ [DIARIO] Erro ao criar anotação:`, error);
+    throw error;
   }
-
-  // Se chegou aqui, todos os endpoints falharam
-  throw new Error(
-    `Erro 404: Nenhum endpoint de diário foi encontrado. ` +
-    `Verifique se a URL da API está correta: ${BASE_URL}. ` +
-    `Endpoints tentados: ${possibleEndpoints.join(", ")}`
-  );
 }
 
 /**
  * ✅ Listar todas as anotações do diário
+ * Endpoint: GET /diario/listar
  */
 export async function getAllDiarios() {
-  const url = `${BASE_URL}/api/diario`;
+  const url = `${BASE_URL}/diario/listar`;
   
   try {
-    console.log(`🔄 Buscando anotações do diário em: ${url}`);
+    console.log(`🔄 [DIARIO] Buscando todas as anotações em: ${url}`);
     const result = await fetchWithLogging(url, "GET", undefined, false);
-    console.log(`✅ Anotações do diário buscadas com sucesso`);
+    console.log(`✅ [DIARIO] Anotações buscadas com sucesso!`);
     return result;
   } catch (error: any) {
-    console.error("🔴 Erro ao buscar anotações do diário:", error);
+    console.error(`❌ [DIARIO] Erro ao buscar anotações:`, error);
     throw error;
   }
 }
 
 /**
  * ✅ Buscar anotação por ID
+ * Nota: O backend não tem endpoint específico para buscar por ID
+ * Usa getAllDiarios() e filtra localmente se necessário
  */
-export async function getDiarioById(id: number) {
-  const url = `${BASE_URL}/api/diario/${id}`;
-  
+export async function getDiarioById(id: string) {
   try {
-    console.log(`🔄 Buscando anotação ${id} em: ${url}`);
-    const result = await fetchWithLogging(url, "GET", undefined, false);
-    console.log(`✅ Anotação ${id} buscada com sucesso`);
-    return result;
+    console.log(`🔄 [DIARIO] Buscando anotação com ID: ${id}`);
+    const allDiarios = await getAllDiarios();
+    
+    // Se a resposta for um array, busca pelo ID
+    if (Array.isArray(allDiarios)) {
+      const diario = allDiarios.find((d: Diario) => d.id === id);
+      if (diario) {
+        console.log(`✅ [DIARIO] Anotação ${id} encontrada!`);
+        return diario;
+      }
+      throw new Error(`Anotação com ID ${id} não encontrada.`);
+    }
+    
+    // Se não for array, retorna como está
+    return allDiarios;
   } catch (error: any) {
-    console.error(`🔴 Erro ao buscar anotação ${id}:`, error);
+    console.error(`❌ [DIARIO] Erro ao buscar anotação ${id}:`, error);
     throw error;
   }
 }
 
 /**
  * ✅ Buscar anotação por data
+ * Nota: O backend não tem endpoint específico para buscar por data
+ * Usa getAllDiarios() e filtra localmente
  */
 export async function getDiarioByDate(data: string) {
-  const url = `${BASE_URL}/api/diario/data/${data}`;
-  
   try {
-    console.log(`🔄 Buscando anotação da data ${data} em: ${url}`);
-    const result = await fetchWithLogging(url, "GET", undefined, false);
-    console.log(`✅ Anotação da data ${data} buscada com sucesso`);
-    return result;
+    console.log(`🔄 [DIARIO] Buscando anotação da data: ${data}`);
+    const allDiarios = await getAllDiarios();
+    
+    // Se a resposta for um array, busca pela data
+    if (Array.isArray(allDiarios)) {
+      const diario = allDiarios.find((d: Diario) => d.data === data);
+      if (diario) {
+        console.log(`✅ [DIARIO] Anotação da data ${data} encontrada!`);
+        return diario;
+      }
+      // Se não encontrar, retorna null (não lança erro)
+      console.log(`⚠️ [DIARIO] Nenhuma anotação encontrada para a data ${data}`);
+      return null;
+    }
+    
+    // Se não for array, retorna como está
+    return allDiarios;
   } catch (error: any) {
-    console.error(`🔴 Erro ao buscar anotação da data ${data}:`, error);
+    console.error(`❌ [DIARIO] Erro ao buscar anotação da data ${data}:`, error);
     throw error;
   }
 }
 
 /**
  * ✅ Atualizar anotação do diário
+ * Endpoint: PUT /diario/editar/{id}
  */
-export async function updateDiario(id: number, payload: DiarioPayload) {
-  const url = `${BASE_URL}/api/diario/${id}`;
+export async function updateDiario(id: string, payload: DiarioPayload) {
+  const url = `${BASE_URL}/diario/editar/${id}`;
   
   try {
-    console.log(`🔄 Atualizando anotação ${id} em: ${url}`, payload);
+    console.log(`🔄 [DIARIO] Atualizando anotação ${id} em: ${url}`);
+    console.log(`📤 [DIARIO] Payload:`, JSON.stringify(payload, null, 2));
+    
     const result = await fetchWithLogging(url, "PUT", payload, false);
-    console.log(`✅ Anotação ${id} atualizada com sucesso`);
+    
+    console.log(`✅ [DIARIO] Anotação ${id} atualizada com sucesso!`);
     return result;
   } catch (error: any) {
-    console.error(`🔴 Erro ao atualizar anotação ${id}:`, error);
+    console.error(`❌ [DIARIO] Erro ao atualizar anotação ${id}:`, error);
     throw error;
   }
 }
 
 /**
  * ✅ Deletar anotação do diário
+ * Endpoint: DELETE /diario/deletar/{id}
  */
-export async function deleteDiario(id: number) {
-  const url = `${BASE_URL}/api/diario/${id}`;
+export async function deleteDiario(id: string) {
+  const url = `${BASE_URL}/diario/deletar/${id}`;
   
   try {
-    console.log(`🔄 Deletando anotação ${id} em: ${url}`);
+    console.log(`🔄 [DIARIO] Deletando anotação ${id} em: ${url}`);
+    
     const result = await fetchWithLogging(url, "DELETE", undefined, false);
-    console.log(`✅ Anotação ${id} deletada com sucesso`);
+    
+    console.log(`✅ [DIARIO] Anotação ${id} deletada com sucesso!`);
     return result;
   } catch (error: any) {
-    console.error(`🔴 Erro ao deletar anotação ${id}:`, error);
+    console.error(`❌ [DIARIO] Erro ao deletar anotação ${id}:`, error);
     throw error;
   }
 }

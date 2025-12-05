@@ -1,6 +1,11 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  sendGroupMessage,
+  getGroupMessages,
+} from "../services/api/ChatGrupoapi";
+
 import {
   FlatList,
   SafeAreaView,
@@ -13,13 +18,14 @@ import {
   Platform,
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface Message {
   id: string;
   text: string;
   sender: string;
   timestamp: Date;
+  userId?: string;
 }
 
 export default function ChatGrupo() {
@@ -27,14 +33,19 @@ export default function ChatGrupo() {
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
 
-  // ✅ Chat inicia vazio
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
+
+  // Armazena as mensagens enviadas pelo usuário
+  const sentByMeRef = useRef<string[]>([]);
 
   const GRADIENT_START = "#70DEFE";
   const GRADIENT_END = "#0095FF";
 
-  // 🎨 Define cores com base no tema
+  // Usuário atual (você pode pegar do login ou contexto)
+  const usuario = "TestUser";
+  const userId = "test-1764893765047";
+
   const colors = isDarkMode
     ? {
         background: "#000000",
@@ -61,16 +72,77 @@ export default function ChatGrupo() {
         emptyText: "#999",
       };
 
-  const sendMessage = () => {
-    if (inputText.trim()) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        text: inputText,
-        sender: "Você",
+  // ✅ CARREGA MENSAGENS DO BACKEND
+  const loadMessages = async () => {
+    try {
+      const response = await getGroupMessages();
+      if (!response || !response.data) return;
+
+      const formatted: Message[] = response.data.map(
+        (msg: any, index: number) => {
+          const isMine =
+            msg.userId === userId || sentByMeRef.current.includes(msg.texto);
+          return {
+            id: `${msg.userId}-${msg.timestamp}-${index}`,
+            text: msg.texto,
+            sender: isMine ? "Você" : msg.usuario || "Usuário",
+            timestamp: new Date(msg.timestamp),
+            userId: msg.userId,
+          };
+        }
+      );
+
+      setMessages(formatted);
+    } catch (error) {
+      console.log("Erro ao buscar mensagens:", error);
+    }
+  };
+
+  // Atualiza mensagens a cada 3 segundos
+  useEffect(() => {
+    loadMessages();
+    const interval = setInterval(() => {
+      loadMessages();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const sendMessage = async () => {
+    if (!inputText.trim()) return;
+
+    const texto = inputText;
+    setInputText("");
+
+    // Marca como enviada por você
+    sentByMeRef.current.push(texto);
+
+    // Mostra instantaneamente em azul
+    const newMessage: Message = {
+      id: `${Date.now()}-${Math.random()}`,
+      text: texto,
+      sender: "Você",
+      timestamp: new Date(),
+      userId,
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+
+    try {
+      // ✅ Envio correto do objeto para o backend
+      await sendGroupMessage({ texto, usuario, userId });
+      await loadMessages(); // Atualiza do backend
+    } catch (error) {
+      console.log("Erro ao enviar mensagem:", error);
+
+      const errorMessage: Message = {
+        id: `${Date.now()}-${Math.random()}`,
+        text: "Erro ao conectar ao chat em grupo.",
+        sender: "Sistema",
         timestamp: new Date(),
       };
-      setMessages([...messages, newMessage]);
-      setInputText("");
+
+      setMessages((prev) => [...prev, errorMessage]);
     }
   };
 
@@ -106,10 +178,7 @@ export default function ChatGrupo() {
         <Text
           style={[
             styles.messageText,
-            {
-              color:
-                item.sender === "Você" ? "#fff" : colors.textPrimary,
-            },
+            { color: item.sender === "Você" ? "#fff" : colors.textPrimary },
           ]}
         >
           {item.text}
@@ -119,9 +188,7 @@ export default function ChatGrupo() {
             styles.timestamp,
             {
               color:
-                item.sender === "Você"
-                  ? "#ffffffaa"
-                  : colors.textSecondary,
+                item.sender === "Você" ? "#ffffffaa" : colors.textSecondary,
             },
           ]}
         >
@@ -132,36 +199,32 @@ export default function ChatGrupo() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <StatusBar 
-        barStyle={Platform.OS === 'android' ? 'light-content' : 'dark-content'} 
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
+      <StatusBar
+        barStyle={Platform.OS === "android" ? "light-content" : "dark-content"}
         backgroundColor={GRADIENT_START}
-        translucent={Platform.OS === 'android'}
+        translucent={Platform.OS === "android"}
       />
 
-      {/* Header com Degradê */}
       <LinearGradient
         colors={[GRADIENT_START, GRADIENT_END]}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       >
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => router.back()}
         >
-          <MaterialCommunityIcons 
-            name="arrow-left" 
-            size={28} 
-            color="#fff" 
-          />
+          <MaterialCommunityIcons name="arrow-left" size={28} color="#fff" />
         </TouchableOpacity>
-        
+
         <Text style={styles.headerTitle}>Chat em Grupo</Text>
         <View style={styles.headerRight} />
       </LinearGradient>
 
-      {/* Lista de Mensagens */}
       <FlatList
         data={messages}
         renderItem={renderMessage}
@@ -182,7 +245,6 @@ export default function ChatGrupo() {
         )}
       />
 
-      {/* Área de entrada */}
       <View
         style={[
           styles.inputContainer,
@@ -206,7 +268,6 @@ export default function ChatGrupo() {
           maxLength={500}
         />
 
-        {/* Botão de enviar */}
         <LinearGradient
           colors={
             inputText.trim()
@@ -245,14 +306,9 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: Platform.OS === "android" ? 1 : 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginLeft: 4,
-  },
-  backText: {
-    fontSize: Platform.OS === "android" ? 22 : 24,
-    fontWeight: "bold",
-    color: "#fff",
   },
   headerTitle: {
     fontSize: Platform.OS === "android" ? 16 : 18,
@@ -261,31 +317,16 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#fff",
   },
-  headerRight: {
-    width: 32,
-  },
-  messagesList: {
-    padding: 16,
-    paddingBottom: 8,
-    flexGrow: 1,
-  },
-  messageContainer: {
-    marginBottom: 12,
-  },
-  myMessageContainer: {
-    alignItems: "flex-end",
-  },
-  otherMessageContainer: {
-    alignItems: "flex-start",
-  },
+  headerRight: { width: 32 },
+  messagesList: { padding: 16, paddingBottom: 8, flexGrow: 1 },
+  messageContainer: { marginBottom: 12 },
+  myMessageContainer: { alignItems: "flex-end" },
+  otherMessageContainer: { alignItems: "flex-start" },
   messageCard: {
     padding: Platform.OS === "android" ? 10 : 12,
     borderRadius: 12,
     maxWidth: "80%",
-    shadowOffset: {
-      width: 0,
-      height: Platform.OS === "android" ? 1 : 2,
-    },
+    shadowOffset: { width: 0, height: Platform.OS === "android" ? 1 : 2 },
     shadowOpacity: Platform.OS === "android" ? 0.2 : 0.1,
     shadowRadius: Platform.OS === "android" ? 1 : 3,
     elevation: Platform.OS === "android" ? 2 : 0,
@@ -294,11 +335,7 @@ const styles = StyleSheet.create({
     fontSize: Platform.OS === "android" ? 14 : 16,
     lineHeight: Platform.OS === "android" ? 20 : 22,
   },
-  timestamp: {
-    fontSize: 12,
-    marginTop: 4,
-    opacity: 0.7,
-  },
+  timestamp: { fontSize: 12, marginTop: 4, opacity: 0.7 },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -316,10 +353,7 @@ const styles = StyleSheet.create({
     fontSize: Platform.OS === "android" ? 13 : 14,
     fontWeight: Platform.OS === "android" ? "normal" : "bold",
   },
-  sendButton: {
-    borderRadius: 25,
-    overflow: "hidden",
-  },
+  sendButton: { borderRadius: 25, overflow: "hidden" },
   sendButtonTouchable: {
     paddingHorizontal: Platform.OS === "android" ? 14 : 16,
     paddingVertical: Platform.OS === "android" ? 8 : 10,
