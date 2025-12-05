@@ -15,6 +15,7 @@ import {
 import { Calendar } from "react-native-calendars";
 import { useCronograma } from "../contexts/CronogramaContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { eventosApi } from "../services/api/eventosApi";
 import "../utils/calendarLocale";
 
 export default function AdicionarEvento() {
@@ -23,6 +24,7 @@ export default function AdicionarEvento() {
   const [note, setNote] = useState("");
   const [time, setTime] = useState("08:00");
   const [showNotification, setShowNotification] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { addEvent } = useCronograma();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
@@ -44,7 +46,42 @@ export default function AdicionarEvento() {
     setSelectedDate(day.dateString);
   };
 
+  // Função para formatar horário (apenas números no formato HH:mm)
+  const handleTimeChange = (text: string) => {
+    // Remove tudo que não é número
+    const numbersOnly = text.replace(/[^0-9]/g, '');
+    
+    // Limita a 4 dígitos (HHmm)
+    const limited = numbersOnly.slice(0, 4);
+    
+    // Formata como HH:mm
+    let formatted = limited;
+    if (limited.length > 2) {
+      formatted = limited.slice(0, 2) + ':' + limited.slice(2);
+    }
+    
+    // Valida horas (00-23) e minutos (00-59)
+    if (formatted.length >= 2) {
+      const hours = parseInt(formatted.split(':')[0] || '0', 10);
+      if (hours > 23) {
+        formatted = '23:' + (formatted.split(':')[1] || '');
+      }
+    }
+    
+    if (formatted.length >= 5) {
+      const minutes = parseInt(formatted.split(':')[1] || '0', 10);
+      if (minutes > 59) {
+        const hours = formatted.split(':')[0];
+        formatted = hours + ':59';
+      }
+    }
+    
+    setTime(formatted);
+  };
+
   const handleAddEvent = async () => {
+    console.log("🟡 handleAddEvent chamado");
+    
     if (!selectedDate || !title.trim()) {
       Alert.alert("Atenção", "Por favor, selecione uma data e preencha o título");
       return;
@@ -56,8 +93,30 @@ export default function AdicionarEvento() {
       return;
     }
 
+    setIsLoading(true);
+    
     try {
-      // Criar novo evento
+      console.log("🟡 Iniciando salvamento do evento na API...");
+      console.log("📤 Dados do evento:", {
+        titulo: title.trim(),
+        data: selectedDate,
+        horario: time,
+        nota: note.trim() || undefined,
+        temNotificacao: showNotification,
+      });
+
+      // ✅ Salvar evento na API
+      const result = await eventosApi.create({
+        titulo: title.trim(),
+        data: selectedDate,
+        horario: time,
+        nota: note.trim() || undefined,
+        temNotificacao: showNotification,
+      });
+
+      console.log("✅ Evento salvo na API com sucesso:", result);
+
+      // Criar novo evento local também (para manter compatibilidade)
       addEvent({
         title: title.trim(),
         note: note.trim(),
@@ -85,9 +144,11 @@ export default function AdicionarEvento() {
             console.log("Notificação agendada com sucesso");
           }
         } catch (e) {
-          console.warn("Falha ao agendar notificação");
+          console.warn("Falha ao agendar notificação:", e);
         }
       }
+      
+      setIsLoading(false);
       
       Alert.alert(
         "Sucesso!",
@@ -99,10 +160,20 @@ export default function AdicionarEvento() {
           }
         ]
       );
-    } catch (error) {
+    } catch (error: any) {
+      setIsLoading(false);
+      console.error("🔴 Erro ao salvar evento na API:", error);
+      console.error("🔴 Detalhes do erro:", {
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name,
+      });
+      
+      const errorMessage = error?.message || "Não foi possível salvar o evento. Tente novamente.";
+      
       Alert.alert(
         "Erro",
-        "Não foi possível salvar o evento. Tente novamente.",
+        errorMessage,
         [{ text: "OK" }]
       );
     }
@@ -214,9 +285,11 @@ export default function AdicionarEvento() {
             <TextInput
               style={[styles.textInput, { backgroundColor: colors.card, color: colors.textPrimary, borderColor: colors.border }]}
               value={time}
-              onChangeText={setTime}
+              onChangeText={handleTimeChange}
               placeholder="08:00"
               placeholderTextColor={colors.placeholder}
+              keyboardType="numeric"
+              maxLength={5}
             />
           </View>
 
@@ -258,14 +331,20 @@ export default function AdicionarEvento() {
 
       {/* Botão de adicionar */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddEvent}>
+        <TouchableOpacity 
+          style={[styles.addButton, isLoading && { opacity: 0.6 }]} 
+          onPress={handleAddEvent}
+          disabled={isLoading}
+        >
           <LinearGradient
             colors={["#8B5CF6", "#3B82F6"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.addButtonGradient}
           >
-            <Text style={styles.addButtonText}>Adicionar</Text>
+            <Text style={styles.addButtonText}>
+              {isLoading ? "Salvando..." : "Adicionar"}
+            </Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

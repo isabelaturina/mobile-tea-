@@ -15,6 +15,8 @@ import {
 import { useCronograma } from "../contexts/CronogramaContext";
 import { useTheme } from "../contexts/ThemeContext";
 
+import { diarioApi } from "../services/api/diarioApi";
+
 const MOOD_OPTIONS = [
   { emoji: "😁", value: "muito_feliz", label: "Muito feliz" },
   { emoji: "😊", value: "feliz", label: "Feliz" },
@@ -210,7 +212,7 @@ export default function AnotarDia() {
     [colors, isDarkMode]
   );
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedMood) {
       Alert.alert("Atenção", "Por favor, selecione como você se sentiu hoje.");
       return;
@@ -224,6 +226,36 @@ export default function AnotarDia() {
     const entryDate = (date as string) ?? new Date().toISOString().slice(0, 10);
     const existingEntry = date ? getDiaryEntryForDate(entryDate) : null;
 
+    const saveToApi = async () => {
+      try {
+        // ✅ Salvar anotação na API
+        await diarioApi.create({
+          data: entryDate,
+          humor: selectedMood,
+          anotacao: note.trim(),
+        });
+
+        // Salvar localmente também (para manter compatibilidade)
+        addDiaryEntry({
+          date: entryDate,
+          mood: selectedMood,
+          note: note.trim(),
+        });
+
+        router.push({
+          pathname: "/DiarioSalvo",
+          params: { date: entryDate },
+        });
+      } catch (error: any) {
+        console.error("Erro ao salvar anotação na API:", error);
+        Alert.alert(
+          "Erro",
+          error?.message || "Não foi possível salvar a anotação. Tente novamente.",
+          [{ text: "OK" }]
+        );
+      }
+    };
+
     if (existingEntry) {
       Alert.alert(
         "Entrada existente",
@@ -235,30 +267,12 @@ export default function AnotarDia() {
           },
           {
             text: "Substituir",
-            onPress: () => {
-              addDiaryEntry({
-                date: entryDate,
-                mood: selectedMood,
-                note: note.trim(),
-              });
-              router.push({
-                pathname: "/DiarioSalvo",
-                params: { date: entryDate },
-              });
-            },
+            onPress: saveToApi,
           },
         ]
       );
     } else {
-      addDiaryEntry({
-        date: entryDate,
-        mood: selectedMood,
-        note: note.trim(),
-      });
-      router.push({
-        pathname: "/DiarioSalvo",
-        params: { date: entryDate },
-      });
+      await saveToApi();
     }
   };
 

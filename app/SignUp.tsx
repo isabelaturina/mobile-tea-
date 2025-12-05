@@ -20,14 +20,12 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useUser } from "../contexts/UserContext";
 
 type SupportLevel = "leve" | "moderado" | "severo";
-type ProfileType = "autista" | "responsavel" | null;
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [profileType, setProfileType] = useState<ProfileType>(null);
   const [supportLevel, setSupportLevel] = useState<SupportLevel | null>(null);
   const [isLevelModalOpen, setIsLevelModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,27 +83,14 @@ export default function SignUp() {
 
   const levelLabel = useMemo(() => {
     const found = levels.find((l) => l.value === supportLevel);
-    if (profileType === "autista") {
-      return found?.label ?? "Nível de suporte";
-    } else if (profileType === "responsavel") {
-      return found?.label ?? "Nível de suporte do meu filho(a)";
-    }
-    return "Nível de suporte";
-  }, [levels, supportLevel, profileType]);
+    return found?.label ?? "Nível de suporte";
+  }, [levels, supportLevel]);
 
   const handleSignUp = async () => {
   if (!name || !email || !password) {
     Alert.alert(
       "Ops!",
       "Parece que você esqueceu de preencher algum campo. Tente novamente!"
-    );
-    return;
-  }
-
-  if (!profileType) {
-    Alert.alert(
-      "Ops!",
-      "Por favor, selecione o tipo de perfil."
     );
     return;
   }
@@ -262,97 +247,26 @@ onChangeText={(text) => {
             </TouchableOpacity>
           </View>
 
-          {/* Tipo de Perfil */}
-          <View style={styles.profileTypeContainer}>
-            <Text style={[styles.profileTypeLabel, { color: colors.textPrimary }]}>
-              Tipo de Perfil:
-            </Text>
-            <View style={styles.radioGroup}>
-              <Pressable
-                onPress={() => {
-                  setProfileType("autista");
-                  setSupportLevel(null);
-                }}
-                style={styles.radioOption}
-              >
-                <View
-                  style={[
-                    styles.radioCircle,
-                    {
-                      borderColor: profileType === "autista" ? colors.accent : colors.border,
-                    },
-                  ]}
-                >
-                  {profileType === "autista" && (
-                    <View
-                      style={[
-                        styles.radioInner,
-                        { backgroundColor: colors.accent },
-                      ]}
-                    />
-                  )}
-                </View>
-                <Text style={[styles.radioLabel, { color: colors.textPrimary }]}>
-                  Sou autista
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => {
-                  setProfileType("responsavel");
-                  setSupportLevel(null);
-                }}
-                style={styles.radioOption}
-              >
-                <View
-                  style={[
-                    styles.radioCircle,
-                    {
-                      borderColor: profileType === "responsavel" ? colors.accent : colors.border,
-                    },
-                  ]}
-                >
-                  {profileType === "responsavel" && (
-                    <View
-                      style={[
-                        styles.radioInner,
-                        { backgroundColor: colors.accent },
-                      ]}
-                    />
-                  )}
-                </View>
-                <Text style={[styles.radioLabel, { color: colors.textPrimary }]}>
-                  Sou pai/mãe/responsável
-                </Text>
-              </Pressable>
-            </View>
-            <Text style={[styles.helpText, { color: colors.textSecondary }]}>
-              Isso nos ajuda a personalizar sua experiência no app.
-            </Text>
-          </View>
-
-          {/* Nível de Suporte - Condicional */}
-          {profileType && (
-            <Pressable
-              onPress={() => setIsLevelModalOpen(true)}
+          {/* Nível de Suporte */}
+          <Pressable
+            onPress={() => setIsLevelModalOpen(true)}
+            style={[
+              styles.dropdownTrigger,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Selecionar nível de suporte"
+          >
+            <Text
               style={[
-                styles.dropdownTrigger,
-                { backgroundColor: colors.card, borderColor: colors.border },
+                styles.dropdownText,
+                { color: supportLevel ? colors.textPrimary : colors.placeholder },
               ]}
-              accessibilityRole="button"
-              accessibilityLabel="Selecionar nível de suporte"
             >
-              <Text
-                style={[
-                  styles.dropdownText,
-                  { color: supportLevel ? colors.textPrimary : colors.placeholder },
-                ]}
-              >
-                {levelLabel}
-              </Text>
-              <Text style={[styles.dropdownCaret, { color: colors.textPrimary }]}>▾</Text>
-            </Pressable>
-          )}
+              {levelLabel}
+            </Text>
+            <Text style={[styles.dropdownCaret, { color: colors.textPrimary }]}>▾</Text>
+          </Pressable>
 
 
           <Modal
@@ -497,12 +411,12 @@ const styles = StyleSheet.create({
   },
   eyeButton: { marginLeft: -40, padding: 8, zIndex: 1 },
   dropdownTrigger: {
-    width: "45%",
+    width: "100%",
     borderWidth: 1,
     borderRadius: 56,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginBottom: 20,
+    marginBottom: 30,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -514,45 +428,6 @@ const styles = StyleSheet.create({
   },
   dropdownText: { fontSize: 14, fontWeight: "600" },
   dropdownCaret: { fontSize: 16 },
-  profileTypeContainer: {
-    marginBottom: 20,
-  },
-  profileTypeLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  radioGroup: {
-    gap: 12,
-    marginBottom: 8,
-  },
-  radioOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  radioCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  radioLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  helpText: {
-    fontSize: 12,
-    marginTop: 4,
-    fontStyle: "italic",
-  },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.25)" },
   modalSheet: {
     position: "absolute",

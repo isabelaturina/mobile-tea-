@@ -1,11 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import * as Location from "expo-location";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
+  Linking,
   Platform,
   StyleSheet,
   Text,
@@ -15,6 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "../contexts/ThemeContext";
+import { Clinica, clinicasApi } from "../services/api/clinicasApi";
 
 export default function ClinicasProximas() {
   // tipa navigation como any para simplificar chamadas de navegação neste componente
@@ -48,65 +50,128 @@ export default function ClinicasProximas() {
       };
 
   const [busca, setBusca] = useState("");
-  const [clinicas, setClinicas] = useState([]);
+  const [clinicas, setClinicas] = useState<Clinica[]>([]);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
 
   const buscarClinicas = async () => {
     setErro("");
     setLoading(true);
+    setClinicas([]); // Limpa resultados anteriores
 
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        setErro("Permissão de localização negada.");
-        setLoading(false);
-        return;
+      console.log("📍 Iniciando busca de clínicas em São Paulo...");
+      
+      // Usa coordenadas fixas de São Paulo (a API já usa por padrão)
+      console.log("🔄 Chamando API com coordenadas fixas de São Paulo");
+      
+      const data = await clinicasApi.buscarProximas();
+
+      console.log("📋 Dados retornados da API:", JSON.stringify(data, null, 2));
+      console.log("📊 Tipo:", typeof data);
+      console.log("📊 É array?", Array.isArray(data));
+      console.log("📊 Quantidade de clínicas:", data?.length || 0);
+      
+      if (data && Array.isArray(data) && data.length > 0) {
+        console.log("✅ Clínicas encontradas! Definindo no estado...");
+        setClinicas(data);
+      } else {
+        console.log("⚠️ Nenhuma clínica encontrada ou dados inválidos");
+        setClinicas([]);
+        if (!erro) {
+          setErro("Nenhuma clínica encontrada na sua região.");
+        }
       }
-
-      const location = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = location.coords;
-
-      // Busca clínicas usando a API real
-      const RAIO_METROS = 5000; // ajuste conforme necessário
-      const coordenadas = { lat: latitude, lng: longitude };
-      const url = `https://api-clinicasproximas.onrender.com/api/clinicas/proximas?lat=${coordenadas.lat}&lng=${coordenadas.lng}&raioEmMetros=${RAIO_METROS}`;
-      const response = await fetch(url);
-      const data = await response.json();
-
-      setClinicas(data);
-    } catch (err) {
-      console.error(err);
-      setErro("Erro ao buscar clínicas.");
+    } catch (err: any) {
+      console.error("❌ Erro completo ao buscar clínicas:", err);
+      console.error("❌ Stack:", err?.stack);
+      console.error("❌ Message:", err?.message);
+      const mensagemErro = err?.message || "Erro ao buscar clínicas. Tente novamente.";
+      setErro(mensagemErro);
+      setClinicas([]);
     } finally {
+      console.log("🏁 Finalizando busca (loading = false)");
       setLoading(false);
     }
   };
 
-  const renderItem = ({ item }: any) => (
-    <View style={[styles.card, { backgroundColor: colors.cardLight }]}>
-      <Text style={[styles.nome, { color: colors.textPrimary }]}>{item.nome}</Text>
-      <Image
-        source={{ uri: item.imagemUrl }}
-        style={styles.imagem}
-        resizeMode="cover"
-      />
-      <View style={styles.info}>
-        <Ionicons name="location" size={16} color={colors.textSecondary} />
-        <Text style={[styles.texto, { color: colors.textSecondary }]}>{item.endereco}</Text>
+  const abrirLocalizacao = async (endereco: string) => {
+    try {
+      // Codifica o endereço para URL
+      const enderecoCodificado = encodeURIComponent(endereco);
+      
+      // Tenta abrir no Google Maps (funciona em Android e iOS)
+      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${enderecoCodificado}`;
+      
+      const supported = await Linking.canOpenURL(googleMapsUrl);
+      
+      if (supported) {
+        await Linking.openURL(googleMapsUrl);
+      } else {
+        // Fallback: tenta abrir no Apple Maps (iOS) ou Google Maps web
+        const mapsUrl = Platform.OS === 'ios' 
+          ? `http://maps.apple.com/?q=${enderecoCodificado}`
+          : `https://www.google.com/maps/search/?api=1&query=${enderecoCodificado}`;
+        
+        await Linking.openURL(mapsUrl);
+      }
+    } catch (err) {
+      console.error("Erro ao abrir localização:", err);
+      Alert.alert('Erro', 'Não foi possível abrir o mapa. Verifique se há um aplicativo de mapas instalado.');
+    }
+  };
+
+  const renderItem = ({ item }: { item: any }) => {
+    // Normaliza os campos da API (pode ter nomes diferentes)
+    const nome = item.nome || item.name || item.nomeFantasia || "Clínica sem nome";
+    const endereco = item.endereco || item.endereço || item.address || item.logradouro || "Endereço não informado";
+    const imagemUrl = item.imagemUrl || item.imagem || item.foto || item.imageUrl;
+    const horario = item.horario || item.horarioFuncionamento || item.funcionamento;
+    const especialidade = item.especialidade || item.tipo || item.categoria;
+    const distancia = item.distancia || item.distance || item.distanciaMetros;
+    
+    return (
+      <View style={[styles.card, { backgroundColor: colors.cardLight }]}>
+        <Text style={[styles.nome, { color: colors.textPrimary }]}>{nome}</Text>
+        {imagemUrl && (
+          <Image
+            source={{ uri: imagemUrl }}
+            style={styles.imagem}
+            resizeMode="cover"
+            onError={(e) => {
+              console.log("Erro ao carregar imagem:", imagemUrl);
+            }}
+          />
+        )}
+        <View style={styles.info}>
+          <Ionicons name="location" size={16} color={colors.textSecondary} />
+          <Text style={[styles.texto, { color: colors.textSecondary, flex: 1 }]}>{endereco}</Text>
+        </View>
+        {horario && (
+          <View style={styles.info}>
+            <Ionicons name="time" size={16} color={colors.textSecondary} />
+            <Text style={[styles.texto, { color: colors.textSecondary }]}>{horario}</Text>
+          </View>
+        )}
+        {especialidade && (
+          <Text style={[styles.especialidade, { color: colors.textSecondary }]}>
+            Especialidade: {especialidade}
+          </Text>
+        )}
+        {distancia && (
+          <Text style={[styles.especialidade, { color: colors.textSecondary }]}>
+            Distância: {(Number(distancia) / 1000).toFixed(2)} km
+          </Text>
+        )}
+        <TouchableOpacity 
+          style={[styles.botao, { backgroundColor: colors.accent }]}
+          onPress={() => abrirLocalizacao(endereco)}
+        >
+          <Text style={styles.botaoTexto}>Saiba Mais</Text>
+        </TouchableOpacity>
       </View>
-      <View style={styles.info}>
-        <Ionicons name="time" size={16} color={colors.textSecondary} />
-        <Text style={[styles.texto, { color: colors.textSecondary }]}>{item.horario}</Text>
-      </View>
-      <Text style={[styles.especialidade, { color: colors.textSecondary }]}>
-        Especialidade: {item.especialidade}
-      </Text>
-      <TouchableOpacity style={[styles.botao, { backgroundColor: colors.accent }]}>
-        <Text style={styles.botaoTexto}>Saiba Mais</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -141,20 +206,39 @@ export default function ClinicasProximas() {
         />
       )}
 
-      {erro !== "" && <Text style={[styles.erro, { color: "#EF4444" }]}>{erro}</Text>}
-
-      {!loading && clinicas.length === 0 && erro === "" && (
-        <Text style={[styles.vazio, { color: colors.textSecondary }]}>Nenhuma clínica encontrada.</Text>
+      {erro !== "" && (
+        <View style={styles.erroContainer}>
+          <Text style={[styles.erro, { color: "#EF4444" }]}>{erro}</Text>
+        </View>
       )}
 
-      <FlatList
-        data={clinicas}
-        keyExtractor={(item: any, index: number) => (item && item.id != null ? String(item.id) : String(index))}
-        renderItem={renderItem}
-        contentContainerStyle={styles.lista}
-        horizontal={false}
-        showsVerticalScrollIndicator={false}
-      />
+      {!loading && clinicas.length === 0 && erro === "" && (
+        <View style={styles.vazioContainer}>
+          <Ionicons name="location-outline" size={48} color={colors.textSecondary} style={{ marginBottom: 10 }} />
+          <Text style={[styles.vazio, { color: colors.textSecondary }]}>
+            Nenhuma clínica encontrada na sua região.
+          </Text>
+          <Text style={[styles.vazioSubtexto, { color: colors.textSecondary }]}>
+            Tente aumentar o raio de busca ou verifique sua localização.
+          </Text>
+        </View>
+      )}
+
+      {clinicas.length > 0 && (
+        <FlatList
+          data={clinicas}
+          keyExtractor={(item, index) => (item && item.id != null ? String(item.id) : String(index))}
+          renderItem={renderItem}
+          contentContainerStyle={styles.lista}
+          horizontal={false}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <Text style={[styles.vazio, { color: colors.textSecondary }]}>
+              Nenhuma clínica encontrada.
+            </Text>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -251,13 +335,34 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
+  erroContainer: {
+    padding: 16,
+    marginTop: 20,
+    backgroundColor: "#FEE2E2",
+    borderRadius: 8,
+    marginHorizontal: 16,
+  },
   erro: {
     textAlign: "center",
-    marginTop: 10,
+    fontSize: 14,
+  },
+  vazioContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
   },
   vazio: {
     textAlign: "center",
-    marginTop: 20,
+    fontSize: 16,
+    fontWeight: "500",
+    marginBottom: 8,
+  },
+  vazioSubtexto: {
+    textAlign: "center",
+    fontSize: 14,
+    opacity: 0.7,
   },
   lista: {
     paddingBottom: 60,
