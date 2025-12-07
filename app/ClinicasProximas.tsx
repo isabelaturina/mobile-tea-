@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -19,8 +19,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { Clinica, clinicasApi } from "../services/api/clinicasApi";
 
 export default function ClinicasProximas() {
-  // tipa navigation como any para simplificar chamadas de navegação neste componente
-  const navigation = useNavigation<any>();
+  const router = useRouter();
   const { theme } = useTheme();
   const isDarkMode = theme === "dark";
 
@@ -175,12 +174,12 @@ export default function ClinicasProximas() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Botão Voltar */}
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.navigate("Home")}
-      >
-        <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <Image
+          source={require("../assets/images/seta.png")}
+          style={styles.backImage}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
 
       <Text style={[styles.titulo, { color: colors.textPrimary }]}>Clínicas Próximas</Text>

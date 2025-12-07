@@ -306,12 +306,12 @@ export default function EditarEvento() {
                 value={showNotification}
                 onValueChange={setShowNotification}
                 trackColor={{ false: colors.border, true: colors.accent }}
-                thumbColor={showNotification ? "#fff" : "#f4f3f4"}
+                thumbColor={showNotification ? "#fff" : colors.textSecondary}
                 ios_backgroundColor={colors.border}
               />
             </View>
             {showNotification && (
-              <View style={styles.notificationDetails}>
+              <View style={[styles.notificationDetails, { borderTopColor: colors.border }]}>
                 <Text style={[styles.notificationDetailsText, { color: colors.lightAccent }]}>
                   📅 Você receberá uma notificação em {formatDate(selectedDate)} às {time}
                 </Text>
@@ -486,7 +486,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#F3F4F6",
   },
   notificationDetailsText: {
     fontSize: 14,

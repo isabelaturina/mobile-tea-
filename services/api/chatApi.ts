@@ -1,9 +1,8 @@
 import axios from 'axios';
-import { API } from '../beaConfig';
 
 // Criar instância do Axios com a URL base
 const chatApiClient = axios.create({
-  baseURL: API,
+  baseURL: 'https://crud-tea-1.onrender.com',
   timeout: 10000, // 10 segundos
   headers: {
     'Content-Type': 'application/json',

@@ -3,16 +3,16 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    useColorScheme,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useCronograma } from "../contexts/CronogramaContext";
+import { useTheme } from "../contexts/ThemeContext";
 
 const MOOD_OPTIONS = [
   { emoji: "😁", value: "muito_feliz", label: "Muito feliz" },
@@ -25,13 +25,12 @@ const MOOD_OPTIONS = [
 ];
 
 export default function EditarAnotacao() {
-  const { date, entryId } = useLocalSearchParams();
+  const { date } = useLocalSearchParams();
   const { getDiaryEntryForDate, updateDiaryEntry, forceDeleteDiaryEntry } = useCronograma();
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
   const [selectedMood, setSelectedMood] = useState<string>("");
   const [note, setNote] = useState<string>("");
-
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
 
   useEffect(() => {
     const entry = getDiaryEntryForDate(date as string);
@@ -41,11 +40,38 @@ export default function EditarAnotacao() {
     }
   }, [date, getDiaryEntryForDate]);
 
-  const styles = useMemo(() => {
-    return StyleSheet.create({
+  const colors = useMemo(
+    () =>
+      isDarkMode
+        ? {
+            background: "#000000",
+            textPrimary: "#F8FAFC",
+            textSecondary: "#94A3B8",
+            card: "#1E293B",
+            accent: "#3B82F6",
+            lightAccent: "#60A5FA",
+            border: "#334155",
+            placeholder: "#64748B",
+          }
+        : {
+            background: "#F8F9FA",
+            textPrimary: "#111",
+            textSecondary: "#666",
+            card: "#FFFFFF",
+            accent: "#3B82F6",
+            lightAccent: "#70DEFE",
+            border: "#E5E7EB",
+            placeholder: "#999",
+          },
+    [isDarkMode]
+  );
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
       container: {
         flex: 1,
-        backgroundColor: isDark ? "#071426" : "#F8F9FA",
+        backgroundColor: colors.background,
       },
       header: {
         paddingTop: 60,
@@ -76,7 +102,7 @@ export default function EditarAnotacao() {
       sectionTitle: {
         fontSize: 16,
         fontWeight: "600",
-        color: isDark ? "#E5E7EB" : "#333",
+        color: colors.textPrimary,
         marginBottom: 16,
         textAlign: "center",
       },
@@ -90,7 +116,7 @@ export default function EditarAnotacao() {
         width: 60,
         height: 60,
         borderRadius: 30,
-        backgroundColor: isDark ? "#0B1220" : "#fff",
+        backgroundColor: colors.card,
         alignItems: "center",
         justifyContent: "center",
         shadowColor: "#000",
@@ -103,33 +129,30 @@ export default function EditarAnotacao() {
         margin: 6,
       },
       selectedMoodButton: {
-        borderColor: "#3B82F6",
-        backgroundColor: isDark ? "#3B82F6" : "#EBF4FF",
+        borderColor: colors.accent,
+        backgroundColor: isDarkMode ? colors.accent : "#EBF4FF",
       },
       moodEmoji: {
         fontSize: 28,
       },
       /* Neon / note container */
       noteContainer: {
-        // fundo preto com borda azul neon e glow no modo escuro
-        backgroundColor: isDark ? "#000000" : "#fff",
+        backgroundColor: colors.card,
         borderRadius: 16,
         padding: 16,
-        borderWidth: isDark ? 2 : 1,
-        borderColor: isDark ? "rgba(59,130,246,0.95)" : "rgba(59,130,246,0.18)",
-        // glow (iOS)
-        shadowColor: isDark ? "#3B82F6" : "#000",
-        shadowOffset: { width: 0, height: isDark ? 8 : 2 },
-        shadowOpacity: isDark ? 0.9 : 0.08,
-        shadowRadius: isDark ? 18 : 6,
-        // elevation (Android)
-        elevation: isDark ? 14 : 4,
+        borderWidth: isDarkMode ? 2 : 1,
+        borderColor: isDarkMode ? "rgba(59,130,246,0.95)" : "rgba(59,130,246,0.18)",
+        shadowColor: isDarkMode ? colors.accent : "#000",
+        shadowOffset: { width: 0, height: isDarkMode ? 8 : 2 },
+        shadowOpacity: isDarkMode ? 0.9 : 0.08,
+        shadowRadius: isDarkMode ? 18 : 6,
+        elevation: isDarkMode ? 14 : 4,
         minHeight: 200,
         overflow: "hidden",
       },
       noteInput: {
         fontSize: 16,
-        color: isDark ? "#E5E7EB" : "#333",
+        color: colors.textPrimary,
         minHeight: 150,
         textAlignVertical: "top",
       },
@@ -138,7 +161,7 @@ export default function EditarAnotacao() {
         marginTop: 12,
       },
       addNoteButton: {
-        backgroundColor: isDark ? "#111827" : "#333",
+        backgroundColor: isDarkMode ? "#111827" : "#333",
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 8,
@@ -153,7 +176,7 @@ export default function EditarAnotacao() {
         paddingBottom: 40,
       },
       saveButton: {
-        backgroundColor: "#3B82F6",
+        backgroundColor: colors.accent,
         paddingVertical: 16,
         borderRadius: 12,
         alignItems: "center",
@@ -168,8 +191,9 @@ export default function EditarAnotacao() {
         fontSize: 18,
         fontWeight: "bold",
       },
-    });
-  }, [isDark]);
+      }),
+    [colors, isDarkMode]
+  );
 
   const handleSave = async () => {
     if (!selectedMood) {
@@ -234,7 +258,7 @@ export default function EditarAnotacao() {
                     onPress: () => router.push("/Cronograma"),
                   },
                 ]);
-              } catch (error) {
+              } catch {
                 Alert.alert("Erro", "Não foi possível excluir a anotação. Tente novamente.");
               }
             }
@@ -248,7 +272,7 @@ export default function EditarAnotacao() {
     <View style={styles.container}>
       {/* Header */}
       <LinearGradient
-        colors={isDark ? ["#8B5CF6", "#3B82F6"] : ["#8B5CF6", "#3B82F6"]}
+        colors={["#8B5CF6", "#3B82F6"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -295,7 +319,7 @@ export default function EditarAnotacao() {
             <TextInput
               style={styles.noteInput}
               placeholder="Faça sua anotação aqui..."
-              placeholderTextColor={isDark ? "#9CA3AF" : "#999"}
+              placeholderTextColor={colors.placeholder}
               value={note}
               onChangeText={setNote}
               multiline
