@@ -70,13 +70,26 @@ class BeaApiService {
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorData.message || errorMessage;
-        } catch (e) {
+        } catch {
           // Não conseguiu parsear JSON de erro
         }
         throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      // Tentar parsear como JSON primeiro, se falhar, tratar como texto puro
+      let data: any;
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        // É JSON
+        data = await response.json();
+      } else {
+        // É texto puro ou outro formato
+        const text = await response.text();
+        console.log('Resposta em texto puro:', text);
+        data = { message: text, response: text, answer: text };
+      }
+
       console.log('Resposta da API:', data);
 
       return {

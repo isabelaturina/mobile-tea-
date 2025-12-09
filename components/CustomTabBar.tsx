@@ -68,10 +68,10 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
               <Ionicons
                 name={iconName as any}
                 size={28}
-                color={isFocused ? "#fff" : "#222"}
+                color={isFocused ? "#ffffffff" : "#ffffffff"}
               />
 
-              <Text style={[styles.label, isFocused && { color: "#fff" }]}>
+              <Text style={[styles.label, isFocused && { color: "#ffffffff" }]}>
                 {icon.label}
               </Text>
             </TouchableOpacity>
@@ -122,6 +122,6 @@ const styles = StyleSheet.create({
     fontSize: Dimensions.get("window").width * 0.03,
     marginTop: 2,
     fontWeight: "600",
-    color: "#222",
+    color: "#ffffffff",
   },
 });

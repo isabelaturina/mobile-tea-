@@ -13,8 +13,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { FormattedMessage } from "../components/FormattedMessage";
 import { useTheme } from "../contexts/ThemeContext";
-import { sendChatMessage } from "../services/api/chatApi";
+import { beaApiService } from "../services/api/beaApi";
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
@@ -42,8 +43,8 @@ export default function ChatBea() {
       setInputMessage("");
 
       try {
-        const resposta = await sendChatMessage(userText);
-        setMessages((msgs) => [...msgs, { sender: "Bea", text: resposta }]);
+        const response = await beaApiService.getBeaResponse(userText);
+        setMessages((msgs) => [...msgs, { sender: "Bea", text: response.message }]);
       } catch (error) {
         console.error("Erro ao se comunicar com a API:", error);
 
@@ -104,31 +105,47 @@ export default function ChatBea() {
               <Image source={BeaAssistencia} style={styles.avatar} />
             )}
 
-            <Text
+            <View
               style={[
-                styles.messageText,
+                styles.messageBubble,
                 message.sender === "Bea"
-                  ? styles.messageTextBea
-                  : styles.messageTextUser,
+                  ? styles.messageBubbleBea
+                  : styles.messageBubbleUser,
               ]}
             >
-              {message.text}
-            </Text>
+              <FormattedMessage
+                text={message.text}
+                style={[
+                  styles.messageText,
+                  message.sender === "Bea"
+                    ? styles.messageTextBea
+                    : styles.messageTextUser,
+                ]}
+                isDarkMode={isDarkMode}
+              />
+            </View>
           </View>
         ))}
 
         {isLoading && (
           <View style={[styles.messageContainer, styles.messageBea]}>
             <Image source={BeaAssistencia} style={styles.avatar} />
-            <Text
+            <View
               style={[
-                styles.messageText,
-                styles.messageTextBea,
-                { fontStyle: "italic" },
+                styles.messageBubble,
+                styles.messageBubbleBea,
               ]}
             >
-              Bea está digitando...
-            </Text>
+              <Text
+                style={[
+                  styles.messageText,
+                  styles.messageTextBea,
+                  { fontStyle: "italic" },
+                ]}
+              >
+                Bea está digitando...
+              </Text>
+            </View>
           </View>
         )}
       </ScrollView>
@@ -199,7 +216,7 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     flexDirection: "row",
-    marginBottom: screenHeight * 0.012,
+    marginBottom: screenHeight * 0.016,
     alignItems: "flex-start",
   },
   messageBea: {
@@ -209,24 +226,34 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     marginRight: screenWidth * 0.025,
   },
+  messageBubble: {
+    maxWidth: "75%",
+    paddingHorizontal: screenWidth * 0.032,
+    paddingVertical: screenWidth * 0.032,
+    borderRadius: screenWidth * 0.04,
+  },
+  messageBubbleBea: {
+    backgroundColor: "#E1E1E1",
+    marginLeft: screenWidth * 0.025,
+  },
+  messageBubbleUser: {
+    backgroundColor: "#1163E7",
+  },
   avatar: {
     width: screenWidth * 0.1,
     height: screenWidth * 0.1,
     borderRadius: screenWidth * 0.05,
     marginRight: screenWidth * 0.025,
+    marginTop: screenHeight * 0.005,
   },
   messageText: {
-    maxWidth: "70%",
-    padding: screenWidth * 0.025,
-    borderRadius: screenWidth * 0.025,
-    fontSize: screenWidth * 0.04,
+    fontSize: screenWidth * 0.038,
+    lineHeight: screenWidth * 0.055,
   },
   messageTextBea: {
-    backgroundColor: "#E1E1E1",
     color: "#333",
   },
   messageTextUser: {
-    backgroundColor: "#1163E7",
     color: "#fff",
   },
   inputContainer: {

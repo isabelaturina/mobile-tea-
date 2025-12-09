@@ -274,7 +274,7 @@ export default function AdicionarEvento() {
               style={[styles.textInput, { backgroundColor: colors.card, color: colors.textPrimary, borderColor: colors.border }]}
               value={title}
               onChangeText={setTitle}
-              placeholder="Fonoaudiologo"
+              placeholder=" Fonoaudiólogo"
               placeholderTextColor={colors.placeholder}
             />
           </View>
@@ -300,7 +300,7 @@ export default function AdicionarEvento() {
               style={[styles.textInput, styles.textArea, { backgroundColor: colors.card, color: colors.textPrimary, borderColor: colors.border }]}
               value={note}
               onChangeText={setNote}
-              placeholder="adicionar a nota do evento exemplo|fonoaudiologo com a profissional"
+              placeholder="adicionar a nota do evento exemplo: fonoaudiólogo com a profissional"
               placeholderTextColor={colors.placeholder}
               multiline
               numberOfLines={3}
