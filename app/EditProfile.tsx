@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -13,7 +13,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "../contexts/ThemeContext";
+import { authApi, mapSupportLevelToAPI } from "../services/api/authApi";
 
 const profileIcons = [
   require("../assets/images/gato-icon.png"),
@@ -61,12 +63,51 @@ export default function EditProfile() {
 
   const [selectedIcon, setSelectedIcon] = useState(0);
   const [showArrows, setShowArrows] = useState(false);
+
   const [name, setName] = useState("");
   const [lastValidName, setLastValidName] = useState("");
   const [email, setEmail] = useState("");
-  const [autismLevel, setAutismLevel] = useState("");
+  // leve / moderado / severo (ou vazio)
+  const [autismLevel, setAutismLevel] = useState<"" | "leve" | "moderado" | "severo">("");
+
+  const [userId, setUserId] = useState<number | null>(null);
+
+  const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const nameValidRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ\s'-]*$/;
+  const gmailStrictRegex = /^[A-Za-z0-9][A-Za-z0-9._]*@gmail\.com$/;
+
+  // Carrega dados do usuário salvos no login
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const data = await AsyncStorage.getItem("userData");
+        if (!data) {
+          console.log("userData não encontrado");
+          return;
+        }
+
+        const user = JSON.parse(data);
+        console.log("userData carregado:", user);
+
+        setUserId(user.id);
+        setName(user.nome || "");
+        setLastValidName(user.nome || "");
+        setEmail(user.email || "");
+
+        // converte nivelSuporte da API para o campo de grau do app
+        if (user.nivelSuporte === "Intermediário") setAutismLevel("leve");
+        else if (user.nivelSuporte === "Avançado") setAutismLevel("moderado");
+        else if (user.nivelSuporte === "Profissional") setAutismLevel("severo");
+      } catch (err) {
+        console.warn("Erro ao carregar userData:", err);
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   const handleNameChange = (text: string) => {
     if (nameValidRegex.test(text)) {
@@ -78,22 +119,17 @@ export default function EditProfile() {
     }
   };
 
-  const [showWarning, setShowWarning] = useState(false);
-  const [warningMessage, setWarningMessage] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-
-  // ---- REGEX QUE ACEITA NÚMEROS NO GMAIL ----
-  const gmailStrictRegex = /^[A-Za-z0-9][A-Za-z0-9._]*@gmail\.com$/;
-
   const goPrevIcon = () => {
     setSelectedIcon((prev) => (prev === 0 ? profileIcons.length - 1 : prev - 1));
   };
 
   const goNextIcon = () => {
-    setSelectedIcon((prev) => (prev === profileIcons.length - 1 ? 0 : prev + 1));
+    setSelectedIcon((prev) =>
+      prev === profileIcons.length - 1 ? 0 : prev + 1
+    );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim() || !email.trim()) {
       setWarningMessage("Por favor, preencha seu nome e e-mail.");
       setShowWarning(true);
@@ -115,7 +151,40 @@ export default function EditProfile() {
       return;
     }
 
-    setShowSuccess(true); // Mostra card final
+    if (!userId) {
+      setWarningMessage("Não foi possível identificar o usuário logado.");
+      setShowWarning(true);
+      return;
+    }
+
+    try {
+      // se o usuário escolheu um grau válido, mapeia; senão envia "Básico"
+      const nivelSuporteAPI =
+        autismLevel === "leve" ||
+        autismLevel === "moderado" ||
+        autismLevel === "severo"
+          ? mapSupportLevelToAPI(autismLevel)
+          : "Básico";
+
+      await authApi.updateUserProfile(userId, {
+        nome: name.trim(),
+        email: email.trim(),
+        nivelSuporte: nivelSuporteAPI,
+      });
+
+      const newUserData = {
+        id: userId,
+        nome: name.trim(),
+        email: email.trim(),
+        nivelSuporte: nivelSuporteAPI,
+      };
+      await AsyncStorage.setItem("userData", JSON.stringify(newUserData));
+
+      setShowSuccess(true);
+    } catch (err: any) {
+      setWarningMessage(err?.message || "Erro ao atualizar perfil.");
+      setShowWarning(true);
+    }
   };
 
   return (
@@ -179,7 +248,11 @@ export default function EditProfile() {
           <TextInput
             style={[
               styles.input,
-              { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary },
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                color: colors.textPrimary,
+              },
             ]}
             placeholder="Digite seu nome"
             placeholderTextColor={colors.placeholder}
@@ -191,7 +264,11 @@ export default function EditProfile() {
           <TextInput
             style={[
               styles.input,
-              { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary },
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                color: colors.textPrimary,
+              },
             ]}
             placeholder="Digite seu Gmail"
             placeholderTextColor={colors.placeholder}
@@ -201,17 +278,27 @@ export default function EditProfile() {
           />
 
           <Text style={[styles.label, { color: colors.textPrimary }]}>
-            Grau autismo:
+            Grau autismo (leve, moderado, severo):
           </Text>
           <TextInput
             style={[
               styles.input,
-              { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary },
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+                color: colors.textPrimary,
+              },
             ]}
             placeholder="Opcional"
             placeholderTextColor={colors.placeholder}
             value={autismLevel}
-            onChangeText={setAutismLevel}
+            onChangeText={(text) =>
+              setAutismLevel(
+                text === "leve" || text === "moderado" || text === "severo"
+                  ? (text as "leve" | "moderado" | "severo")
+                  : ""
+              )
+            }
           />
 
           <TouchableOpacity
@@ -249,7 +336,11 @@ export default function EditProfile() {
       <Modal transparent visible={showSuccess} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalBox, { backgroundColor: colors.modal }]}>
-            <Ionicons name="checkmark-circle-outline" size={42} color={colors.accent} />
+            <Ionicons
+              name="checkmark-circle-outline"
+              size={42}
+              color={colors.accent}
+            />
 
             <Text style={[styles.modalText, { color: colors.modalText }]}>
               Perfil atualizado com sucesso! 🎉
@@ -281,7 +372,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     position: "relative",
   },
-
   headerTitle: {
     color: "#fff",
     fontSize: 22,
@@ -289,14 +379,12 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     marginTop: 8,
   },
-
   selectedIconContainer: {
     marginTop: 8,
     marginBottom: 8,
     alignItems: "center",
     justifyContent: "center",
   },
-
   avatarWrapper: {
     width: 120,
     height: 120,
@@ -304,7 +392,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "relative",
   },
-
   avatarCircle: {
     width: 90,
     height: 90,
@@ -316,27 +403,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   selectedIconImage: {
     width: "120%",
     height: "125%",
     resizeMode: "contain",
   },
-
   arrowLeft: {
     position: "absolute",
     left: -25,
     top: "50%",
     transform: [{ translateY: -17 }],
   },
-
   arrowRight: {
     position: "absolute",
     right: -25,
     top: "50%",
     transform: [{ translateY: -17 }],
   },
-
   editPhotoButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -350,26 +433,22 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
-
   editPhotoText: {
     fontWeight: "600",
     marginLeft: 6,
     fontSize: 15,
   },
-
   formContainer: {
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 32,
   },
-
   label: {
     fontSize: 15,
     marginBottom: 6,
     marginTop: 10,
     fontWeight: "600",
   },
-
   input: {
     borderRadius: 10,
     borderWidth: 1.5,
@@ -378,7 +457,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 10,
   },
-
   saveButton: {
     borderRadius: 18,
     paddingVertical: 13,
@@ -388,13 +466,11 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
-
   saveButtonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },
-
   backButton: {
     position: "absolute",
     left: 18,
@@ -402,12 +478,10 @@ const styles = StyleSheet.create({
     zIndex: 2,
     padding: 8,
   },
-
   backImage: {
     width: 24,
     height: 24,
   },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -415,7 +489,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
   },
-
   modalBox: {
     width: "100%",
     maxWidth: 400,
@@ -428,14 +501,12 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
   },
-
   modalText: {
     fontSize: 16,
     textAlign: "center",
     marginVertical: 20,
     fontWeight: "500",
   },
-
   modalButton: {
     paddingVertical: 12,
     paddingHorizontal: 32,
@@ -443,7 +514,6 @@ const styles = StyleSheet.create({
     minWidth: 120,
     alignItems: "center",
   },
-
   modalButtonText: {
     color: "#fff",
     fontSize: 16,

@@ -5,6 +5,8 @@ import {
   sendGroupMessage,
   getGroupMessages,
 } from "../services/api/ChatGrupoapi";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from "../contexts/UserContext";
 
 import {
   FlatList,
@@ -35,6 +37,9 @@ export default function ChatGrupo() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
+  const [usuario, setUsuario] = useState<string>("Usuário");
+  const [userId, setUserId] = useState<string>("");
+  const { userData } = useUser();
 
   // Armazena as mensagens enviadas pelo usuário
   const sentByMeRef = useRef<string[]>([]);
@@ -42,9 +47,43 @@ export default function ChatGrupo() {
   const GRADIENT_START = "#70DEFE";
   const GRADIENT_END = "#0095FF";
 
-  // Usuário atual (você pode pegar do login ou contexto)
-  const usuario = "TestUser";
-  const userId = "test-1764893765047";
+  // Carrega dados do usuário do AsyncStorage ou contexto
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        // Prioriza dados do contexto
+        if (userData) {
+          const userName = userData.name || userData.email?.split('@')[0] || "Usuário";
+          const userUserId = userData.id?.toString() || userData.email || "";
+          setUsuario(userName);
+          setUserId(userUserId);
+          console.log("✅ [CHAT GRUPO] Dados do usuário carregados do contexto:", { usuario: userName, userId: userUserId });
+          return;
+        }
+
+        // Fallback: busca do AsyncStorage
+        const storedUserId = await AsyncStorage.getItem('userId');
+        const storedUserData = await AsyncStorage.getItem('userData');
+        
+        if (storedUserData) {
+          try {
+            const parsedUserData = JSON.parse(storedUserData);
+            const userName = parsedUserData.name || parsedUserData.nome || parsedUserData.email?.split('@')[0] || "Usuário";
+            const userUserId = storedUserId || parsedUserData.id?.toString() || parsedUserData.email || "";
+            setUsuario(userName);
+            setUserId(userUserId);
+            console.log("✅ [CHAT GRUPO] Dados do usuário carregados do AsyncStorage:", { usuario: userName, userId: userUserId });
+          } catch (parseError) {
+            console.warn("⚠️ [CHAT GRUPO] Erro ao fazer parse do userData:", parseError);
+          }
+        }
+      } catch (error) {
+        console.warn("⚠️ [CHAT GRUPO] Erro ao carregar dados do usuário:", error);
+      }
+    };
+
+    loadUserData();
+  }, [userData]);
 
   const colors = isDarkMode
     ? {
@@ -76,25 +115,40 @@ export default function ChatGrupo() {
   const loadMessages = async () => {
     try {
       const response = await getGroupMessages();
-      if (!response || !response.data) return;
+      
+      // A API pode retornar diretamente um array ou { data: [...] }
+      const messagesArray = Array.isArray(response) ? response : (response?.data || []);
+      
+      if (!messagesArray || messagesArray.length === 0) {
+        console.log("📭 [CHAT GRUPO] Nenhuma mensagem encontrada");
+        return;
+      }
 
-      const formatted: Message[] = response.data.map(
+      const formatted: Message[] = messagesArray.map(
         (msg: any, index: number) => {
-          const isMine =
-            msg.userId === userId || sentByMeRef.current.includes(msg.texto);
+          // Normaliza campos da API (pode ter nomes diferentes)
+          const texto = msg.texto || msg.text || msg.mensagem || "";
+          const msgUsuario = msg.usuario || msg.user || msg.sender || "Usuário";
+          const msgUserId = msg.userId || msg.user_id || "";
+          const msgTimestamp = msg.timestamp || msg.data || msg.createdAt || new Date();
+          
+          const isMine = msgUserId === userId || sentByMeRef.current.includes(texto);
+          
           return {
-            id: `${msg.userId}-${msg.timestamp}-${index}`,
-            text: msg.texto,
-            sender: isMine ? "Você" : msg.usuario || "Usuário",
-            timestamp: new Date(msg.timestamp),
-            userId: msg.userId,
+            id: `${msgUserId}-${msgTimestamp}-${index}`,
+            text: texto,
+            sender: isMine ? "Você" : msgUsuario,
+            timestamp: new Date(msgTimestamp),
+            userId: msgUserId,
           };
         }
       );
 
       setMessages(formatted);
-    } catch (error) {
-      console.log("Erro ao buscar mensagens:", error);
+      console.log(`✅ [CHAT GRUPO] ${formatted.length} mensagens carregadas`);
+    } catch (error: any) {
+      console.error("❌ [CHAT GRUPO] Erro ao buscar mensagens:", error);
+      console.error("❌ [CHAT GRUPO] Detalhes:", error?.response?.data || error?.message || error);
     }
   };
 
@@ -110,6 +164,19 @@ export default function ChatGrupo() {
 
   const sendMessage = async () => {
     if (!inputText.trim()) return;
+
+    // Valida se tem userId e usuario antes de enviar
+    if (!userId || userId.trim() === '') {
+      console.error("❌ [CHAT GRUPO] userId não encontrado. Não é possível enviar mensagem.");
+      const errorMessage: Message = {
+        id: `${Date.now()}-${Math.random()}`,
+        text: "Erro: Usuário não identificado. Faça login novamente.",
+        sender: "Sistema",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+      return;
+    }
 
     const texto = inputText;
     setInputText("");
@@ -129,15 +196,20 @@ export default function ChatGrupo() {
     setMessages((prev) => [...prev, newMessage]);
 
     try {
-      // ✅ Envio correto do objeto para o backend
+      // ✅ Envio correto do objeto para o backend conforme documentação
+      console.log(`🔄 [CHAT GRUPO] Enviando mensagem:`, { texto, usuario, userId });
       await sendGroupMessage({ texto, usuario, userId });
       await loadMessages(); // Atualiza do backend
-    } catch (error) {
-      console.log("Erro ao enviar mensagem:", error);
+    } catch (error: any) {
+      console.error("❌ [CHAT GRUPO] Erro ao enviar mensagem:", error);
+      console.error("❌ [CHAT GRUPO] Detalhes:", error?.response?.data || error?.message || error);
+
+      // Remove a mensagem otimista se houver erro
+      setMessages((prev) => prev.filter(msg => msg.id !== newMessage.id));
 
       const errorMessage: Message = {
         id: `${Date.now()}-${Math.random()}`,
-        text: "Erro ao conectar ao chat em grupo.",
+        text: error?.response?.data?.message || error?.message || "Erro ao conectar ao chat em grupo. Verifique sua conexão.",
         sender: "Sistema",
         timestamp: new Date(),
       };

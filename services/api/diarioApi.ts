@@ -1,19 +1,28 @@
-const BASE_URL = "https://diario-api-fzvz.onrender.com";
+const BASE_URL = "https://api-tea-comunicacao.onrender.com";
 
 /**
- * Tipos para Diário
+ * Tipos para Diário - Conforme documentação da API
+ * Documentação: https://api-tea-comunicacao.onrender.com
  */
 export type DiarioPayload = {
-  data: string; // formato: YYYY-MM-DD
-  humor: string; // muito_feliz | feliz | neutro | triste | muito_triste | ansioso | irritado
-  anotacao: string;
+  anotacao: string; // Texto da anotação do diário
+  emocao: string; // Emoji representando a emoção do dia (ex: "😊", "💪", "😔")
+  dia: number; // Dia do mês (1-31)
+  mes: number; // Mês (1-12)
+  ano: number; // Ano (ex: 2025)
+  hora: string; // Hora da anotação (formato livre, ex: "14:30")
+  usuarioId: string; // ID do usuário que criou a anotação
 };
 
 export type Diario = {
-  id?: string; // O backend usa String para ID
-  data: string;
-  humor: string;
+  id?: string; // ID gerado automaticamente pelo Firebase
   anotacao: string;
+  emocao: string;
+  dia: number;
+  mes: number;
+  ano: number;
+  hora: string;
+  usuarioId: string;
 };
 
 async function handleResponse(res: Response, url: string, method: string) {
@@ -34,15 +43,23 @@ async function handleResponse(res: Response, url: string, method: string) {
   });
 
   if (!res.ok) {
-    const bodySnippet =
-      typeof parsed === "object" ? JSON.stringify(parsed) : raw;
+    // Tenta extrair mensagem de erro da resposta da API
+    let errorMessage = `${status} ${statusText}`;
+    
+    if (parsed && typeof parsed === 'object') {
+      // A API pode retornar { error: "mensagem" } ou { message: "mensagem" }
+      if (parsed.error) {
+        errorMessage = parsed.error;
+      } else if (parsed.message) {
+        errorMessage = parsed.message;
+      } else {
+        errorMessage = JSON.stringify(parsed);
+      }
+    } else if (raw && typeof raw === 'string') {
+      errorMessage = raw;
+    }
 
-    const message =
-      bodySnippet && bodySnippet.length
-        ? `${status} ${statusText}: ${bodySnippet}`
-        : `${status} ${statusText}`;
-
-    throw new Error(message);
+    throw new Error(errorMessage);
   }
 
   return parsed;
@@ -100,10 +117,12 @@ async function fetchWithLogging(
 
 /**
  * ✅ Criar nova anotação do diário
- * Endpoint: POST /diario/salvar
+ * Endpoint: POST /api/diario/salvar
+ * Documentação: Cria uma nova entrada no diário
+ * Resposta: String com o ID do documento criado (ex: "Salvo com ID: abc123xyz789")
  */
 export async function createDiario(payload: DiarioPayload) {
-  const url = `${BASE_URL}/diario/salvar`;
+  const url = `${BASE_URL}/api/diario/salvar`;
   
   try {
     console.log(`🔄 [DIARIO] Criando anotação em: ${url}`);
@@ -111,7 +130,7 @@ export async function createDiario(payload: DiarioPayload) {
     
     const result = await fetchWithLogging(url, "POST", payload, false);
     
-    console.log(`✅ [DIARIO] Anotação criada com sucesso!`);
+    console.log(`✅ [DIARIO] Anotação criada com sucesso! Resposta:`, result);
     return result;
   } catch (error: any) {
     console.error(`❌ [DIARIO] Erro ao criar anotação:`, error);
@@ -121,15 +140,17 @@ export async function createDiario(payload: DiarioPayload) {
 
 /**
  * ✅ Listar todas as anotações do diário
- * Endpoint: GET /diario/listar
+ * Endpoint: GET /api/diario/listar
+ * Documentação: Retorna todas as entradas do diário
+ * Resposta: Array de objetos Diario
  */
 export async function getAllDiarios() {
-  const url = `${BASE_URL}/diario/listar`;
+  const url = `${BASE_URL}/api/diario/listar`;
   
   try {
     console.log(`🔄 [DIARIO] Buscando todas as anotações em: ${url}`);
     const result = await fetchWithLogging(url, "GET", undefined, false);
-    console.log(`✅ [DIARIO] Anotações buscadas com sucesso!`);
+    console.log(`✅ [DIARIO] Anotações buscadas com sucesso! Total: ${Array.isArray(result) ? result.length : 'N/A'}`);
     return result;
   } catch (error: any) {
     console.error(`❌ [DIARIO] Erro ao buscar anotações:`, error);
@@ -197,10 +218,14 @@ export async function getDiarioByDate(data: string) {
 
 /**
  * ✅ Atualizar anotação do diário
- * Endpoint: PUT /diario/editar/{id}
+ * Endpoint: PUT /api/diario/editar/{id}
+ * Documentação: Atualiza uma entrada existente do diário
+ * Path Parameter: id - ID do documento no Firebase
+ * Resposta: String com timestamp da atualização (ex: "Atualizado em: 2025-12-09T16:00:00.123456Z")
+ * Observação: Todos os campos devem ser enviados, pois o método set() do Firebase substitui o documento completo
  */
 export async function updateDiario(id: string, payload: DiarioPayload) {
-  const url = `${BASE_URL}/diario/editar/${id}`;
+  const url = `${BASE_URL}/api/diario/editar/${id}`;
   
   try {
     console.log(`🔄 [DIARIO] Atualizando anotação ${id} em: ${url}`);
@@ -208,7 +233,7 @@ export async function updateDiario(id: string, payload: DiarioPayload) {
     
     const result = await fetchWithLogging(url, "PUT", payload, false);
     
-    console.log(`✅ [DIARIO] Anotação ${id} atualizada com sucesso!`);
+    console.log(`✅ [DIARIO] Anotação ${id} atualizada com sucesso! Resposta:`, result);
     return result;
   } catch (error: any) {
     console.error(`❌ [DIARIO] Erro ao atualizar anotação ${id}:`, error);
@@ -218,17 +243,20 @@ export async function updateDiario(id: string, payload: DiarioPayload) {
 
 /**
  * ✅ Deletar anotação do diário
- * Endpoint: DELETE /diario/deletar/{id}
+ * Endpoint: DELETE /api/diario/deletar/{id}
+ * Documentação: Remove uma entrada do diário
+ * Path Parameter: id - ID do documento no Firebase
+ * Resposta: String com timestamp da exclusão (ex: "Deletado em: 2025-12-09T16:00:00.123456Z")
  */
 export async function deleteDiario(id: string) {
-  const url = `${BASE_URL}/diario/deletar/${id}`;
+  const url = `${BASE_URL}/api/diario/deletar/${id}`;
   
   try {
     console.log(`🔄 [DIARIO] Deletando anotação ${id} em: ${url}`);
     
     const result = await fetchWithLogging(url, "DELETE", undefined, false);
     
-    console.log(`✅ [DIARIO] Anotação ${id} deletada com sucesso!`);
+    console.log(`✅ [DIARIO] Anotação ${id} deletada com sucesso! Resposta:`, result);
     return result;
   } catch (error: any) {
     console.error(`❌ [DIARIO] Erro ao deletar anotação ${id}:`, error);

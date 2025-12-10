@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from "expo-linear-gradient";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
@@ -15,8 +16,13 @@ import {
 import { Calendar } from "react-native-calendars";
 import { useCronograma } from "../contexts/CronogramaContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { eventosApi } from "../services/api/eventosApi";
 import "../utils/calendarLocale";
+
+// Base URL - Verificar qual está correta:
+// Documentação mostra: https://api-diario-t26y.onrender.com
+// Mas outros serviços usam: https://api-tea-comunicacao.onrender.com
+// Usando api-tea-comunicacao conforme solicitado
+const API_URL = "https://api-tea-comunicacao.onrender.com";
 
 export default function AdicionarEvento() {
   const [selectedDate, setSelectedDate] = useState("");
@@ -25,8 +31,8 @@ export default function AdicionarEvento() {
   const [time, setTime] = useState("08:00");
   const [showNotification, setShowNotification] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { addEvent } = useCronograma();
   const { theme } = useTheme();
+  const { addEvent } = useCronograma();
   const isDarkMode = theme === "dark";
 
   const today = new Date().toISOString().split("T")[0];
@@ -39,28 +45,21 @@ export default function AdicionarEvento() {
     },
   };
 
-  // Desabilitar datas passadas
   const minDate = today;
 
   const handleDateSelect = (day: any) => {
     setSelectedDate(day.dateString);
   };
 
-  // Função para formatar horário (apenas números no formato HH:mm)
   const handleTimeChange = (text: string) => {
-    // Remove tudo que não é número
     const numbersOnly = text.replace(/[^0-9]/g, '');
-    
-    // Limita a 4 dígitos (HHmm)
     const limited = numbersOnly.slice(0, 4);
     
-    // Formata como HH:mm
     let formatted = limited;
     if (limited.length > 2) {
       formatted = limited.slice(0, 2) + ':' + limited.slice(2);
     }
     
-    // Valida horas (00-23) e minutos (00-59)
     if (formatted.length >= 2) {
       const hours = parseInt(formatted.split(':')[0] || '0', 10);
       if (hours > 23) {
@@ -79,113 +78,283 @@ export default function AdicionarEvento() {
     setTime(formatted);
   };
 
-  const handleAddEvent = async () => {
-    console.log("🟡 handleAddEvent chamado");
-    
+  const handleAddEvent = () => {
     if (!selectedDate || !title.trim()) {
       Alert.alert("Atenção", "Por favor, selecione uma data e preencha o título");
       return;
     }
 
-    // Verificar se a data selecionada não é no passado
     if (selectedDate < today) {
       Alert.alert("Data Inválida", "Não é possível adicionar eventos para datas passadas. Por favor, selecione uma data atual ou futura.");
       return;
     }
 
     setIsLoading(true);
-    
-    try {
-      console.log("🟡 Iniciando salvamento do evento na API...");
-      console.log("📤 Dados do evento:", {
-        titulo: title.trim(),
-        data: selectedDate,
-        horario: time,
-        nota: note.trim() || undefined,
-        temNotificacao: showNotification,
-      });
 
-      // ✅ Salvar evento na API
-      const result = await eventosApi.create({
-        titulo: title.trim(),
-        data: selectedDate,
-        horario: time,
-        nota: note.trim() || undefined,
-        temNotificacao: showNotification,
-      });
-
-      console.log("✅ Evento salvo na API com sucesso:", result);
-
-      // Criar novo evento local também (para manter compatibilidade)
-      addEvent({
-        title: title.trim(),
-        note: note.trim(),
-        date: selectedDate,
-        time: time,
-        hasAlarm: showNotification,
-      });
-      
-      // Agenda notificação se solicitado
-      if (showNotification) {
-        try {
-          const [hours, minutes] = time.split(":").map(Number);
-          const triggerDate = new Date(selectedDate + "T00:00:00");
-          triggerDate.setHours(hours);
-          triggerDate.setMinutes(minutes);
-          triggerDate.setSeconds(0);
-          if (triggerDate.getTime() > Date.now()) {
-            await Notifications.scheduleNotificationAsync({
-              content: {
-                title: "Lembrete do evento",
-                body: `${title} - ${note}`.trim(),
-              },
-              trigger: null
-            });
-            console.log("Notificação agendada com sucesso");
+    // Obter usuarioId do AsyncStorage
+    AsyncStorage.getItem('userId').then((storedUserId) => {
+      if (!storedUserId || storedUserId === 'null' || storedUserId.trim() === '') {
+        // Tenta obter do userData
+        return AsyncStorage.getItem('userData').then((storedUserData) => {
+          if (storedUserData) {
+            try {
+              const parsedData = JSON.parse(storedUserData);
+              return parsedData.id ? String(parsedData.id).trim() : (parsedData.email || '');
+            } catch {
+              return '';
+            }
           }
-        } catch (e) {
-          console.warn("Falha ao agendar notificação:", e);
-        }
+          return '';
+        });
+      }
+      return storedUserId.trim();
+    }).then((usuarioId) => {
+      if (!usuarioId || usuarioId.trim() === '') {
+        setIsLoading(false);
+        Alert.alert(
+          "Erro de Autenticação",
+          "Não foi possível identificar o usuário. Por favor, faça login novamente.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
+      // Preparar payload conforme formato esperado pela API
+      // A API espera: titulo, descricao (opcional), datahora (formato ISO 8601), usuarioId
+      // IMPORTANTE: A API usa "datahora" (campo único) em vez de "data" e "hora" separados
+      
+      // Validar e preparar campos obrigatórios
+      const tituloValue = title.trim();
+      const usuarioIdValue = String(usuarioId).trim();
+      
+      if (!tituloValue || !selectedDate || !usuarioIdValue) {
+        setIsLoading(false);
+        Alert.alert("Erro", "Por favor, preencha todos os campos obrigatórios.", [{ text: "OK" }]);
+        return;
       }
       
-      setIsLoading(false);
+      // Formatar datahora no formato ISO 8601: YYYY-MM-DDTHH:mm:ss
+      // selectedDate está no formato YYYY-MM-DD
+      // time está no formato HH:mm
+      const [hours, minutes] = time.split(':').map(Number);
+      const datahoraValue = `${selectedDate}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
       
-      Alert.alert(
-        "Sucesso!",
-        "Evento adicionado com sucesso.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.back()
-          }
-        ]
-      );
-    } catch (error: any) {
-      setIsLoading(false);
-      console.error("🔴 Erro ao salvar evento na API:", error);
-      console.error("🔴 Detalhes do erro:", {
-        message: error?.message,
-        stack: error?.stack,
-        name: error?.name,
+      const payload: any = {
+        titulo: tituloValue,
+        datahora: datahoraValue, // Formato: YYYY-MM-DDTHH:mm:ss (ISO 8601)
+        usuarioId: usuarioIdValue,
+      };
+
+      // Adicionar descricao apenas se tiver valor válido
+      const descricaoValue = note ? note.trim() : '';
+      if (descricaoValue && descricaoValue !== '') {
+        payload.descricao = descricaoValue;
+      }
+
+      // Garantir que não há campos undefined ou null
+      const cleanPayload: any = {};
+      Object.keys(payload).forEach(key => {
+        const value = payload[key];
+        if (value !== undefined && value !== null && value !== '') {
+          cleanPayload[key] = value;
+        }
       });
       
-      const errorMessage = error?.message || "Não foi possível salvar o evento. Tente novamente.";
+      // Usar o payload limpo
+      const finalPayload = cleanPayload;
+
+      // Validação final do payload
+      if (!finalPayload.titulo || !finalPayload.datahora || !finalPayload.usuarioId) {
+        setIsLoading(false);
+        Alert.alert("Erro", "Campos obrigatórios faltando. Verifique título, data/hora e usuário.", [{ text: "OK" }]);
+        return;
+      }
+
+      // Logs para debug
+      const fullUrl = `${API_URL}/api/eventos/add`;
+      console.log("🔍 [EVENTOS] ========== DEBUG ==========");
+      console.log("🔍 [EVENTOS] URL completa:", fullUrl);
+      console.log("🔍 [EVENTOS] Método: POST");
+      console.log("🔍 [EVENTOS] Payload final (limpo):", JSON.stringify(finalPayload, null, 2));
+      console.log("🔍 [EVENTOS] Tipos dos campos:", {
+        titulo: typeof finalPayload.titulo,
+        datahora: typeof finalPayload.datahora,
+        usuarioId: typeof finalPayload.usuarioId,
+        descricao: finalPayload.descricao ? typeof finalPayload.descricao : 'não enviado',
+      });
+      console.log("🔍 [EVENTOS] Valores individuais:", {
+        titulo: finalPayload.titulo,
+        datahora: finalPayload.datahora,
+        usuarioId: finalPayload.usuarioId,
+        descricao: finalPayload.descricao || '(não enviado)',
+      });
+      console.log("🔍 [EVENTOS] ==========================");
+
+      // Fazer requisição POST conforme documentação
+      // Garantir que o body seja uma string JSON válida sem campos undefined
+      const bodyString = JSON.stringify(finalPayload);
       
+      console.log("🔍 [EVENTOS] Body string que será enviado:", bodyString);
+      console.log("🔍 [EVENTOS] Verificando URL:", {
+        API_URL,
+        endpoint: '/api/eventos/add',
+        fullUrl,
+        'URL está correta?': fullUrl === 'https://api-tea-comunicacao.onrender.com/api/eventos/add'
+      });
+      
+      // Verificar se o JSON é válido
+      try {
+        JSON.parse(bodyString);
+        console.log("✅ [EVENTOS] JSON válido");
+      } catch (jsonError) {
+        console.error("❌ [EVENTOS] JSON inválido:", jsonError);
+        setIsLoading(false);
+        Alert.alert("Erro", "Erro ao preparar os dados do evento.", [{ text: "OK" }]);
+        return;
+      }
+      
+      fetch(fullUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: bodyString,
+      })
+        .then((response) => {
+          console.log("🔍 [EVENTOS] Resposta recebida:", {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok,
+            headers: Object.fromEntries(response.headers.entries()),
+          });
+          
+          return response.text().then((text) => {
+            console.log("🔍 [EVENTOS] Resposta raw:", text);
+            
+            let parsed;
+            try {
+              parsed = text ? JSON.parse(text) : null;
+              console.log("🔍 [EVENTOS] Resposta parsed:", parsed);
+            } catch (parseError) {
+              console.warn("⚠️ [EVENTOS] Erro ao fazer parse da resposta:", parseError);
+              parsed = text;
+            }
+            return { ok: response.ok, status: response.status, data: parsed, text };
+          });
+        })
+        .then((result) => {
+          if (result.ok) {
+            console.log("✅ Evento salvo com sucesso:", result.data);
+            
+            // Agenda notificação se solicitado
+            if (showNotification) {
+              const [hours, minutes] = time.split(":").map(Number);
+              const triggerDate = new Date(selectedDate + "T00:00:00");
+              triggerDate.setHours(hours);
+              triggerDate.setMinutes(minutes);
+              triggerDate.setSeconds(0);
+              if (triggerDate.getTime() > Date.now()) {
+                Notifications.scheduleNotificationAsync({
+                  content: {
+                    title: "Lembrete do evento",
+                    body: `${title} - ${note}`.trim(),
+                  },
+                  trigger: null
+                }).catch((e) => {
+                  console.warn("Falha ao agendar notificação:", e);
+                });
+              }
+            }
+            
+            setIsLoading(false);
+            
+            // Adicionar evento ao contexto local para aparecer no Cronograma
+            // Converter formato da API para formato do contexto
+            const eventoLocal = {
+              title: title.trim(),
+              note: note.trim() || '',
+              time: time.trim(),
+              date: selectedDate, // Formato: YYYY-MM-DD
+              hasAlarm: showNotification,
+              alarmTime: showNotification ? time.trim() : undefined,
+            };
+            
+            addEvent(eventoLocal);
+            console.log("✅ [EVENTOS] Evento adicionado ao contexto local do Cronograma");
+            
+            Alert.alert(
+              "Sucesso!",
+              "Evento adicionado com sucesso.",
+              [
+                {
+                  text: "OK",
+                  onPress: () => router.back()
+                }
+              ]
+            );
+          } else {
+            // Tratar erro da API
+            console.error("❌ [EVENTOS] Erro na resposta da API:", {
+              status: result.status,
+              data: result.data,
+              text: result.text,
+            });
+            
+            let errorMessage = "Não foi possível salvar o evento. Tente novamente.";
+            
+            if (result.data) {
+              if (typeof result.data === 'object') {
+                if (result.data.error) {
+                  errorMessage = typeof result.data.error === 'string' ? result.data.error : JSON.stringify(result.data.error);
+                } else if (result.data.message) {
+                  errorMessage = typeof result.data.message === 'string' ? result.data.message : JSON.stringify(result.data.message);
+                } else if (result.data.errors) {
+                  // Se for array de erros
+                  if (Array.isArray(result.data.errors)) {
+                    errorMessage = result.data.errors.map((e: any) => e.message || e).join(', ');
+                  } else {
+                    errorMessage = JSON.stringify(result.data.errors);
+                  }
+                } else {
+                  errorMessage = JSON.stringify(result.data);
+                }
+              } else if (typeof result.data === 'string') {
+                errorMessage = result.data;
+              }
+            } else if (result.text) {
+              errorMessage = result.text;
+            }
+
+            // Mensagem específica para Bad Request
+            if (result.status === 400) {
+              errorMessage = `Erro nos dados enviados (400): ${errorMessage}\n\nVerifique se:\n- O título está preenchido\n- A data está no formato correto\n- O usuário está logado`;
+            }
+
+            setIsLoading(false);
+            Alert.alert("Erro", errorMessage, [{ text: "OK" }]);
+          }
+        })
+        .catch((error) => {
+          console.error("Erro ao salvar evento:", error);
+          setIsLoading(false);
+          
+          let errorMessage = "Não foi possível salvar o evento. Verifique sua conexão e tente novamente.";
+          if (error.message) {
+            errorMessage = error.message;
+          }
+          
+          Alert.alert("Erro", errorMessage, [{ text: "OK" }]);
+        });
+    }).catch((error) => {
+      console.error("Erro ao obter usuarioId:", error);
+      setIsLoading(false);
       Alert.alert(
         "Erro",
-        errorMessage,
+        "Não foi possível identificar o usuário. Por favor, faça login novamente.",
         [{ text: "OK" }]
       );
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const months = [
-      "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-      "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-    ];
-    return `${months[date.getMonth()]} ${date.getFullYear()}`;
+    });
   };
 
   // 🎨 Define cores com base no tema

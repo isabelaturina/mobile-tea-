@@ -10,7 +10,6 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -48,7 +47,6 @@ export default function ClinicasProximas() {
         cardLight: "#F1F8FF",
       };
 
-  const [busca, setBusca] = useState("");
   const [clinicas, setClinicas] = useState<Clinica[]>([]);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
@@ -175,25 +173,26 @@ export default function ClinicasProximas() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Image
-          source={require("../assets/images/seta.png")}
-          style={styles.backImage}
-          resizeMode="contain"
+        <Ionicons 
+          name="arrow-back" 
+          size={24} 
+          color={colors.textPrimary} 
         />
       </TouchableOpacity>
 
       <Text style={[styles.titulo, { color: colors.textPrimary }]}>Clínicas Próximas</Text>
 
       <View style={styles.searchContainer}>
-        <TextInput
-          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.textPrimary }]}
-          placeholder="Busque por clínicas próximas a você"
-          placeholderTextColor={colors.placeholder}
-          value={busca}
-          onChangeText={setBusca}
-        />
-        <TouchableOpacity style={[styles.searchButton, { backgroundColor: colors.accent }]} onPress={buscarClinicas}>
-          <Text style={styles.searchButtonText}>Clique Aqui</Text>
+        <Text style={[styles.instructionText, { color: colors.textSecondary }]}>
+          Clique no botão abaixo para buscar clínicas próximas a você
+        </Text>
+        <TouchableOpacity 
+          style={[styles.searchButton, { backgroundColor: colors.accent }]} 
+          onPress={buscarClinicas}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="search" size={20} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.searchButtonText}>Buscar Clínicas</Text>
         </TouchableOpacity>
       </View>
 
@@ -255,11 +254,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
   },
-  backImage: {
-    width: 24,
-    height: 24,
-    resizeMode: "contain",
-  },
   titulo: {
     fontSize: 20,
     fontWeight: "bold",
@@ -267,29 +261,35 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   searchContainer: {
-    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 70,
+    marginBottom: 30,
+    paddingHorizontal: 20,
   },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginRight: 8,
-    marginBottom: -50,
+  instructionText: {
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 16,
+    lineHeight: 20,
+    paddingHorizontal: 20,
   },
   searchButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    marginBottom: -50,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 200,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
   searchButtonText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 13,
+    fontSize: 16,
   },
   card: {
     borderRadius: 16,

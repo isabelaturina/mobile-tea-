@@ -1,16 +1,41 @@
-import { API_CONFIG } from '../config/apiConfig';
+import { API_CONFIG } from "../config/apiConfig";
 
 const BASE_URL = API_CONFIG.BASE_URL;
 
 /**
  * ✅ TIPO EXATO COMO O BACKEND ESPERA
+ * A API aceita: "Básico", "Intermediário", "Avançado", "Profissional", "Expert"
+ * Mapeamos: leve -> Intermediário, moderado -> Avançado, severo -> Profissional
  */
 export type RegisterPayload = {
   nome: string;
   email: string;
   senha: string;
-  nivelSuporte: "leve" | "moderado" | "severo";
+  nivelSuporte: "Básico" | "Intermediário" | "Avançado" | "Profissional" | "Expert";
 };
+
+export type UpdateProfilePayload = {
+  nome: string;
+  email: string;
+  nivelSuporte: "Básico" | "Intermediário" | "Avançado" | "Profissional" | "Expert";
+};
+
+/**
+ * Mapeia os níveis de suporte do app para os valores da API
+ */
+export function mapSupportLevelToAPI(
+  level: "leve" | "moderado" | "severo"
+): "Básico" | "Intermediário" | "Avançado" | "Profissional" | "Expert" {
+  const mapping: Record<
+    "leve" | "moderado" | "severo",
+    "Básico" | "Intermediário" | "Avançado" | "Profissional" | "Expert"
+  > = {
+    leve: "Intermediário",
+    moderado: "Avançado",
+    severo: "Profissional",
+  };
+  return mapping[level];
+}
 
 async function handleResponse(res: Response, url: string, method: string) {
   const status = res.status;
@@ -30,15 +55,23 @@ async function handleResponse(res: Response, url: string, method: string) {
   });
 
   if (!res.ok) {
-    const bodySnippet =
-      typeof parsed === "object" ? JSON.stringify(parsed) : raw;
+    // Tenta extrair mensagem de erro da resposta da API
+    let errorMessage = `${status} ${statusText}`;
 
-    const message =
-      bodySnippet && bodySnippet.length
-        ? `${status} ${statusText}: ${bodySnippet}`
-        : `${status} ${statusText}`;
+    if (parsed && typeof parsed === "object") {
+      // A API pode retornar { error: "mensagem" } ou { message: "mensagem" }
+      if (parsed.error) {
+        errorMessage = parsed.error;
+      } else if (parsed.message) {
+        errorMessage = parsed.message;
+      } else {
+        errorMessage = JSON.stringify(parsed);
+      }
+    } else if (raw && typeof raw === "string") {
+      errorMessage = raw;
+    }
 
-    throw new Error(message);
+    throw new Error(errorMessage);
   }
 
   return parsed;
@@ -47,23 +80,24 @@ async function handleResponse(res: Response, url: string, method: string) {
 // Função auxiliar para obter token do AsyncStorage
 async function getToken(): Promise<string | null> {
   try {
-    const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-    return await AsyncStorage.getItem('userToken');
+    const AsyncStorage =
+      require("@react-native-async-storage/async-storage").default;
+    return await AsyncStorage.getItem("userToken");
   } catch {
     return null;
   }
 }
 
 async function fetchWithLogging(
-  url: string, 
-  method: string, 
-  body?: any, 
+  url: string,
+  method: string,
+  body?: any,
   requiresAuth: boolean = false
 ) {
   try {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      "Accept": "application/json",
+      Accept: "application/json",
     };
 
     // Se precisar de autenticação, adiciona o token JWT
@@ -73,9 +107,12 @@ async function fetchWithLogging(
         headers["Authorization"] = `Bearer ${token}`;
       }
     }
-    
-    console.log(`[auth] 🔄 ${method} ${url}`, { requiresAuth, hasToken: requiresAuth ? !!headers["Authorization"] : false });
-    
+
+    console.log(`[auth] 🔄 ${method} ${url}`, {
+      requiresAuth,
+      hasToken: requiresAuth ? !!headers["Authorization"] : false,
+    });
+
     const res = await fetch(url, {
       method,
       headers,
@@ -88,59 +125,76 @@ async function fetchWithLogging(
       `[auth] ❌ network/error for ${method} ${url}:`,
       err?.message || err
     );
-    
+
     // Melhorar mensagens de erro para desenvolvimento local
     if (API_CONFIG.USE_LOCAL) {
-      if (err?.message?.includes('Network request failed') || 
-          err?.message?.includes('Failed to fetch') ||
-          err?.message?.includes('ECONNREFUSED')) {
+      if (
+        err?.message?.includes("Network request failed") ||
+        err?.message?.includes("Failed to fetch") ||
+        err?.message?.includes("ECONNREFUSED")
+      ) {
         const enhancedError = new Error(
           `Não foi possível conectar ao backend local (${BASE_URL}). ` +
-          `Verifique se o servidor está rodando na porta ${API_CONFIG.PORT}.`
+            `Verifique se o servidor está rodando na porta ${API_CONFIG.PORT}.`
         );
         throw enhancedError;
       }
     }
-    
+
     throw err;
   }
 }
 
 /**
  * ✅ CADASTRO - Endpoint: POST /api/auth/register
- * IMPORTANTE: Cadastro NÃO deve exigir token de autenticação
  */
 export async function registerUser(payload: RegisterPayload) {
   const url = `${BASE_URL}/api/auth/register`;
-  
+
   try {
     console.log(`🔄 [CADASTRO] URL: ${url}`);
     console.log(`🔄 [CADASTRO] Payload:`, JSON.stringify(payload, null, 2));
-    
+
     const result = await fetchWithLogging(url, "POST", payload, false);
-    
-    console.log(`✅ [CADASTRO] Sucesso! Resposta:`, JSON.stringify(result, null, 2));
+
+    console.log(
+      `✅ [CADASTRO] Sucesso! Resposta:`,
+      JSON.stringify(result, null, 2)
+    );
     return result;
   } catch (error: any) {
     console.error(`❌ [CADASTRO] Erro completo:`, error);
     console.error(`❌ [CADASTRO] Mensagem:`, error?.message);
     console.error(`❌ [CADASTRO] Stack:`, error?.stack);
-    
+
     // Melhorar mensagem de erro para o usuário
     let errorMessage = "Erro ao criar conta. Tente novamente.";
-    
+
     if (error?.message?.includes("Não foi possível conectar ao backend local")) {
       errorMessage = error.message;
     } else if (error?.message?.includes("500")) {
-      errorMessage = "Erro no servidor. Verifique se todos os campos estão preenchidos corretamente.";
+      errorMessage =
+        "Erro no servidor. Verifique se todos os campos estão preenchidos corretamente.";
     } else if (error?.message?.includes("400")) {
-      errorMessage = "Dados inválidos. Verifique se o email e senha estão corretos.";
-    } else if (error?.message?.includes("409") || error?.message?.includes("Conflict")) {
+      if (
+        error?.message?.includes("Email já está em uso") ||
+        error?.message?.includes("email") ||
+        error?.message?.includes("já")
+      ) {
+        errorMessage = "Este email já está cadastrado. Tente fazer login.";
+      } else {
+        errorMessage =
+          "Dados inválidos. Verifique se o email e senha estão corretos.";
+      }
+    } else if (
+      error?.message?.includes("409") ||
+      error?.message?.includes("Conflict")
+    ) {
       errorMessage = "Este email já está cadastrado. Tente fazer login.";
     } else if (error?.message) {
       errorMessage = error.message;
     }
-    
+
     const enhancedError = new Error(errorMessage);
     (enhancedError as any).originalError = error;
     throw enhancedError;
@@ -149,29 +203,32 @@ export async function registerUser(payload: RegisterPayload) {
 
 /**
  * ✅ LOGIN - Endpoint: POST /api/auth/login
- * IMPORTANTE: Login NÃO deve exigir token de autenticação
  */
 export async function loginUser(email: string, password: string) {
   const url = `${BASE_URL}/api/auth/login`;
-  
+
   try {
     console.log(`🔄 Tentando login em: ${url}`);
-    // Tenta primeiro com { email, password }
-    const result = await fetchWithLogging(url, "POST", { email, password }, false);
+    const result = await fetchWithLogging(
+      url,
+      "POST",
+      { email, senha: password },
+      false
+    );
     console.log(`✅ Login bem-sucedido em: ${url}`);
-    
-    // Salva o token no AsyncStorage se existir
-    if (result?.token || result?.accessToken || result?.access_token) {
-      const token = result.token || result.accessToken || result.access_token;
+    console.log(`📦 Resposta do login:`, JSON.stringify(result, null, 2));
+
+    if (result?.user) {
       try {
-        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-        await AsyncStorage.setItem('userToken', token);
-        console.log(`✅ Token salvo no AsyncStorage`);
+        const AsyncStorage =
+          require("@react-native-async-storage/async-storage").default;
+        await AsyncStorage.setItem("userData", JSON.stringify(result.user));
+        console.log(`✅ Dados do usuário salvos no AsyncStorage`);
       } catch (storageError) {
-        console.warn(`⚠️ Erro ao salvar token:`, storageError);
+        console.warn(`⚠️ Erro ao salvar dados:`, storageError);
       }
     }
-    
+
     return result;
   } catch (error: any) {
     console.error(`❌ Erro no login:`, error);
@@ -180,15 +237,14 @@ export async function loginUser(email: string, password: string) {
 }
 
 /**
- * ✅ BUSCAR DADOS DO USUÁRIO AUTENTICADO - Endpoint: GET /api/auth/me
- * Requer token JWT no header Authorization
+ * ✅ BUSCAR USUÁRIO POR EMAIL - Endpoint: GET /api/user/email/{email}
  */
-export async function getCurrentUser() {
-  const url = `${BASE_URL}/api/auth/me`;
-  
+export async function getUserByEmail(email: string) {
+  const url = `${BASE_URL}/api/user/email/${encodeURIComponent(email)}`;
+
   try {
-    console.log(`🔄 Buscando dados do usuário em: ${url}`);
-    const result = await fetchWithLogging(url, "GET", undefined, true);
+    console.log(`🔄 Buscando usuário por email em: ${url}`);
+    const result = await fetchWithLogging(url, "GET", undefined, false);
     console.log(`✅ Dados do usuário obtidos com sucesso`);
     return result;
   } catch (error: any) {
@@ -198,33 +254,70 @@ export async function getCurrentUser() {
 }
 
 /**
- * ✅ VALIDAR TOKEN JWT - Endpoint: GET /api/auth/validate-jwt?token={token}
+ * ✅ ATUALIZAR SENHA DE USUÁRIO - Endpoint: PUT /api/user/{id}/password
  */
-export async function validateJWT(token: string) {
-  const url = `${BASE_URL}/api/auth/validate-jwt?token=${encodeURIComponent(token)}`;
-  
+export async function updateUserPassword(userId: number, newPassword: string) {
+  const url = `${BASE_URL}/api/user/${userId}/password`;
+
   try {
-    console.log(`🔄 Validando token JWT em: ${url}`);
-    const result = await fetchWithLogging(url, "GET", undefined, false);
-    console.log(`✅ Token validado com sucesso`);
+    console.log(`🔄 Atualizando senha do usuário em: ${url}`);
+    const result = await fetchWithLogging(
+      url,
+      "PUT",
+      { newPassword },
+      false
+    );
+    console.log(`✅ Senha atualizada com sucesso`);
     return result;
   } catch (error: any) {
-    console.error(`❌ Erro ao validar token:`, error);
+    console.error(`❌ Erro ao atualizar senha:`, error);
     throw error;
   }
 }
 
 /**
- * ✅ VALIDAR TOKEN - Endpoint: GET /api/auth/validate-token
- * Requer token JWT no header Authorization
+ * ✅ ATUALIZAR PERFIL - Endpoint: PUT /api/user/{id}
  */
-export async function validateToken() {
-  const url = `${BASE_URL}/api/auth/validate-token`;
-  
+export async function updateUserProfile(
+  userId: number,
+  payload: UpdateProfilePayload
+) {
+  const url = `${BASE_URL}/api/user/${userId}`;
+
+  try {
+    console.log(`🔄 Atualizando perfil em: ${url}`);
+    console.log(`🔄 Payload perfil:`, JSON.stringify(payload, null, 2));
+
+    const result = await fetchWithLogging(url, "PUT", payload, false);
+
+    console.log(
+      `✅ Perfil atualizado com sucesso:`,
+      JSON.stringify(result, null, 2)
+    );
+    return result;
+  } catch (error: any) {
+    console.error(`❌ Erro ao atualizar perfil:`, error);
+    throw error;
+  }
+}
+
+/**
+ * ✅ VALIDAR TOKEN - Endpoint: GET /api/auth/validate-token?token={token}
+ */
+export async function validateToken(token: string) {
+  const url = `${BASE_URL}/api/auth/validate-token?token=${encodeURIComponent(
+    token
+  )}`;
+
   try {
     console.log(`🔄 Validando token em: ${url}`);
-    const result = await fetchWithLogging(url, "GET", undefined, true);
-    console.log(`✅ Token validado com sucesso`);
+    const result = await fetchWithLogging(url, "GET", undefined, false);
+    console.log(`✅ Token validado:`, result);
+
+    if (result?.valid === false) {
+      throw new Error("Token inválido ou expirado");
+    }
+
     return result;
   } catch (error: any) {
     console.error(`❌ Erro ao validar token:`, error);
@@ -237,10 +330,17 @@ export async function validateToken() {
  */
 export async function forgotPassword(email: string) {
   const url = `${BASE_URL}/api/auth/forgot-password`;
-  
+
   try {
-    console.log(`🔄 Enviando solicitação de recuperação de senha em: ${url}`);
-    const result = await fetchWithLogging(url, "POST", { email }, false);
+    console.log(
+      `🔄 Enviando solicitação de recuperação de senha em: ${url}`
+    );
+    const result = await fetchWithLogging(
+      url,
+      "POST",
+      { email },
+      false
+    );
     console.log(`✅ Solicitação de recuperação enviada com sucesso`);
     return result;
   } catch (error: any) {
@@ -254,14 +354,27 @@ export async function forgotPassword(email: string) {
  */
 export async function resetPassword(token: string, newPassword: string) {
   const url = `${BASE_URL}/api/auth/reset-password`;
-  
+
   try {
     console.log(`🔄 Redefinindo senha em: ${url}`);
-    const result = await fetchWithLogging(url, "POST", { token, newPassword }, false);
+    const result = await fetchWithLogging(
+      url,
+      "POST",
+      { token, newPassword },
+      false
+    );
     console.log(`✅ Senha redefinida com sucesso`);
     return result;
   } catch (error: any) {
     console.error(`❌ Erro ao redefinir senha:`, error);
+    if (
+      error?.message?.includes("Token inválido") ||
+      error?.message?.includes("expirado")
+    ) {
+      throw new Error(
+        "Token inválido ou expirado. Solicite um novo código de recuperação."
+      );
+    }
     throw error;
   }
 }
@@ -270,10 +383,11 @@ export async function resetPassword(token: string, newPassword: string) {
 export const authApi = {
   register: registerUser,
   login: loginUser,
-  getCurrentUser,
-  validateJWT,
+  getUserByEmail,
+  updateUserPassword,
   validateToken,
   forgotPassword,
   resetPassword,
+  mapSupportLevelToAPI,
+  updateUserProfile,
 };
-

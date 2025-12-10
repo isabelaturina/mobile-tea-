@@ -1,34 +1,39 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    Pressable,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
+import { useUser } from "../contexts/UserContext";
+import { authApi } from "../services/api/authApi";
 
 export default function AlterarSenha() {
   const router = useRouter();
   const { theme } = useTheme();
+  const { userData } = useUser();
   const isDarkMode = theme === "dark";
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSavePassword = () => {
+  const handleSavePassword = async () => {
     if (!currentPassword) {
       Alert.alert("Erro", "Digite sua senha atual");
       return;
     }
 
-    if (newPassword.length < 8) {
-      Alert.alert("Erro", "A nova senha deve ter pelo menos 8 caracteres");
+    if (newPassword.length < 6) {
+      Alert.alert("Erro", "A nova senha deve ter pelo menos 6 caracteres");
       return;
     }
 
@@ -37,10 +42,39 @@ export default function AlterarSenha() {
       return;
     }
 
+    // Verifica se temos o ID do usuário
+    let userId: number | null = null;
     try {
-      router.push("/PasswordChangedSuccess");
+      const storedUserId = await AsyncStorage.getItem('userId');
+      const storedUserData = await AsyncStorage.getItem('userData');
+      
+      if (storedUserId) {
+        userId = parseInt(storedUserId, 10);
+      } else if (storedUserData) {
+        const userData = JSON.parse(storedUserData);
+        userId = userData.id;
+      } else if (userData && (userData as any).id) {
+        userId = (userData as any).id;
+      }
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível redirecionar");
+      console.warn("Erro ao buscar ID do usuário:", error);
+    }
+
+    if (!userId) {
+      Alert.alert("Erro", "Não foi possível identificar o usuário. Faça login novamente.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Atualiza a senha usando o endpoint da API
+      await authApi.updateUserPassword(userId, newPassword);
+      Alert.alert("Sucesso", "Senha alterada com sucesso!");
+      router.push("/PasswordChangedSuccess");
+    } catch (error: any) {
+      Alert.alert("Erro", error.message || "Não foi possível alterar a senha. Tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,8 +120,8 @@ export default function AlterarSenha() {
           placeholder="Digite a nova senha"
           placeholderTextColor={isDarkMode ? "#aaa" : "#999"}
         />
-        {newPassword.length > 0 && newPassword.length < 8 && (
-          <Text style={styles.errorText}>Mínimo 8 caracteres</Text>
+        {newPassword.length > 0 && newPassword.length < 6 && (
+          <Text style={styles.errorText}>Mínimo 6 caracteres</Text>
         )}
 
         <Text style={[styles.label, isDarkMode && styles.labelDark]}>
@@ -109,9 +143,10 @@ export default function AlterarSenha() {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.buttonWrapper}
+          style={[styles.buttonWrapper, isLoading && styles.buttonDisabled]}
           onPress={handleSavePassword}
           activeOpacity={0.8}
+          disabled={isLoading}
         >
           <LinearGradient
             colors={["#00C6FF", "#1163E7"]}
@@ -119,7 +154,9 @@ export default function AlterarSenha() {
             end={{ x: 1, y: 0 }}
             style={styles.button}
           >
-            <Text style={styles.buttonText}>Salvar informações</Text>
+            <Text style={styles.buttonText}>
+              {isLoading ? "Salvando..." : "Salvar informações"}
+            </Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -213,5 +250,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-
+  buttonDisabled: {
+    opacity: 0.6,
+  },
 });

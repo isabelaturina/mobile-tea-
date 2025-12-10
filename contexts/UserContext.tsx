@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { authApi } from '../services/api/authApi';
+import { authApi, mapSupportLevelToAPI } from '../services/api/authApi';
 import { API_CONFIG } from '../services/config/apiConfig';
 import * as localAuth from '../services/storage/localAuth';
 
@@ -11,6 +11,7 @@ const USE_OFFLINE_MODE = true; // Altere para false para usar sempre o backend
 interface UserData {
   name: string;
   email: string;
+  id?: number;
   profileImage?: any;
   token?: string;
 }
@@ -55,6 +56,11 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
               email: localUser.email,
               profileImage: require('../assets/images/familia 1.png'),
             });
+            // Salva userId do usuário local também
+            if (localUser.id) {
+              await AsyncStorage.setItem('userId', String(localUser.id));
+              console.log("✅ userId do usuário local salvo no AsyncStorage:", localUser.id);
+            }
             console.log("✅ Usuário carregado do modo offline local");
             return;
           }
@@ -63,13 +69,31 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
         // Se não estiver no modo offline ou não houver usuário local, tenta carregar do backend
         const storedToken = await AsyncStorage.getItem('userToken');
         const storedUserData = await AsyncStorage.getItem('userData');
+        const storedUserId = await AsyncStorage.getItem('userId');
         
-        if (storedToken && storedUserData) {
+        console.log("🔍 [UserContext] Carregando dados do AsyncStorage:", {
+          hasToken: !!storedToken,
+          hasUserData: !!storedUserData,
+          hasUserId: !!storedUserId,
+          userId: storedUserId,
+        });
+        
+        if (storedUserData) {
           const parsedData = JSON.parse(storedUserData);
           setUserData({
             ...parsedData,
-            token: storedToken,
+            token: storedToken || undefined,
           });
+          
+          // Garante que userId esteja salvo se não estiver
+          if (!storedUserId && parsedData.id) {
+            await AsyncStorage.setItem('userId', String(parsedData.id));
+            console.log("✅ userId recuperado do userData e salvo:", parsedData.id);
+          } else if (!storedUserId && parsedData.email) {
+            await AsyncStorage.setItem('userId', parsedData.email);
+            console.log("✅ email salvo como userId (fallback):", parsedData.email);
+          }
+          
           console.log("✅ Dados do usuário carregados do AsyncStorage");
         }
       } catch (error) {
@@ -109,27 +133,43 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
           throw new Error("Resposta da API inválida");
         }
 
-        const userName = data.user?.name || data.name || data.nome || email.split('@')[0];
-        const userEmail = data.user?.email || data.email || email;
-        const userToken = data.token || data.accessToken || data.access_token || '';
+        // A API retorna: { message, user: { id, nome, email, nivelSuporte } }
+        const user = data.user || data;
+        const userName = user?.nome || user?.name || email.split('@')[0];
+        const userEmail = user?.email || email;
+        const userId = user?.id;
 
         const userDataToSave = {
           name: userName,
           email: userEmail,
+          id: userId,
           profileImage: require('../assets/images/familia 1.png'),
         };
 
         // Salva no estado
         setUserData({
           ...userDataToSave,
-          token: userToken,
         });
 
         // Salva no AsyncStorage
         try {
-          await AsyncStorage.setItem('userToken', userToken);
           await AsyncStorage.setItem('userData', JSON.stringify(userDataToSave));
-          console.log("✅ Dados do usuário salvos no AsyncStorage");
+          // Sempre salva userId - prioriza ID numérico, usa email como fallback
+          if (userId && userId !== null && userId !== undefined) {
+            const userIdStr = userId.toString().trim();
+            if (userIdStr !== '' && userIdStr !== 'null' && userIdStr !== 'undefined') {
+              await AsyncStorage.setItem('userId', userIdStr);
+              console.log("✅ userId salvo no AsyncStorage (login):", userIdStr);
+            } else if (userEmail) {
+              await AsyncStorage.setItem('userId', userEmail);
+              console.log("✅ email salvo como userId no AsyncStorage (login - fallback):", userEmail);
+            }
+          } else if (userEmail) {
+            // Se não tiver ID, salva email como userId (fallback)
+            await AsyncStorage.setItem('userId', userEmail);
+            console.log("✅ email salvo como userId no AsyncStorage (login - sem ID):", userEmail);
+          }
+          console.log("✅ Dados do usuário salvos no AsyncStorage - userId:", userId || userEmail);
         } catch (storageError) {
           console.warn("⚠️ Erro ao salvar dados no AsyncStorage:", storageError);
         }
@@ -187,12 +227,15 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
 
       // Tenta cadastro no backend
       try {
+        // ✅ MAPEIA O NÍVEL DE SUPORTE PARA O FORMATO DA API
+        const apiSupportLevel = mapSupportLevelToAPI(nivelSuporte);
+        
         // ✅ OBJETO EXATO QUE SUA API ESPERA
         const payload = {
           nome: name,               // ✅ nome correto
           email: email,             // ✅
           senha: password,          // ✅ senha correta
-          nivelSuporte: nivelSuporte // ✅ leve | moderado | severo
+          nivelSuporte: apiSupportLevel // ✅ Básico | Intermediário | Avançado | Profissional | Expert
         };
 
         console.log("📤 Enviando para API:", payload);
@@ -204,14 +247,38 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
           throw new Error("Resposta da API inválida");
         }
 
+        // A API retorna: { id, nome, email, nivelSuporte }
         const userName = data.nome || name;
         const userEmail = data.email || email;
+        const userId = data.id;
 
         setUserData({
           name: userName,
           email: userEmail,
+          id: userId,
           profileImage: require('../assets/images/familia 1.png'),
         });
+
+        // Salva no AsyncStorage
+        try {
+          await AsyncStorage.setItem('userData', JSON.stringify({
+            name: userName,
+            email: userEmail,
+            id: userId,
+          }));
+          // Salva userId se disponível, caso contrário salva email como fallback
+          if (userId) {
+            await AsyncStorage.setItem('userId', userId.toString());
+            console.log("✅ userId salvo no AsyncStorage (cadastro):", userId.toString());
+          } else if (userEmail) {
+            // Se não tiver ID, salva email como userId (fallback)
+            await AsyncStorage.setItem('userId', userEmail);
+            console.log("✅ email salvo como userId no AsyncStorage (cadastro):", userEmail);
+          }
+          console.log("✅ Dados do usuário salvos no AsyncStorage");
+        } catch (storageError) {
+          console.warn("⚠️ Erro ao salvar dados no AsyncStorage:", storageError);
+        }
 
         console.log("🟢 UserContext - Cadastro concluído com sucesso");
         return true;
@@ -246,10 +313,11 @@ export const UserProvider: React.FC<ProviderProps> = ({ children }) => {
         await localAuth.logoutLocalUser();
       }
 
-      // Remove dados do AsyncStorage
+      // Remove dados do AsyncStorage (incluindo userId)
       await AsyncStorage.removeItem('userToken');
       await AsyncStorage.removeItem('userData');
-      console.log("✅ Dados do usuário removidos do AsyncStorage");
+      await AsyncStorage.removeItem('userId'); // Garantir que userId também seja removido
+      console.log("✅ Dados do usuário removidos do AsyncStorage (incluindo userId)");
     } catch (error) {
       console.warn("⚠️ Erro ao remover dados do AsyncStorage:", error);
     }

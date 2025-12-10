@@ -159,22 +159,22 @@ export default function Home() {
                   end={{ x: 0, y: 1 }}
                   style={styles.cardContent}
                 >
-                  <View style={[styles.cardImageContainer, { marginBottom: 12 }]}>
+                  <View style={[styles.cardImageContainer, { marginBottom: 8 }]}>
                     <Image source={item.image} style={styles.cardImage} resizeMode="contain" />
                   </View>
-                  <View style={[styles.cardTextContainer, { flexGrow: 1, justifyContent: 'flex-start', marginBottom: 12 }]}>
-                    <Text style={[styles.cardTitle, { color: "#FFFFFF", marginBottom: 8 }]}>
+                  <View style={styles.cardTextContainer}>
+                    <Text style={[styles.cardTitle, { color: "#FFFFFF" }]}>
                       {item.title}
                     </Text>
                     <Text 
-                      style={[styles.cardDescription, { color: "#E0E7FF", marginBottom: 8 }]}
+                      style={[styles.cardDescription, { color: "#E0E7FF" }]}
                       numberOfLines={3}
                     >
                       {item.description}
                     </Text>
                   </View>
                   <TouchableOpacity
-                    style={[styles.cardButton, { backgroundColor: "#FFFFFF", marginTop: 0 }]}
+                    style={[styles.cardButton, { backgroundColor: "#FFFFFF" }]}
                     onPress={item.onPress}
                     activeOpacity={0.8}
                   >
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 14,
     alignItems: "center",
-    height: 240,
+    minHeight: Platform.OS === 'android' ? 260 : 240,
     shadowColor: "#000",
     shadowOpacity: Platform.OS === 'ios' ? 0.1 : 0.15,
     shadowRadius: 8,
@@ -376,13 +376,15 @@ const styles = StyleSheet.create({
     elevation: Platform.OS === 'android' ? 6 : 4,
     width: "100%",
     justifyContent: "space-between",
+    flexDirection: "column",
   },
   cardImageContainer: { 
-    height: 100, 
+    height: 90, 
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
-    marginBottom: 8,
+    marginBottom: 10,
+    flexShrink: 0,
   },
   cardImage: { 
     width: 100, 
@@ -392,7 +394,9 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "flex-start",
-    flex: 1,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+    flexShrink: 1,
   },
   cardTitle: { 
     fontSize: 17, 
@@ -400,12 +404,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 6,
     paddingHorizontal: 8,
+    flexShrink: 1,
   },
   cardDescription: { 
     fontSize: 13, 
     textAlign: "center", 
     paddingHorizontal: 8,
     lineHeight: 18,
+    flexShrink: 1,
   },
   cardButton: { 
     borderRadius: 12, 
@@ -415,6 +421,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     minHeight: 44,
+    flexShrink: 0,
+    marginTop: 8,
   },
   cardButtonText: { 
     fontWeight: "bold", 

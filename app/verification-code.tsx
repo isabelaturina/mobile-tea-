@@ -107,12 +107,18 @@ export default function VerificationCode() {
 
     setIsLoading(true);
     try {
-      // Valida o token (código de verificação)
+      // Valida o token (código de verificação) - passa o token como parâmetro
       const result = await authApi.validateToken(fullCode);
       setToken(fullCode);
-      Alert.alert("Sucesso", "Código verificado com sucesso!");
-      // Passa o token para a próxima tela via query params ou state
-      router.push({ pathname: '/new-password', params: { token: fullCode } } as any);
+      
+      // Se o token for válido, redireciona para a tela de nova senha
+      if (result?.valid !== false) {
+        Alert.alert("Sucesso", "Código verificado com sucesso!");
+        // Passa o token para a próxima tela via query params
+        router.push({ pathname: '/new-password', params: { token: fullCode } } as any);
+      } else {
+        Alert.alert("Erro", "Código inválido ou expirado");
+      }
     } catch (error: any) {
       Alert.alert("Erro", error.message || "Código inválido ou expirado");
     } finally {

@@ -1,7 +1,7 @@
- {
+{
   "expo": {
     "name": "TEA+",
-    "slug": "TEA+",
+    "slug": "tea-plus",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo tea.png",
@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/logo tea.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.turina08.teaplus"
     },
     "web": {
       "bundler": "metro",
@@ -42,12 +43,16 @@
           "icon": "./assets/logo tea.png",
           "color": "#3B82F6",
           "defaultChannel": "default"
-          
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a5821e21-df70-4e91-baab-d3413318f2ef"
+      }
     }
   }
 }

@@ -5,11 +5,11 @@ import { Platform } from 'react-native';
  */
 
 // ⚙️ CONFIGURAÇÃO - Altere para true para usar backend local
-const USE_LOCAL_BACKEND = true;
+const USE_LOCAL_BACKEND = false;
 
 // 🌐 URLs de configuração
-const LOCAL_BACKEND_PORT = 3000; // Porta padrão do backend local (altere se necessário)
-const PRODUCTION_URL = "https://crud-tea-1.onrender.com";
+const LOCAL_BACKEND_PORT = 8080; // Porta padrão do backend local (altere se necessário)
+const PRODUCTION_URL = "https://api-auth-tea.onrender.com";
 
 /**
  * Obtém a URL base da API baseado na configuração

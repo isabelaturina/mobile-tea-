@@ -244,14 +244,41 @@ export default function AnotarDia() {
           console.log("⚠️ Não foi possível verificar anotação existente na API, continuando...");
         }
 
+        // Obter usuarioId do contexto ou AsyncStorage
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        let usuarioId = 'user123'; // Default fallback
+        try {
+          const storedUserId = await AsyncStorage.getItem('userId');
+          const storedUserData = await AsyncStorage.getItem('userData');
+          if (storedUserId) {
+            usuarioId = storedUserId;
+          } else if (storedUserData) {
+            const userData = JSON.parse(storedUserData);
+            usuarioId = userData.id || userData.email || usuarioId;
+          }
+        } catch (e) {
+          console.warn("⚠️ Erro ao obter usuarioId, usando default");
+        }
+
+        // Parse da data para dia, mês e ano
+        const dateObj = new Date(entryDate);
+        const dia = dateObj.getDate();
+        const mes = dateObj.getMonth() + 1; // getMonth() retorna 0-11
+        const ano = dateObj.getFullYear();
+        const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
         let result;
         if (existingApiEntry && existingApiEntry.id) {
           // Se já existe na API, atualiza
           console.log("🔄 [ANOTAR DIA] Atualizando anotação existente na API:", existingApiEntry.id);
           result = await diarioApi.update(existingApiEntry.id, {
-            data: entryDate,
-            humor: selectedMood,
             anotacao: note.trim(),
+            emocao: selectedMood,
+            dia: dia,
+            mes: mes,
+            ano: ano,
+            hora: hora,
+            usuarioId: usuarioId,
           });
           console.log("✅ [ANOTAR DIA] Anotação atualizada na API");
 
@@ -273,9 +300,13 @@ export default function AnotarDia() {
           // Se não existe na API, cria nova
           console.log("🔄 [ANOTAR DIA] Criando nova anotação na API");
           result = await diarioApi.create({
-            data: entryDate,
-            humor: selectedMood,
             anotacao: note.trim(),
+            emocao: selectedMood,
+            dia: dia,
+            mes: mes,
+            ano: ano,
+            hora: hora,
+            usuarioId: usuarioId,
           });
           console.log("✅ [ANOTAR DIA] Anotação criada na API:", result);
 
